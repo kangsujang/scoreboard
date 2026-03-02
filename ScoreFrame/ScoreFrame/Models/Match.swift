@@ -1,0 +1,74 @@
+import Foundation
+import SwiftData
+
+@Model
+final class Match {
+    var id: UUID
+    var homeTeamName: String
+    var awayTeamName: String
+    var videoBookmark: Data?
+    var createdAt: Date
+    var scoreboardStyleData: Data?
+
+    @Relationship(deleteRule: .cascade, inverse: \ScoreEvent.match)
+    var scoreEvents: [ScoreEvent]
+
+    var scoreboardStyle: ScoreboardStyle {
+        get {
+            guard let data = scoreboardStyleData,
+                  let style = try? JSONDecoder().decode(ScoreboardStyle.self, from: data) else {
+                return ScoreboardStyle()
+            }
+            return style
+        }
+        set {
+            scoreboardStyleData = try? JSONEncoder().encode(newValue)
+        }
+    }
+
+    var videoURL: URL? {
+        get {
+            guard let bookmark = videoBookmark else { return nil }
+            var isStale = false
+            return try? URL(
+                resolvingBookmarkData: bookmark,
+                bookmarkDataIsStale: &isStale
+            )
+        }
+        set {
+            videoBookmark = try? newValue?.bookmarkData()
+        }
+    }
+
+    var homeScore: Int {
+        scoreEvents.filter { $0.team == .home }.count
+    }
+
+    var awayScore: Int {
+        scoreEvents.filter { $0.team == .away }.count
+    }
+
+    var sortedEvents: [ScoreEvent] {
+        scoreEvents.sorted { $0.timestamp < $1.timestamp }
+    }
+
+    init(homeTeamName: String, awayTeamName: String) {
+        self.id = UUID()
+        self.homeTeamName = homeTeamName
+        self.awayTeamName = awayTeamName
+        self.createdAt = Date()
+        self.scoreEvents = []
+    }
+
+    func scoreAt(time: TimeInterval) -> (home: Int, away: Int) {
+        var home = 0
+        var away = 0
+        for event in sortedEvents where event.timestamp <= time {
+            switch event.team {
+            case .home: home += 1
+            case .away: away += 1
+            }
+        }
+        return (home, away)
+    }
+}

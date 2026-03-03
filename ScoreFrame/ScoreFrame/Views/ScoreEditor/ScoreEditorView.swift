@@ -55,7 +55,11 @@ struct ScoreEditorView: View {
                 match: match,
                 currentTime: playerVM.currentTime,
                 onGoal: { team in addGoal(team: team, at: playerVM.currentTime) },
-                onUndo: { undoLastGoal() }
+                onUndo: { undoLastGoal() },
+                onTimerStart: { setTimerStart(at: playerVM.currentTime) },
+                onTimerStop: { setTimerStop(at: playerVM.currentTime) },
+                onTimerClear: { clearTimer() },
+                onTimerOffsetChange: { seconds in setTimerOffset(seconds: seconds) }
             )
             .padding(.vertical, 6)
 
@@ -95,7 +99,11 @@ struct ScoreEditorView: View {
                     match: match,
                     currentTime: playerVM.currentTime,
                     onGoal: { team in addGoal(team: team, at: playerVM.currentTime) },
-                    onUndo: { undoLastGoal() }
+                    onUndo: { undoLastGoal() },
+                    onTimerStart: { setTimerStart(at: playerVM.currentTime) },
+                    onTimerStop: { setTimerStop(at: playerVM.currentTime) },
+                    onTimerClear: { clearTimer() },
+                    onTimerOffsetChange: { seconds in setTimerOffset(seconds: seconds) }
                 )
                 .padding(.vertical, 12)
 
@@ -132,5 +140,29 @@ struct ScoreEditorView: View {
         }
         match.scoreEvents.removeAll { $0.id == lastEvent.id }
         modelContext.delete(lastEvent)
+    }
+
+    private func setTimerStart(at timestamp: TimeInterval) {
+        match.timerStartTime = timestamp
+        // stop が start 以下なら stop をクリア
+        if let stop = match.timerStopTime, stop <= timestamp {
+            match.timerStopTime = nil
+        }
+    }
+
+    private func setTimerStop(at timestamp: TimeInterval) {
+        guard let start = match.timerStartTime, timestamp > start else { return }
+        match.timerStopTime = timestamp
+    }
+
+    private func clearTimer() {
+        match.timerStartTime = nil
+        match.timerStopTime = nil
+        match.timerStartOffset = nil
+    }
+
+    private func setTimerOffset(seconds: TimeInterval) {
+        let clamped = max(0, seconds)
+        match.timerStartOffset = clamped > 0 ? clamped : nil
     }
 }

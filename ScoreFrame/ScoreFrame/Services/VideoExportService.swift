@@ -115,7 +115,10 @@ final class VideoExportService {
             events: match.sortedEvents,
             style: match.scoreboardStyle,
             videoSize: videoSize,
-            videoDuration: videoDuration
+            videoDuration: videoDuration,
+            timerStartTime: match.timerStartTime,
+            timerStopTime: match.timerStopTime,
+            timerStartOffset: match.timerStartOffset
         )
 
         let parentLayer = CALayer()

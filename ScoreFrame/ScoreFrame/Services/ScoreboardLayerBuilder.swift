@@ -11,6 +11,9 @@ struct ScoreboardLayerBuilder {
         let style: ScoreboardStyle
         let videoSize: CGSize
         let videoDuration: TimeInterval
+        let timerStartTime: TimeInterval?
+        let timerStopTime: TimeInterval?
+        let timerStartOffset: TimeInterval?
     }
 
     // MARK: - Public
@@ -109,7 +112,10 @@ struct ScoreboardLayerBuilder {
                 frame: timerFrame,
                 duration: config.videoDuration,
                 fontSize: timerFontSize,
-                theme: config.style.theme
+                theme: config.style.theme,
+                timerStartTime: config.timerStartTime,
+                timerStopTime: config.timerStopTime,
+                timerStartOffset: config.timerStartOffset
             )
         }
 
@@ -324,8 +330,19 @@ struct ScoreboardLayerBuilder {
         frame: CGRect,
         duration: TimeInterval,
         fontSize: CGFloat,
-        theme: ScoreboardStyle.Theme
+        theme: ScoreboardStyle.Theme,
+        timerStartTime: TimeInterval? = nil,
+        timerStopTime: TimeInterval? = nil,
+        timerStartOffset: TimeInterval? = nil
     ) {
+        let startOffset = timerStartTime ?? 0
+        let initialTime = Int(timerStartOffset ?? 0)
+        let maxMatchTime: Int? = if let stop = timerStopTime {
+            Int(ceil(stop - startOffset)) + initialTime
+        } else {
+            nil
+        }
+
         let totalSeconds = Int(ceil(duration))
         guard totalSeconds > 0 else {
             let staticLabel = makeTextLayer(
@@ -426,24 +443,31 @@ struct ScoreboardLayerBuilder {
             }
         }
 
+        // Convert video second to match second (applying offset, initial time, and cap)
+        func matchSecond(from videoSecond: Int) -> Int {
+            var s = max(0, videoSecond - Int(startOffset)) + initialTime
+            if let cap = maxMatchTime { s = min(s, cap) }
+            return s
+        }
+
         // Minute tens (0-9)
         addDigitLayers(xPos: minuteTensX, width: digitWidth, maxDigit: 9) { second in
-            (second / 60) / 10
+            (matchSecond(from: second) / 60) / 10
         }
 
         // Minute ones (0-9)
         addDigitLayers(xPos: minuteOnesX, width: digitWidth, maxDigit: 9) { second in
-            (second / 60) % 10
+            (matchSecond(from: second) / 60) % 10
         }
 
         // Second tens (0-5)
         addDigitLayers(xPos: secondTensX, width: digitWidth, maxDigit: 5) { second in
-            (second % 60) / 10
+            (matchSecond(from: second) % 60) / 10
         }
 
         // Second ones (0-9)
         addDigitLayers(xPos: secondOnesX, width: digitWidth, maxDigit: 9) { second in
-            (second % 60) % 10
+            (matchSecond(from: second) % 60) % 10
         }
     }
 }

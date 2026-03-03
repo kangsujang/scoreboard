@@ -9,6 +9,9 @@ final class Match {
     var videoBookmark: Data?
     var createdAt: Date
     var scoreboardStyleData: Data?
+    var timerStartTime: TimeInterval?   // キックオフの動画内タイムスタンプ
+    var timerStopTime: TimeInterval?    // 試合終了の動画内タイムスタンプ
+    var timerStartOffset: TimeInterval? // タイマー開始時の試合経過時間（秒）例: 後半開始=2700
 
     @Relationship(deleteRule: .cascade, inverse: \ScoreEvent.match)
     var scoreEvents: [ScoreEvent]

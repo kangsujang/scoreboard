@@ -7,7 +7,6 @@ struct MatchDetailView: View {
 
     var body: some View {
         List {
-            // Summary section
             Section {
                 VStack(spacing: 12) {
                     ScoreboardPreviewView(
@@ -45,9 +44,9 @@ struct MatchDetailView: View {
                         .foregroundStyle(.secondary)
                 }
                 .padding(.vertical, 4)
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
             }
 
-            // Events section
             Section("スコアイベント (\(match.scoreEvents.count))") {
                 if match.scoreEvents.isEmpty {
                     Text("得点記録がありません")
@@ -77,7 +76,6 @@ struct MatchDetailView: View {
                 }
             }
 
-            // Actions section
             Section("アクション") {
                 Button {
                     router.navigate(to: .scoreEditor(match))
@@ -99,6 +97,7 @@ struct MatchDetailView: View {
                 .disabled(match.videoURL == nil)
             }
         }
+        .listStyle(.insetGrouped)
         .navigationTitle("試合詳細")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showStyleSheet) {

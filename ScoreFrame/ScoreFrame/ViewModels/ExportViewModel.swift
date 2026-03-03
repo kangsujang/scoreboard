@@ -1,6 +1,7 @@
 import Foundation
 import Photos
 
+@MainActor
 @Observable
 final class ExportViewModel {
     let match: Match
@@ -35,26 +36,39 @@ final class ExportViewModel {
 
     func saveToPhotos() {
         guard let url = exportedURL else { return }
+        saveError = nil
 
-        PHPhotoLibrary.requestAuthorization(for: .addOnly) { [weak self] status in
-            guard status == .authorized || status == .limited else {
-                Task { @MainActor in
-                    self?.saveError = "写真ライブラリへのアクセスが許可されていません"
-                }
-                return
+        Task {
+            do {
+                try await PhotoLibrarySaver.save(videoAt: url)
+                savedToPhotos = true
+            } catch PhotoLibrarySaver.SaveError.notAuthorized {
+                saveError = "写真ライブラリへのアクセスが許可されていません。設定アプリから許可してください。"
+            } catch {
+                saveError = error.localizedDescription
             }
+        }
+    }
+}
 
-            PHPhotoLibrary.shared().performChanges {
-                PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
-            } completionHandler: { success, error in
-                Task { @MainActor in
-                    if success {
-                        self?.savedToPhotos = true
-                    } else {
-                        self?.saveError = error?.localizedDescription ?? "保存に失敗しました"
-                    }
-                }
-            }
+// Nonisolated helper to avoid @MainActor leaking into PHPhotoLibrary's @Sendable closure
+private enum PhotoLibrarySaver {
+    enum SaveError: LocalizedError {
+        case notAuthorized
+
+        var errorDescription: String? {
+            "写真ライブラリへのアクセスが許可されていません"
+        }
+    }
+
+    static func save(videoAt url: URL) async throws {
+        let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+        guard status == .authorized || status == .limited else {
+            throw SaveError.notAuthorized
+        }
+
+        try await PHPhotoLibrary.shared().performChanges {
+            PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
         }
     }
 }

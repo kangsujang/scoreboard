@@ -7,28 +7,30 @@ struct ScoreControlsView: View {
     let onUndo: () -> Void
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             HStack {
                 Text(match.homeTeamName)
                     .font(.headline)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                 Spacer()
                 Text("\(match.homeScore) - \(match.awayScore)")
-                    .font(.system(.title, design: .rounded, weight: .bold))
+                    .font(.system(.title2, design: .rounded, weight: .bold))
                     .monospacedDigit()
                 Spacer()
                 Text(match.awayTeamName)
                     .font(.headline)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.7)
             }
             .padding(.horizontal)
 
             Text(TimeFormatting.format(seconds: currentTime))
-                .font(.caption)
+                .font(.caption2)
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
 
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 GoalButton(teamName: match.homeTeamName, color: .blue) {
                     onGoal(.home)
                 }
@@ -37,7 +39,7 @@ struct ScoreControlsView: View {
                     onUndo()
                 } label: {
                     Label("取消", systemImage: "arrow.uturn.backward")
-                        .font(.subheadline)
+                        .font(.caption)
                 }
                 .buttonStyle(.bordered)
                 .disabled(match.scoreEvents.isEmpty)
@@ -62,14 +64,14 @@ private struct GoalButton: View {
             tapCount += 1
             action()
         } label: {
-            VStack(spacing: 4) {
+            VStack(spacing: 2) {
                 Image(systemName: "soccerball")
-                    .font(.title2)
+                    .font(.title3)
                 Text("ゴール+")
-                    .font(.caption.weight(.semibold))
+                    .font(.caption2.weight(.semibold))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .padding(.vertical, 8)
         }
         .buttonStyle(.borderedProminent)
         .tint(color)

@@ -14,6 +14,7 @@ struct ExportView: View {
                 ProgressView("準備中...")
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("エクスポート")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -28,7 +29,7 @@ struct ExportView: View {
 
     @ViewBuilder
     private func exportContent(vm: ExportViewModel) -> some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             if vm.isExporting {
                 exportingView(vm: vm)
             } else if let url = vm.exportedURL {
@@ -38,6 +39,7 @@ struct ExportView: View {
             }
         }
         .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .sheet(isPresented: Binding(
             get: { vm.showShareSheet },
             set: { vm.showShareSheet = $0 }
@@ -60,6 +62,7 @@ struct ExportView: View {
                     .monospacedDigit()
             }
             .progressViewStyle(.linear)
+            .frame(maxWidth: 300)
 
             Text("\(match.homeTeamName) \(match.homeScore) - \(match.awayScore) \(match.awayTeamName)")
                 .font(.subheadline)
@@ -78,7 +81,7 @@ struct ExportView: View {
         VStack(spacing: 16) {
             if let player {
                 VideoPlayer(player: player)
-                    .frame(height: 220)
+                    .aspectRatio(16/9, contentMode: .fit)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
@@ -107,12 +110,15 @@ struct ExportView: View {
                 .buttonStyle(.bordered)
                 .disabled(vm.savedToPhotos)
             }
+            .frame(maxWidth: 400)
 
             if let saveError = vm.saveError {
                 Text(saveError)
                     .font(.caption)
                     .foregroundStyle(.red)
             }
+
+            Spacer(minLength: 0)
         }
         .onAppear {
             player = AVPlayer(url: url)

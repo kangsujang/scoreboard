@@ -1,6 +1,6 @@
 import AVFoundation
-import Combine
 
+@MainActor
 @Observable
 final class PlayerViewModel {
     let player: AVPlayer
@@ -8,9 +8,10 @@ final class PlayerViewModel {
     private(set) var duration: TimeInterval = 0
     private(set) var isPlaying = false
 
-    private var timeObserver: Any?
-    private var statusObservation: NSKeyValueObservation?
-    private var rateObservation: NSKeyValueObservation?
+    // nonisolated(unsafe) needed for deinit access from @MainActor @Observable class
+    private nonisolated(unsafe) var timeObserver: Any?
+    private nonisolated(unsafe) var statusObservation: NSKeyValueObservation?
+    private nonisolated(unsafe) var rateObservation: NSKeyValueObservation?
 
     init(url: URL) {
         let asset = AVURLAsset(url: url)
@@ -62,7 +63,9 @@ final class PlayerViewModel {
     private func setupObservers() {
         let interval = CMTime(seconds: 0.1, preferredTimescale: 600)
         timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-            self?.currentTime = time.safeSeconds
+            Task { @MainActor in
+                self?.currentTime = time.safeSeconds
+            }
         }
 
         statusObservation = player.currentItem?.observe(\.status, options: [.new]) { [weak self] item, _ in
@@ -73,9 +76,9 @@ final class PlayerViewModel {
             }
         }
 
-        rateObservation = player.observe(\.rate, options: [.new]) { [weak self] player, _ in
+        rateObservation = player.observe(\.rate, options: [.new]) { [weak self] _, change in
             Task { @MainActor in
-                self?.isPlaying = player.rate > 0
+                self?.isPlaying = (change.newValue ?? 0) > 0
             }
         }
     }

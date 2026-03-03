@@ -1,6 +1,7 @@
 import AVFoundation
 import UIKit
 
+@MainActor
 @Observable
 final class VideoExportService {
     private(set) var progress: Float = 0
@@ -36,29 +37,23 @@ final class VideoExportService {
             throw ExportError.noVideoTrack
         }
 
-        await MainActor.run {
-            isExporting = true
-            progress = 0
-            exportedURL = nil
-            error = nil
-        }
+        isExporting = true
+        progress = 0
+        exportedURL = nil
+        error = nil
 
         do {
             let url = try await performExport(
                 videoURL: videoURL,
                 match: match
             )
-            await MainActor.run {
-                exportedURL = url
-                isExporting = false
-                progress = 1.0
-            }
+            exportedURL = url
+            isExporting = false
+            progress = 1.0
             return url
         } catch {
-            await MainActor.run {
-                self.error = error
-                isExporting = false
-            }
+            self.error = error
+            isExporting = false
             throw error
         }
     }
@@ -106,7 +101,7 @@ final class VideoExportService {
         // Get corrected video size
         let naturalSize = try await sourceVideoTrack.load(.naturalSize)
         let preferredTransform = try await sourceVideoTrack.load(.preferredTransform)
-        let videoSize = correctedSize(naturalSize: naturalSize, transform: preferredTransform)
+        let videoSize = Self.correctedSize(naturalSize: naturalSize, transform: preferredTransform)
 
         // Apply preferred transform to composition track
         compositionVideoTrack.preferredTransform = preferredTransform
@@ -147,8 +142,10 @@ final class VideoExportService {
         instruction.timeRange = timeRange
 
         let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compositionVideoTrack)
-        // Apply transform to handle rotated videos correctly
-        layerInstruction.setTransform(correctedTransform(preferredTransform, naturalSize: naturalSize), at: .zero)
+        layerInstruction.setTransform(
+            Self.correctedTransform(preferredTransform, naturalSize: naturalSize),
+            at: .zero
+        )
         instruction.layerInstructions = [layerInstruction]
 
         videoComposition.instructions = [instruction]
@@ -172,7 +169,7 @@ final class VideoExportService {
         self.exportSession = session
 
         // Start progress monitoring
-        await startProgressMonitoring(session: session)
+        startProgressMonitoring(session: session)
 
         await session.export()
 
@@ -191,7 +188,6 @@ final class VideoExportService {
         }
     }
 
-    @MainActor
     private func startProgressMonitoring(session: AVAssetExportSession) {
         progressTimer?.invalidate()
         progressTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
@@ -203,7 +199,7 @@ final class VideoExportService {
 
     // MARK: - Transform Handling
 
-    private func correctedSize(naturalSize: CGSize, transform: CGAffineTransform) -> CGSize {
+    private static func correctedSize(naturalSize: CGSize, transform: CGAffineTransform) -> CGSize {
         let isRotated = abs(transform.b) == 1 && abs(transform.c) == 1
         if isRotated {
             return CGSize(width: naturalSize.height, height: naturalSize.width)
@@ -211,8 +207,7 @@ final class VideoExportService {
         return naturalSize
     }
 
-    private func correctedTransform(_ transform: CGAffineTransform, naturalSize: CGSize) -> CGAffineTransform {
-        // For portrait videos (90° rotation), build the correct transform
+    private static func correctedTransform(_ transform: CGAffineTransform, naturalSize: CGSize) -> CGAffineTransform {
         let a = transform.a
         let b = transform.b
         let c = transform.c
@@ -236,7 +231,6 @@ final class VideoExportService {
                 .rotated(by: .pi)
         }
 
-        // Identity or already correct
         return .identity
     }
 }

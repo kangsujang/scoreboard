@@ -7,11 +7,12 @@ struct EventListView: View {
 
     var body: some View {
         if events.isEmpty {
-            Text("ゴールボタンで得点を記録しましょう")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity)
-                .padding()
+            ContentUnavailableView(
+                "まだ得点がありません",
+                systemImage: "soccerball",
+                description: Text("ゴールボタンで得点を記録しましょう")
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             List {
                 ForEach(sortedEventsWithScore, id: \.event.id) { item in
@@ -34,6 +35,7 @@ struct EventListView: View {
                             .font(.subheadline.weight(.semibold))
                             .monospacedDigit()
                     }
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                 }
             }
             .listStyle(.plain)

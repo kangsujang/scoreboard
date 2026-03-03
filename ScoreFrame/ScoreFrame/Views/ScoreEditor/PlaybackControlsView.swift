@@ -4,7 +4,7 @@ struct PlaybackControlsView: View {
     @Bindable var playerVM: PlayerViewModel
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 4) {
             Slider(
                 value: Binding(
                     get: { playerVM.currentTime },
@@ -17,31 +17,31 @@ struct PlaybackControlsView: View {
             HStack {
                 Text(TimeFormatting.format(seconds: playerVM.currentTime))
                     .monospacedDigit()
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
 
                 Spacer()
 
-                HStack(spacing: 24) {
+                HStack(spacing: 20) {
                     Button {
                         playerVM.skipBackward()
                     } label: {
                         Image(systemName: "gobackward.5")
-                            .font(.title3)
+                            .font(.body)
                     }
 
                     Button {
                         playerVM.togglePlayback()
                     } label: {
                         Image(systemName: playerVM.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.title2)
+                            .font(.title3)
                     }
 
                     Button {
                         playerVM.skipForward()
                     } label: {
                         Image(systemName: "goforward.5")
-                            .font(.title3)
+                            .font(.body)
                     }
                 }
 
@@ -49,7 +49,7 @@ struct PlaybackControlsView: View {
 
                 Text(TimeFormatting.format(seconds: playerVM.duration))
                     .monospacedDigit()
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
             }
         }

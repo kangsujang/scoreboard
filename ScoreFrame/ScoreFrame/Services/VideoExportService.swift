@@ -109,16 +109,19 @@ final class VideoExportService {
         // Build layer tree
         let videoDuration = duration.seconds
 
+        let style = match.scoreboardStyle
         let config = ScoreboardLayerBuilder.Config(
             homeTeamName: match.homeTeamName,
             awayTeamName: match.awayTeamName,
             events: match.sortedEvents,
-            style: match.scoreboardStyle,
+            style: style,
             videoSize: videoSize,
             videoDuration: videoDuration,
             timerStartTime: match.timerStartTime,
             timerStopTime: match.timerStopTime,
-            timerStartOffset: match.timerStartOffset
+            timerStartOffset: match.timerStartOffset,
+            homeTeamColor: style.homeTeamColor.flatMap { UIColor($0).cgColor },
+            awayTeamColor: style.awayTeamColor.flatMap { UIColor($0).cgColor }
         )
 
         let parentLayer = CALayer()

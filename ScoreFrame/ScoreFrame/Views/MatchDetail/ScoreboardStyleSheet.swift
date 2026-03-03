@@ -65,6 +65,25 @@ struct ScoreboardStyleSheet: View {
                     .pickerStyle(.segmented)
                 }
 
+                Section("チームカラー") {
+                    ColorPicker(
+                        "ホーム: \(match.homeTeamName)",
+                        selection: homeColorBinding,
+                        supportsOpacity: false
+                    )
+                    ColorPicker(
+                        "アウェイ: \(match.awayTeamName)",
+                        selection: awayColorBinding,
+                        supportsOpacity: false
+                    )
+                    if style.homeTeamColorHex != nil || style.awayTeamColorHex != nil {
+                        Button("デフォルトに戻す") {
+                            style.homeTeamColorHex = nil
+                            style.awayTeamColorHex = nil
+                        }
+                    }
+                }
+
                 Section("オプション") {
                     Toggle("タイマー表示", isOn: $style.showMatchTimer)
                 }
@@ -85,6 +104,22 @@ struct ScoreboardStyleSheet: View {
                 }
             }
         }
+    }
+
+    // MARK: - Color Bindings
+
+    private var homeColorBinding: Binding<Color> {
+        Binding(
+            get: { style.homeTeamColor ?? Color.scoreboardText(for: style.theme) },
+            set: { style.homeTeamColor = $0 }
+        )
+    }
+
+    private var awayColorBinding: Binding<Color> {
+        Binding(
+            get: { style.awayTeamColor ?? Color.scoreboardText(for: style.theme) },
+            set: { style.awayTeamColor = $0 }
+        )
     }
 
     // MARK: - Gestures

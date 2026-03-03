@@ -14,6 +14,8 @@ struct ScoreboardLayerBuilder {
         let timerStartTime: TimeInterval?
         let timerStopTime: TimeInterval?
         let timerStartOffset: TimeInterval?
+        let homeTeamColor: CGColor?
+        let awayTeamColor: CGColor?
     }
 
     // MARK: - Public
@@ -34,11 +36,14 @@ struct ScoreboardLayerBuilder {
         let scale = config.style.scale
         let padding: CGFloat = 10 * scale
         let teamFontSize: CGFloat = 18 * scale
-        let scoreFontSize: CGFloat = 28 * scale
+        let scoreFontSize: CGFloat = 24 * scale
         let timerFontSize: CGFloat = 14 * scale
+        let accentHeight: CGFloat = 3 * scale
+        let circleSize: CGFloat = 34 * scale
+        let circleGap: CGFloat = 4 * scale
 
         let containerHeight: CGFloat = 48 * scale
-        let containerWidth: CGFloat = min(config.videoSize.width * 0.55, 440 * scale)
+        let containerWidth: CGFloat = min(config.videoSize.width * 0.55, 480 * scale)
 
         let container = CALayer()
         container.frame = containerFrame(
@@ -47,64 +52,23 @@ struct ScoreboardLayerBuilder {
             containerSize: CGSize(width: containerWidth, height: containerHeight)
         )
 
-        applyThemeBackground(to: container, theme: config.style.theme, cornerRadius: 8)
+        applyThemeBackground(to: container, theme: config.style.theme, cornerRadius: 6)
 
-        let contentY: CGFloat = (containerHeight - scoreFontSize) / 2
+        let theme = config.style.theme
+        let showTimer = config.style.showMatchTimer
+        let timerWidth: CGFloat = showTimer ? containerWidth * 0.22 : 0
 
-        // Home team name
-        let homeLabel = makeTextLayer(
-            fontSize: teamFontSize,
-            alignment: .right,
-            theme: config.style.theme,
-            isScore: false
-        )
-        homeLabel.string = config.homeTeamName
-        homeLabel.frame = CGRect(
-            x: padding,
-            y: contentY + (scoreFontSize - teamFontSize) / 2,
-            width: containerWidth * 0.25,
-            height: teamFontSize + 4
-        )
-        container.addSublayer(homeLabel)
+        // ── Timer section (LEFT, inverted background) ──
+        if showTimer {
+            let timerBg = CALayer()
+            timerBg.frame = CGRect(x: 0, y: 0, width: timerWidth, height: containerHeight)
+            timerBg.backgroundColor = textColor(for: theme)
+            container.addSublayer(timerBg)
 
-        // Score container — holds one CATextLayer per score state
-        let scoreFrame = CGRect(
-            x: containerWidth * 0.3,
-            y: contentY,
-            width: containerWidth * 0.25,
-            height: scoreFontSize + 4
-        )
-        addScoreLayers(
-            to: container,
-            frame: scoreFrame,
-            events: config.events,
-            duration: config.videoDuration,
-            fontSize: scoreFontSize,
-            theme: config.style.theme
-        )
-
-        // Away team name
-        let awayLabel = makeTextLayer(
-            fontSize: teamFontSize,
-            alignment: .left,
-            theme: config.style.theme,
-            isScore: false
-        )
-        awayLabel.string = config.awayTeamName
-        awayLabel.frame = CGRect(
-            x: containerWidth * 0.6,
-            y: contentY + (scoreFontSize - teamFontSize) / 2,
-            width: containerWidth * 0.25,
-            height: teamFontSize + 4
-        )
-        container.addSublayer(awayLabel)
-
-        // Timer container — holds per-digit CATextLayers
-        if config.style.showMatchTimer {
             let timerFrame = CGRect(
-                x: containerWidth * 0.85,
+                x: 0,
                 y: (containerHeight - timerFontSize - 4) / 2,
-                width: containerWidth * 0.14,
+                width: timerWidth,
                 height: timerFontSize + 4
             )
             addTimerLayers(
@@ -112,12 +76,122 @@ struct ScoreboardLayerBuilder {
                 frame: timerFrame,
                 duration: config.videoDuration,
                 fontSize: timerFontSize,
-                theme: config.style.theme,
+                timerTextColor: invertedTextColor(for: theme),
                 timerStartTime: config.timerStartTime,
                 timerStopTime: config.timerStopTime,
                 timerStartOffset: config.timerStartOffset
             )
         }
+
+        // ── Main content area (team names + score circles) ──
+        let mainX = timerWidth
+        let mainWidth = containerWidth - timerWidth
+        let contentY: CGFloat = (containerHeight - accentHeight - circleSize) / 2
+
+        // Home team name (always theme text color)
+        let homeLabel = makeTextLayer(
+            fontSize: teamFontSize,
+            alignment: .right,
+            color: textColor(for: theme),
+            weight: .semibold
+        )
+        homeLabel.string = config.homeTeamName
+        homeLabel.frame = CGRect(
+            x: mainX + padding,
+            y: (containerHeight - accentHeight - teamFontSize - 4) / 2,
+            width: mainWidth * 0.30,
+            height: teamFontSize + 4
+        )
+        container.addSublayer(homeLabel)
+
+        // Score circles — centered in main area
+        let circlesWidth = circleSize * 2 + circleGap
+        let circlesCenterX = mainX + mainWidth / 2
+        let homeCircleX = circlesCenterX - circlesWidth / 2
+        let awayCircleX = homeCircleX + circleSize + circleGap
+
+        // Home score circle
+        let homeCircleBg = CALayer()
+        homeCircleBg.frame = CGRect(x: homeCircleX, y: contentY, width: circleSize, height: circleSize)
+        homeCircleBg.backgroundColor = textColor(for: theme)
+        homeCircleBg.cornerRadius = circleSize / 2
+        container.addSublayer(homeCircleBg)
+
+        let homeScoreFrame = CGRect(
+            x: homeCircleX,
+            y: contentY + (circleSize - scoreFontSize - 4) / 2,
+            width: circleSize,
+            height: scoreFontSize + 4
+        )
+        addSingleTeamScoreLayers(
+            to: container,
+            frame: homeScoreFrame,
+            events: config.events,
+            team: .home,
+            duration: config.videoDuration,
+            fontSize: scoreFontSize,
+            textColor: invertedTextColor(for: theme)
+        )
+
+        // Away score circle
+        let awayCircleBg = CALayer()
+        awayCircleBg.frame = CGRect(x: awayCircleX, y: contentY, width: circleSize, height: circleSize)
+        awayCircleBg.backgroundColor = textColor(for: theme)
+        awayCircleBg.cornerRadius = circleSize / 2
+        container.addSublayer(awayCircleBg)
+
+        let awayScoreFrame = CGRect(
+            x: awayCircleX,
+            y: contentY + (circleSize - scoreFontSize - 4) / 2,
+            width: circleSize,
+            height: scoreFontSize + 4
+        )
+        addSingleTeamScoreLayers(
+            to: container,
+            frame: awayScoreFrame,
+            events: config.events,
+            team: .away,
+            duration: config.videoDuration,
+            fontSize: scoreFontSize,
+            textColor: invertedTextColor(for: theme)
+        )
+
+        // Away team name (always theme text color)
+        let awayLabel = makeTextLayer(
+            fontSize: teamFontSize,
+            alignment: .left,
+            color: textColor(for: theme),
+            weight: .semibold
+        )
+        awayLabel.string = config.awayTeamName
+        awayLabel.frame = CGRect(
+            x: containerWidth - mainWidth * 0.30 - padding,
+            y: (containerHeight - accentHeight - teamFontSize - 4) / 2,
+            width: mainWidth * 0.30,
+            height: teamFontSize + 4
+        )
+        container.addSublayer(awayLabel)
+
+        // ── Accent lines under team names only ──
+        let homeAccent = CALayer()
+        homeAccent.frame = CGRect(
+            x: homeLabel.frame.origin.x,
+            y: containerHeight - accentHeight,
+            width: homeLabel.frame.width,
+            height: accentHeight
+        )
+        homeAccent.backgroundColor = config.homeTeamColor ?? scoreColor(for: theme)
+        container.addSublayer(homeAccent)
+
+        let awayAccent = CALayer()
+        awayAccent.frame = CGRect(
+            x: awayLabel.frame.origin.x,
+            y: containerHeight - accentHeight,
+            width: awayLabel.frame.width,
+            height: accentHeight
+        )
+        awayAccent.backgroundColor = config.awayTeamColor ?? scoreColor(for: theme)
+        container.addSublayer(awayAccent)
 
         return container
     }
@@ -166,10 +240,20 @@ struct ScoreboardLayerBuilder {
         }
     }
 
+    /// Inverted text color (for timer section and score circle text)
+    private static func invertedTextColor(for theme: ScoreboardStyle.Theme) -> CGColor {
+        switch theme {
+        case .dark, .broadcast, .minimal:
+            return UIColor.black.cgColor
+        case .light:
+            return UIColor.white.cgColor
+        }
+    }
+
     private static func scoreColor(for theme: ScoreboardStyle.Theme) -> CGColor {
         switch theme {
         case .dark:
-            return UIColor(red: 1.0, green: 0.843, blue: 0.0, alpha: 1.0).cgColor // #FFD700
+            return UIColor(red: 1.0, green: 0.843, blue: 0.0, alpha: 1.0).cgColor
         case .light:
             return UIColor.systemBlue.cgColor
         case .broadcast:
@@ -184,72 +268,87 @@ struct ScoreboardLayerBuilder {
     private static func makeTextLayer(
         fontSize: CGFloat,
         alignment: CATextLayerAlignmentMode,
-        theme: ScoreboardStyle.Theme,
-        isScore: Bool
+        color: CGColor,
+        weight: UIFont.Weight = .medium
     ) -> CATextLayer {
         let layer = CATextLayer()
         layer.fontSize = fontSize
-        layer.font = UIFont.systemFont(
-            ofSize: fontSize,
-            weight: isScore ? .bold : .medium
-        )
-        layer.foregroundColor = isScore ? scoreColor(for: theme) : textColor(for: theme)
+        layer.font = UIFont.systemFont(ofSize: fontSize, weight: weight)
+        layer.foregroundColor = color
         layer.alignmentMode = alignment
         layer.contentsScale = UIScreen.main.scale
         layer.truncationMode = .end
         return layer
     }
 
-    // MARK: - Score Animations (opacity-based layer switching)
+    // MARK: - Single-Team Score Animation
 
-    /// Each score state gets its own CATextLayer. Opacity animations show/hide them
-    /// at the correct timestamps. This works reliably in AVVideoCompositionCoreAnimationTool
-    /// unlike `CAKeyframeAnimation(keyPath: "string")`.
-    private static func addScoreLayers(
+    /// Creates opacity-animated text layers for one team's score.
+    private static func addSingleTeamScoreLayers(
         to container: CALayer,
         frame: CGRect,
         events: [ScoreEvent],
+        team: Team,
         duration: TimeInterval,
         fontSize: CGFloat,
-        theme: ScoreboardStyle.Theme
+        textColor: CGColor
     ) {
         let sorted = events.sorted { $0.timestamp < $1.timestamp }
-
-        // Build score states: [(scoreString, startTime, endTime)]
         var states: [(string: String, start: Double, end: Double)] = []
-        var home = 0
-        var away = 0
+        var score = 0
 
-        if sorted.isEmpty {
-            // No events — static "0 - 0"
-            states.append(("\(home) - \(away)", 0, duration))
+        // Collect timestamps where this team scored
+        var teamTimestamps: [(timestamp: Double, newScore: Int)] = []
+        for event in sorted where event.team == team {
+            score += 1
+            teamTimestamps.append((event.timestamp, score))
+        }
+
+        if teamTimestamps.isEmpty {
+            states.append(("0", 0, duration))
         } else {
-            // Initial state before first event
-            states.append(("\(home) - \(away)", 0, sorted[0].timestamp))
-
-            for (i, event) in sorted.enumerated() {
-                switch event.team {
-                case .home: home += 1
-                case .away: away += 1
-                }
-                let start = event.timestamp
-                let end = (i + 1 < sorted.count) ? sorted[i + 1].timestamp : duration
-                states.append(("\(home) - \(away)", start, end))
+            states.append(("0", 0, teamTimestamps[0].timestamp))
+            for (i, ts) in teamTimestamps.enumerated() {
+                let end = (i + 1 < teamTimestamps.count) ? teamTimestamps[i + 1].timestamp : duration
+                states.append(("\(ts.newScore)", ts.timestamp, end))
             }
         }
 
+        addOpacityAnimatedTextLayers(
+            to: container,
+            frame: frame,
+            states: states,
+            duration: duration,
+            fontSize: fontSize,
+            textColor: textColor,
+            fontWeight: .bold
+        )
+    }
+
+    // MARK: - Opacity Animation Helper
+
+    /// Creates opacity-animated text layers from a sequence of timed states.
+    private static func addOpacityAnimatedTextLayers(
+        to container: CALayer,
+        frame: CGRect,
+        states: [(string: String, start: Double, end: Double)],
+        duration: TimeInterval,
+        fontSize: CGFloat,
+        textColor: CGColor,
+        fontWeight: UIFont.Weight = .bold
+    ) {
         for state in states {
-            let layer = makeTextLayer(
-                fontSize: fontSize,
-                alignment: .center,
-                theme: theme,
-                isScore: true
-            )
+            let layer = CATextLayer()
+            layer.fontSize = fontSize
+            layer.font = UIFont.systemFont(ofSize: fontSize, weight: fontWeight)
+            layer.foregroundColor = textColor
+            layer.alignmentMode = .center
+            layer.contentsScale = UIScreen.main.scale
+            layer.truncationMode = .end
             layer.string = state.string
             layer.frame = frame
 
             if states.count == 1 {
-                // Only one state — always visible, no animation needed
                 layer.opacity = 1.0
             } else {
                 layer.opacity = 0.0
@@ -271,7 +370,6 @@ struct ScoreboardLayerBuilder {
                     Float(0.0),
                 ] as [Float]
 
-                // First state: visible from the start
                 if state.start == 0 {
                     animation.keyTimes = [
                         0.0,
@@ -285,7 +383,6 @@ struct ScoreboardLayerBuilder {
                     ] as [Float]
                 }
 
-                // Last state: visible until the end
                 if state.end >= duration {
                     animation.keyTimes = [
                         0.0,
@@ -299,7 +396,6 @@ struct ScoreboardLayerBuilder {
                     ] as [Float]
                 }
 
-                // Only state spanning full duration
                 if state.start == 0 && state.end >= duration {
                     animation.keyTimes = [0.0, 1.0] as [NSNumber]
                     animation.values = [Float(1.0), Float(1.0)] as [Float]
@@ -311,7 +407,7 @@ struct ScoreboardLayerBuilder {
                 animation.isRemovedOnCompletion = false
                 animation.fillMode = .forwards
 
-                layer.add(animation, forKey: "scoreOpacity")
+                layer.add(animation, forKey: "textOpacity")
             }
 
             container.addSublayer(layer)
@@ -322,15 +418,12 @@ struct ScoreboardLayerBuilder {
 
     /// Creates per-digit CATextLayers with opacity animations for reliable timer rendering
     /// in AVVideoCompositionCoreAnimationTool export pipeline.
-    ///
-    /// Digit positions: [minuteTens][minuteOnes]:[secondTens][secondOnes]
-    /// Each digit position has layers for each possible value (0-9 or 0-5).
     private static func addTimerLayers(
         to container: CALayer,
         frame: CGRect,
         duration: TimeInterval,
         fontSize: CGFloat,
-        theme: ScoreboardStyle.Theme,
+        timerTextColor: CGColor,
         timerStartTime: TimeInterval? = nil,
         timerStopTime: TimeInterval? = nil,
         timerStartOffset: TimeInterval? = nil
@@ -348,8 +441,8 @@ struct ScoreboardLayerBuilder {
             let staticLabel = makeTextLayer(
                 fontSize: fontSize,
                 alignment: .center,
-                theme: theme,
-                isScore: false
+                color: timerTextColor,
+                weight: .semibold
             )
             staticLabel.string = "00:00"
             staticLabel.frame = frame
@@ -358,10 +451,9 @@ struct ScoreboardLayerBuilder {
         }
 
         // Calculate character widths for positioning
-        let digitWidth = frame.width / 5.0  // 5 character slots: MM:SS
+        let digitWidth = frame.width / 5.0
         let colonWidth = digitWidth * 0.6
 
-        // Digit position X coordinates
         let minuteTensX = frame.origin.x
         let minuteOnesX = minuteTensX + digitWidth
         let colonX = minuteOnesX + digitWidth
@@ -372,16 +464,14 @@ struct ScoreboardLayerBuilder {
         let colonLayer = makeTextLayer(
             fontSize: fontSize,
             alignment: .center,
-            theme: theme,
-            isScore: false
+            color: timerTextColor,
+            weight: .semibold
         )
         colonLayer.string = ":"
         colonLayer.frame = CGRect(x: colonX, y: frame.origin.y, width: colonWidth, height: frame.height)
         colonLayer.opacity = 1.0
         container.addSublayer(colonLayer)
 
-        // Helper: build opacity keyframes for a digit at a given position
-        // The digit should be visible (opacity 1) only when its value matches.
         func addDigitLayers(
             xPos: CGFloat,
             width: CGFloat,
@@ -392,8 +482,8 @@ struct ScoreboardLayerBuilder {
                 let layer = makeTextLayer(
                     fontSize: fontSize,
                     alignment: .center,
-                    theme: theme,
-                    isScore: false
+                    color: timerTextColor,
+                    weight: .semibold
                 )
                 layer.string = "\(digit)"
                 layer.frame = CGRect(x: xPos, y: frame.origin.y, width: width, height: frame.height)
@@ -416,14 +506,12 @@ struct ScoreboardLayerBuilder {
                     }
                 }
 
-                // Ensure we end at time 1.0
                 if let lastTime = keyTimes.last?.doubleValue, lastTime < 1.0 {
                     keyTimes.append(1.0)
                     values.append(values.last ?? 0.0)
                 }
 
                 guard keyTimes.count >= 2 else {
-                    // Digit is either always visible or never visible
                     layer.opacity = values.first ?? 0.0
                     container.addSublayer(layer)
                     continue
@@ -443,29 +531,24 @@ struct ScoreboardLayerBuilder {
             }
         }
 
-        // Convert video second to match second (applying offset, initial time, and cap)
         func matchSecond(from videoSecond: Int) -> Int {
             var s = max(0, videoSecond - Int(startOffset)) + initialTime
             if let cap = maxMatchTime { s = min(s, cap) }
             return s
         }
 
-        // Minute tens (0-9)
         addDigitLayers(xPos: minuteTensX, width: digitWidth, maxDigit: 9) { second in
             (matchSecond(from: second) / 60) / 10
         }
 
-        // Minute ones (0-9)
         addDigitLayers(xPos: minuteOnesX, width: digitWidth, maxDigit: 9) { second in
             (matchSecond(from: second) / 60) % 10
         }
 
-        // Second tens (0-5)
         addDigitLayers(xPos: secondTensX, width: digitWidth, maxDigit: 5) { second in
             (matchSecond(from: second) % 60) / 10
         }
 
-        // Second ones (0-9)
         addDigitLayers(xPos: secondOnesX, width: digitWidth, maxDigit: 9) { second in
             (matchSecond(from: second) % 60) % 10
         }

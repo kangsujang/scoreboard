@@ -1,8 +1,13 @@
 import Foundation
+import SwiftUI
 
 struct ScoreboardStyle: Codable, Equatable {
     var theme: Theme = .dark
     var showMatchTimer: Bool = true
+
+    // チームユニフォームカラー ("#RRGGBB" 形式、nil=テーマデフォルト)
+    var homeTeamColorHex: String?
+    var awayTeamColorHex: String?
 
     // 連続位置 (0〜1 正規化, 左上原点)
     var positionX: CGFloat = 0.02
@@ -69,8 +74,21 @@ struct ScoreboardStyle: Codable, Equatable {
 
     // MARK: - Codable (旧データ互換)
 
+    // MARK: - Computed Color accessors
+
+    var homeTeamColor: Color? {
+        get { homeTeamColorHex.flatMap { Color(hex: $0) } }
+        set { homeTeamColorHex = newValue?.hexString }
+    }
+
+    var awayTeamColor: Color? {
+        get { awayTeamColorHex.flatMap { Color(hex: $0) } }
+        set { awayTeamColorHex = newValue?.hexString }
+    }
+
     enum CodingKeys: String, CodingKey {
         case theme, showMatchTimer, positionX, positionY, scale, position, fontSize
+        case homeTeamColorHex, awayTeamColorHex
     }
 
     init() {}
@@ -84,5 +102,7 @@ struct ScoreboardStyle: Codable, Equatable {
         scale = try container.decodeIfPresent(CGFloat.self, forKey: .scale) ?? 1.0
         position = try container.decodeIfPresent(Position.self, forKey: .position) ?? .topLeft
         fontSize = try container.decodeIfPresent(FontSize.self, forKey: .fontSize) ?? .medium
+        homeTeamColorHex = try container.decodeIfPresent(String.self, forKey: .homeTeamColorHex)
+        awayTeamColorHex = try container.decodeIfPresent(String.self, forKey: .awayTeamColorHex)
     }
 }

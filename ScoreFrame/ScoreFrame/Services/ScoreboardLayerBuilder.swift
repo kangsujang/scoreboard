@@ -28,21 +28,20 @@ struct ScoreboardLayerBuilder {
     // MARK: - Container
 
     private static func buildContainerLayer(config: Config) -> CALayer {
-        let scale = config.style.fontSize.scaleFactor
-        let padding: CGFloat = 8 * scale
-        let teamFontSize: CGFloat = 14 * scale
-        let scoreFontSize: CGFloat = 20 * scale
-        let timerFontSize: CGFloat = 12 * scale
+        let scale = config.style.scale
+        let padding: CGFloat = 10 * scale
+        let teamFontSize: CGFloat = 18 * scale
+        let scoreFontSize: CGFloat = 28 * scale
+        let timerFontSize: CGFloat = 14 * scale
 
-        let containerHeight: CGFloat = 36 * scale
-        let containerWidth: CGFloat = min(config.videoSize.width * 0.45, 360 * scale)
+        let containerHeight: CGFloat = 48 * scale
+        let containerWidth: CGFloat = min(config.videoSize.width * 0.55, 440 * scale)
 
         let container = CALayer()
         container.frame = containerFrame(
-            position: config.style.position,
+            style: config.style,
             videoSize: config.videoSize,
-            containerSize: CGSize(width: containerWidth, height: containerHeight),
-            margin: 16
+            containerSize: CGSize(width: containerWidth, height: containerHeight)
         )
 
         applyThemeBackground(to: container, theme: config.style.theme, cornerRadius: 8)
@@ -65,25 +64,21 @@ struct ScoreboardLayerBuilder {
         )
         container.addSublayer(homeLabel)
 
-        // Score
-        let scoreLabel = makeTextLayer(
-            fontSize: scoreFontSize,
-            alignment: .center,
-            theme: config.style.theme,
-            isScore: true
-        )
-        scoreLabel.frame = CGRect(
+        // Score container — holds one CATextLayer per score state
+        let scoreFrame = CGRect(
             x: containerWidth * 0.3,
             y: contentY,
             width: containerWidth * 0.25,
             height: scoreFontSize + 4
         )
-        addScoreAnimations(
-            to: scoreLabel,
+        addScoreLayers(
+            to: container,
+            frame: scoreFrame,
             events: config.events,
-            duration: config.videoDuration
+            duration: config.videoDuration,
+            fontSize: scoreFontSize,
+            theme: config.style.theme
         )
-        container.addSublayer(scoreLabel)
 
         // Away team name
         let awayLabel = makeTextLayer(
@@ -101,25 +96,21 @@ struct ScoreboardLayerBuilder {
         )
         container.addSublayer(awayLabel)
 
-        // Timer
+        // Timer container — holds per-digit CATextLayers
         if config.style.showMatchTimer {
-            let timerLabel = makeTextLayer(
-                fontSize: timerFontSize,
-                alignment: .center,
-                theme: config.style.theme,
-                isScore: false
-            )
-            timerLabel.frame = CGRect(
+            let timerFrame = CGRect(
                 x: containerWidth * 0.85,
                 y: (containerHeight - timerFontSize - 4) / 2,
                 width: containerWidth * 0.14,
                 height: timerFontSize + 4
             )
-            addTimerAnimation(
-                to: timerLabel,
-                duration: config.videoDuration
+            addTimerLayers(
+                to: container,
+                frame: timerFrame,
+                duration: config.videoDuration,
+                fontSize: timerFontSize,
+                theme: config.style.theme
             )
-            container.addSublayer(timerLabel)
         }
 
         return container
@@ -128,22 +119,18 @@ struct ScoreboardLayerBuilder {
     // MARK: - Position
 
     private static func containerFrame(
-        position: ScoreboardStyle.Position,
+        style: ScoreboardStyle,
         videoSize: CGSize,
-        containerSize: CGSize,
-        margin: CGFloat
+        containerSize: CGSize
     ) -> CGRect {
-        let y = margin
-        let x: CGFloat
-        switch position {
-        case .topLeft:
-            x = margin
-        case .topCenter:
-            x = (videoSize.width - containerSize.width) / 2
-        case .topRight:
-            x = videoSize.width - containerSize.width - margin
-        }
-        return CGRect(origin: CGPoint(x: x, y: y), size: containerSize)
+        let x = min(style.positionX * videoSize.width,
+                     videoSize.width - containerSize.width)
+        let y = min(style.positionY * videoSize.height,
+                     videoSize.height - containerSize.height)
+        return CGRect(
+            origin: CGPoint(x: max(x, 0), y: max(y, 0)),
+            size: containerSize
+        )
     }
 
     // MARK: - Theme
@@ -207,85 +194,256 @@ struct ScoreboardLayerBuilder {
         return layer
     }
 
-    // MARK: - Score Animations
+    // MARK: - Score Animations (opacity-based layer switching)
 
-    private static func addScoreAnimations(
-        to layer: CATextLayer,
+    /// Each score state gets its own CATextLayer. Opacity animations show/hide them
+    /// at the correct timestamps. This works reliably in AVVideoCompositionCoreAnimationTool
+    /// unlike `CAKeyframeAnimation(keyPath: "string")`.
+    private static func addScoreLayers(
+        to container: CALayer,
+        frame: CGRect,
         events: [ScoreEvent],
-        duration: TimeInterval
+        duration: TimeInterval,
+        fontSize: CGFloat,
+        theme: ScoreboardStyle.Theme
     ) {
         let sorted = events.sorted { $0.timestamp < $1.timestamp }
 
-        guard !sorted.isEmpty else {
-            layer.string = "0 - 0"
-            return
-        }
-
-        var keyTimes: [NSNumber] = [0.0]
-        var values: [String] = ["0 - 0"]
-
+        // Build score states: [(scoreString, startTime, endTime)]
+        var states: [(string: String, start: Double, end: Double)] = []
         var home = 0
         var away = 0
 
-        for event in sorted {
-            switch event.team {
-            case .home: home += 1
-            case .away: away += 1
+        if sorted.isEmpty {
+            // No events — static "0 - 0"
+            states.append(("\(home) - \(away)", 0, duration))
+        } else {
+            // Initial state before first event
+            states.append(("\(home) - \(away)", 0, sorted[0].timestamp))
+
+            for (i, event) in sorted.enumerated() {
+                switch event.team {
+                case .home: home += 1
+                case .away: away += 1
+                }
+                let start = event.timestamp
+                let end = (i + 1 < sorted.count) ? sorted[i + 1].timestamp : duration
+                states.append(("\(home) - \(away)", start, end))
             }
-            let normalizedTime = duration > 0 ? event.timestamp / duration : 0
-            keyTimes.append(NSNumber(value: max(0.001, min(normalizedTime, 0.999))))
-            values.append("\(home) - \(away)")
         }
 
-        // Hold final score
-        keyTimes.append(1.0)
-        values.append("\(home) - \(away)")
+        for state in states {
+            let layer = makeTextLayer(
+                fontSize: fontSize,
+                alignment: .center,
+                theme: theme,
+                isScore: true
+            )
+            layer.string = state.string
+            layer.frame = frame
 
-        let animation = CAKeyframeAnimation(keyPath: "string")
-        animation.values = values
-        animation.keyTimes = keyTimes
-        animation.calculationMode = .discrete
-        animation.duration = duration
-        animation.beginTime = AVCoreAnimationBeginTimeAtZero
-        animation.isRemovedOnCompletion = false
-        animation.fillMode = .forwards
+            if states.count == 1 {
+                // Only one state — always visible, no animation needed
+                layer.opacity = 1.0
+            } else {
+                layer.opacity = 0.0
 
-        layer.add(animation, forKey: "scoreChange")
-        layer.string = "0 - 0"
+                let animation = CAKeyframeAnimation(keyPath: "opacity")
+                let startFraction = duration > 0 ? state.start / duration : 0
+                let endFraction = duration > 0 ? state.end / duration : 1
+
+                animation.keyTimes = [
+                    0.0,
+                    NSNumber(value: max(0.0, startFraction)),
+                    NSNumber(value: min(1.0, endFraction)),
+                    1.0,
+                ] as [NSNumber]
+                animation.values = [
+                    Float(0.0),
+                    Float(1.0),
+                    Float(0.0),
+                    Float(0.0),
+                ] as [Float]
+
+                // First state: visible from the start
+                if state.start == 0 {
+                    animation.keyTimes = [
+                        0.0,
+                        NSNumber(value: min(1.0, endFraction)),
+                        1.0,
+                    ] as [NSNumber]
+                    animation.values = [
+                        Float(1.0),
+                        Float(0.0),
+                        Float(0.0),
+                    ] as [Float]
+                }
+
+                // Last state: visible until the end
+                if state.end >= duration {
+                    animation.keyTimes = [
+                        0.0,
+                        NSNumber(value: max(0.0, startFraction)),
+                        1.0,
+                    ] as [NSNumber]
+                    animation.values = [
+                        Float(0.0),
+                        Float(1.0),
+                        Float(1.0),
+                    ] as [Float]
+                }
+
+                // Only state spanning full duration
+                if state.start == 0 && state.end >= duration {
+                    animation.keyTimes = [0.0, 1.0] as [NSNumber]
+                    animation.values = [Float(1.0), Float(1.0)] as [Float]
+                }
+
+                animation.calculationMode = .discrete
+                animation.duration = duration
+                animation.beginTime = AVCoreAnimationBeginTimeAtZero
+                animation.isRemovedOnCompletion = false
+                animation.fillMode = .forwards
+
+                layer.add(animation, forKey: "scoreOpacity")
+            }
+
+            container.addSublayer(layer)
+        }
     }
 
-    // MARK: - Timer Animation
+    // MARK: - Timer Animation (per-digit opacity layers)
 
-    private static func addTimerAnimation(
-        to layer: CATextLayer,
-        duration: TimeInterval
+    /// Creates per-digit CATextLayers with opacity animations for reliable timer rendering
+    /// in AVVideoCompositionCoreAnimationTool export pipeline.
+    ///
+    /// Digit positions: [minuteTens][minuteOnes]:[secondTens][secondOnes]
+    /// Each digit position has layers for each possible value (0-9 or 0-5).
+    private static func addTimerLayers(
+        to container: CALayer,
+        frame: CGRect,
+        duration: TimeInterval,
+        fontSize: CGFloat,
+        theme: ScoreboardStyle.Theme
     ) {
         let totalSeconds = Int(ceil(duration))
         guard totalSeconds > 0 else {
-            layer.string = "00:00"
+            let staticLabel = makeTextLayer(
+                fontSize: fontSize,
+                alignment: .center,
+                theme: theme,
+                isScore: false
+            )
+            staticLabel.string = "00:00"
+            staticLabel.frame = frame
+            container.addSublayer(staticLabel)
             return
         }
 
-        var values: [String] = []
-        var keyTimes: [NSNumber] = []
+        // Calculate character widths for positioning
+        let digitWidth = frame.width / 5.0  // 5 character slots: MM:SS
+        let colonWidth = digitWidth * 0.6
 
-        for second in 0...totalSeconds {
-            let minutes = second / 60
-            let secs = second % 60
-            values.append(String(format: "%02d:%02d", minutes, secs))
-            keyTimes.append(NSNumber(value: Double(second) / duration))
+        // Digit position X coordinates
+        let minuteTensX = frame.origin.x
+        let minuteOnesX = minuteTensX + digitWidth
+        let colonX = minuteOnesX + digitWidth
+        let secondTensX = colonX + colonWidth
+        let secondOnesX = secondTensX + digitWidth
+
+        // Static colon layer
+        let colonLayer = makeTextLayer(
+            fontSize: fontSize,
+            alignment: .center,
+            theme: theme,
+            isScore: false
+        )
+        colonLayer.string = ":"
+        colonLayer.frame = CGRect(x: colonX, y: frame.origin.y, width: colonWidth, height: frame.height)
+        colonLayer.opacity = 1.0
+        container.addSublayer(colonLayer)
+
+        // Helper: build opacity keyframes for a digit at a given position
+        // The digit should be visible (opacity 1) only when its value matches.
+        func addDigitLayers(
+            xPos: CGFloat,
+            width: CGFloat,
+            maxDigit: Int,
+            digitExtractor: @escaping (Int) -> Int
+        ) {
+            for digit in 0...maxDigit {
+                let layer = makeTextLayer(
+                    fontSize: fontSize,
+                    alignment: .center,
+                    theme: theme,
+                    isScore: false
+                )
+                layer.string = "\(digit)"
+                layer.frame = CGRect(x: xPos, y: frame.origin.y, width: width, height: frame.height)
+                layer.opacity = 0.0
+
+                var keyTimes: [NSNumber] = []
+                var values: [Float] = []
+
+                var previousOpacity: Float = -1
+
+                for second in 0...totalSeconds {
+                    let currentDigit = digitExtractor(second)
+                    let opacity: Float = (currentDigit == digit) ? 1.0 : 0.0
+
+                    if opacity != previousOpacity {
+                        let time = duration > 0 ? Double(second) / duration : 0
+                        keyTimes.append(NSNumber(value: min(time, 1.0)))
+                        values.append(opacity)
+                        previousOpacity = opacity
+                    }
+                }
+
+                // Ensure we end at time 1.0
+                if let lastTime = keyTimes.last?.doubleValue, lastTime < 1.0 {
+                    keyTimes.append(1.0)
+                    values.append(values.last ?? 0.0)
+                }
+
+                guard keyTimes.count >= 2 else {
+                    // Digit is either always visible or never visible
+                    layer.opacity = values.first ?? 0.0
+                    container.addSublayer(layer)
+                    continue
+                }
+
+                let animation = CAKeyframeAnimation(keyPath: "opacity")
+                animation.keyTimes = keyTimes
+                animation.values = values
+                animation.calculationMode = .discrete
+                animation.duration = duration
+                animation.beginTime = AVCoreAnimationBeginTimeAtZero
+                animation.isRemovedOnCompletion = false
+                animation.fillMode = .forwards
+
+                layer.add(animation, forKey: "digitOpacity")
+                container.addSublayer(layer)
+            }
         }
 
-        let animation = CAKeyframeAnimation(keyPath: "string")
-        animation.values = values
-        animation.keyTimes = keyTimes
-        animation.calculationMode = .discrete
-        animation.duration = duration
-        animation.beginTime = AVCoreAnimationBeginTimeAtZero
-        animation.isRemovedOnCompletion = false
-        animation.fillMode = .forwards
+        // Minute tens (0-9)
+        addDigitLayers(xPos: minuteTensX, width: digitWidth, maxDigit: 9) { second in
+            (second / 60) / 10
+        }
 
-        layer.add(animation, forKey: "timer")
-        layer.string = "00:00"
+        // Minute ones (0-9)
+        addDigitLayers(xPos: minuteOnesX, width: digitWidth, maxDigit: 9) { second in
+            (second / 60) % 10
+        }
+
+        // Second tens (0-5)
+        addDigitLayers(xPos: secondTensX, width: digitWidth, maxDigit: 5) { second in
+            (second % 60) / 10
+        }
+
+        // Second ones (0-9)
+        addDigitLayers(xPos: secondOnesX, width: digitWidth, maxDigit: 9) { second in
+            (second % 60) % 10
+        }
     }
 }

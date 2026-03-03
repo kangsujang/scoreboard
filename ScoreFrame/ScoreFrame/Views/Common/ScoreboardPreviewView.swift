@@ -8,31 +8,24 @@ struct ScoreboardPreviewView: View {
     let style: ScoreboardStyle
 
     var body: some View {
-        ZStack {
-            // Simulated video background
-            Rectangle()
-                .fill(.green.opacity(0.3))
-                .overlay {
-                    Image(systemName: "sportscourt")
-                        .font(.system(size: 60))
-                        .foregroundStyle(.green.opacity(0.2))
-                }
-
-            // Scoreboard overlay
-            VStack {
-                HStack {
-                    if style.position == .topRight {
-                        Spacer()
+        GeometryReader { geo in
+            ZStack(alignment: .topLeading) {
+                // Simulated video background
+                Rectangle()
+                    .fill(.green.opacity(0.3))
+                    .overlay {
+                        Image(systemName: "sportscourt")
+                            .font(.system(size: 60))
+                            .foregroundStyle(.green.opacity(0.2))
                     }
 
-                    scoreboardContent
-
-                    if style.position == .topLeft {
-                        Spacer()
-                    }
-                }
-                .padding(8)
-                Spacer()
+                // Scoreboard overlay
+                scoreboardContent
+                    .scaleEffect(style.scale, anchor: .topLeading)
+                    .offset(
+                        x: style.positionX * geo.size.width,
+                        y: style.positionY * geo.size.height
+                    )
             }
         }
         .aspectRatio(16/9, contentMode: .fit)
@@ -63,11 +56,5 @@ struct ScoreboardPreviewView: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
-    private var baseFontSize: CGFloat {
-        switch style.fontSize {
-        case .small: return 12
-        case .medium: return 16
-        case .large: return 20
-        }
-    }
+    private var baseFontSize: CGFloat { 16 }
 }

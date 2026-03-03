@@ -1,10 +1,19 @@
 import Foundation
 
 struct ScoreboardStyle: Codable, Equatable {
-    var position: Position = .topLeft
     var theme: Theme = .dark
-    var fontSize: FontSize = .medium
     var showMatchTimer: Bool = true
+
+    // 連続位置 (0〜1 正規化, 左上原点)
+    var positionX: CGFloat = 0.02
+    var positionY: CGFloat = 0.02
+
+    // 連続スケール (0.5〜2.5)
+    var scale: CGFloat = 1.0
+
+    // 旧プロパティ — Codable 互換のため残す（UIからは使わない）
+    var position: Position = .topLeft
+    var fontSize: FontSize = .medium
 
     enum Position: String, Codable, CaseIterable {
         case topLeft
@@ -56,5 +65,24 @@ struct ScoreboardStyle: Codable, Equatable {
             case .large: return 1.3
             }
         }
+    }
+
+    // MARK: - Codable (旧データ互換)
+
+    enum CodingKeys: String, CodingKey {
+        case theme, showMatchTimer, positionX, positionY, scale, position, fontSize
+    }
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        theme = try container.decodeIfPresent(Theme.self, forKey: .theme) ?? .dark
+        showMatchTimer = try container.decodeIfPresent(Bool.self, forKey: .showMatchTimer) ?? true
+        positionX = try container.decodeIfPresent(CGFloat.self, forKey: .positionX) ?? 0.02
+        positionY = try container.decodeIfPresent(CGFloat.self, forKey: .positionY) ?? 0.02
+        scale = try container.decodeIfPresent(CGFloat.self, forKey: .scale) ?? 1.0
+        position = try container.decodeIfPresent(Position.self, forKey: .position) ?? .topLeft
+        fontSize = try container.decodeIfPresent(FontSize.self, forKey: .fontSize) ?? .medium
     }
 }

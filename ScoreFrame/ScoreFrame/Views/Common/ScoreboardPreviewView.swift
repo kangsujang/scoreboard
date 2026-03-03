@@ -6,18 +6,27 @@ struct ScoreboardPreviewView: View {
     let homeScore: Int
     let awayScore: Int
     let style: ScoreboardStyle
+    var thumbnail: UIImage? = nil
 
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .topLeading) {
-                // Simulated video background
-                Rectangle()
-                    .fill(.green.opacity(0.3))
-                    .overlay {
-                        Image(systemName: "sportscourt")
-                            .font(.system(size: 60))
-                            .foregroundStyle(.green.opacity(0.2))
-                    }
+                // Video thumbnail or placeholder background
+                if let thumbnail {
+                    Image(uiImage: thumbnail)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .clipped()
+                } else {
+                    Rectangle()
+                        .fill(.green.opacity(0.3))
+                        .overlay {
+                            Image(systemName: "sportscourt")
+                                .font(.system(size: 60))
+                                .foregroundStyle(.green.opacity(0.2))
+                        }
+                }
 
                 // Scoreboard overlay
                 scoreboardContent

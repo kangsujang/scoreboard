@@ -4,6 +4,7 @@ struct MatchDetailView: View {
     @Environment(Router.self) private var router
     @Bindable var match: Match
     @State private var showStyleSheet = false
+    @State private var thumbnail: UIImage?
 
     var body: some View {
         List {
@@ -14,7 +15,8 @@ struct MatchDetailView: View {
                         awayTeamName: match.awayTeamName,
                         homeScore: match.homeScore,
                         awayScore: match.awayScore,
-                        style: match.scoreboardStyle
+                        style: match.scoreboardStyle,
+                        thumbnail: thumbnail
                     )
 
                     HStack {
@@ -101,7 +103,14 @@ struct MatchDetailView: View {
         .navigationTitle("試合詳細")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showStyleSheet) {
-            ScoreboardStyleSheet(match: match)
+            ScoreboardStyleSheet(match: match, thumbnail: thumbnail)
+        }
+        .task(id: match.videoBookmark) {
+            guard let url = match.videoURL else {
+                thumbnail = nil
+                return
+            }
+            thumbnail = await ThumbnailGenerator.generate(for: url)
         }
     }
 

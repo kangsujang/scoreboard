@@ -4,13 +4,15 @@ struct ScoreboardStyleSheet: View {
     @Bindable var match: Match
     @Environment(\.dismiss) private var dismiss
     @State private var style: ScoreboardStyle
+    let thumbnail: UIImage?
 
     // ジェスチャー用ベース値
     @State private var baseScale: CGFloat = 1.0
     @State private var basePosition: CGPoint = .zero
 
-    init(match: Match) {
+    init(match: Match, thumbnail: UIImage? = nil) {
         self.match = match
+        self.thumbnail = thumbnail
         let s = match.scoreboardStyle
         self._style = State(initialValue: s)
         self._baseScale = State(initialValue: s.scale)
@@ -27,7 +29,8 @@ struct ScoreboardStyleSheet: View {
                             awayTeamName: match.awayTeamName,
                             homeScore: match.homeScore,
                             awayScore: match.awayScore,
-                            style: style
+                            style: style,
+                            thumbnail: thumbnail
                         )
                         .simultaneousGesture(dragGesture(in: geo.size))
                         .simultaneousGesture(magnificationGesture)

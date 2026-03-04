@@ -36,6 +36,7 @@
 		E780767857ECB454C617C97F /* CMTime+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E37F0E884BCAEF314199DC98 /* CMTime+Extensions.swift */; };
 		EE4B328C03C8880F0F934C4E /* ScoreboardStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00A454AE546A89D646D932F /* ScoreboardStyle.swift */; };
 		F0F94F21DA97C1841EF14681 /* ScoreEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 237E1BB08710B801398E5D03 /* ScoreEvent.swift */; };
+		CC11DD22EE33FF44AA55BB66 /* TimerSegment.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD22EE33FF44AA55BB66CC11 /* TimerSegment.swift */; };
 		F7AFECFAA0E0B1429B94403F /* PlaybackControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CC1CC7B7FC2A549B0199AB /* PlaybackControlsView.swift */; };
 		F9CE53026CF354435E3A69A6 /* ThumbnailGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C46D066E18FD879B6406271 /* ThumbnailGenerator.swift */; };
 		AA11BB22CC33DD44EE55FF66 /* VideoCompositionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22CC33DD44EE55FF660011 /* VideoCompositionBuilder.swift */; };
@@ -75,6 +76,7 @@
 		F9973B57299EF3067D093522 /* CGSize+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGSize+Extensions.swift"; sourceTree = "<group>"; };
 		FE91A0EB2E1132EE8F406DC2 /* Color+Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Theme.swift"; sourceTree = "<group>"; };
 		BB22CC33DD44EE55FF660011 /* VideoCompositionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCompositionBuilder.swift; sourceTree = "<group>"; };
+		DD22EE33FF44AA55BB66CC11 /* TimerSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerSegment.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -85,6 +87,7 @@
 				A00A454AE546A89D646D932F /* ScoreboardStyle.swift */,
 				237E1BB08710B801398E5D03 /* ScoreEvent.swift */,
 				3B157216AA48E3734EFEB8BF /* Team.swift */,
+				DD22EE33FF44AA55BB66CC11 /* TimerSegment.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -339,6 +342,7 @@
 				77DDB07F02DB9DA2052647D4 /* ScoreboardStyleSheet.swift in Sources */,
 				61002E8C203C2A266D886558 /* ShareSheet.swift in Sources */,
 				D65466C15A58D5611CE53550 /* Team.swift in Sources */,
+				CC11DD22EE33FF44AA55BB66 /* TimerSegment.swift in Sources */,
 				F9CE53026CF354435E3A69A6 /* ThumbnailGenerator.swift in Sources */,
 				1791A6ADC240BE6A0E89B5E5 /* TimeFormatting.swift in Sources */,
 				AA11BB22CC33DD44EE55FF66 /* VideoCompositionBuilder.swift in Sources */,

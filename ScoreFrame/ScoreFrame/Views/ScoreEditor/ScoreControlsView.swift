@@ -5,17 +5,13 @@ struct ScoreControlsView: View {
     let currentTime: TimeInterval
     let onGoal: (Team) -> Void
     let onUndo: () -> Void
-    let onTimerStart: () -> Void
-    let onTimerStop: () -> Void
-    let onTimerClear: () -> Void
-    let onTimerOffsetChange: (TimeInterval) -> Void
-
-    private var totalOffsetSeconds: Int {
-        Int(match.timerStartOffset ?? 0)
-    }
-
-    private var offsetMinutes: Int { totalOffsetSeconds / 60 }
-    private var offsetSeconds: Int { totalOffsetSeconds % 60 }
+    let onSegmentTimerStart: (Int) -> Void
+    let onSegmentTimerStop: (Int) -> Void
+    let onSegmentTimerClear: (Int) -> Void
+    let onSegmentOffsetChange: (Int, TimeInterval) -> Void
+    let onSegmentPeriodLabel: (Int, String?) -> Void
+    let onAddSegment: () -> Void
+    let onRemoveSegment: (Int) -> Void
 
     var body: some View {
         VStack(spacing: 8) {
@@ -61,6 +57,83 @@ struct ScoreControlsView: View {
             }
             .padding(.horizontal)
 
+            // セグメントリスト
+            ForEach(Array(match.timerSegments.enumerated()), id: \.offset) { index, segment in
+                SegmentControlRow(
+                    index: index,
+                    segment: segment,
+                    onTimerStart: { onSegmentTimerStart(index) },
+                    onTimerStop: { onSegmentTimerStop(index) },
+                    onTimerClear: { onSegmentTimerClear(index) },
+                    onOffsetChange: { onSegmentOffsetChange(index, $0) },
+                    onPeriodLabel: { onSegmentPeriodLabel(index, $0) },
+                    onRemove: match.timerSegments.count > 1 ? { onRemoveSegment(index) } : nil
+                )
+            }
+
+            // セグメント追加ボタン
+            Button {
+                onAddSegment()
+            } label: {
+                Label("セグメント追加", systemImage: "plus.circle")
+                    .font(.caption2.weight(.semibold))
+            }
+            .buttonStyle(.bordered)
+            .tint(.blue)
+            .padding(.horizontal)
+        }
+    }
+}
+
+// MARK: - Segment Control Row
+
+private struct SegmentControlRow: View {
+    let index: Int
+    let segment: TimerSegment
+    let onTimerStart: () -> Void
+    let onTimerStop: () -> Void
+    let onTimerClear: () -> Void
+    let onOffsetChange: (TimeInterval) -> Void
+    let onPeriodLabel: (String?) -> Void
+    let onRemove: (() -> Void)?
+
+    private var totalOffsetSeconds: Int { Int(segment.timerStartOffset ?? 0) }
+    private var offsetMinutes: Int { totalOffsetSeconds / 60 }
+    private var offsetSeconds: Int { totalOffsetSeconds % 60 }
+
+    var body: some View {
+        VStack(spacing: 6) {
+            // ヘッダー
+            HStack {
+                Text("セグメント \(index + 1)")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if let onRemove {
+                    Button(role: .destructive) {
+                        onRemove()
+                    } label: {
+                        Image(systemName: "trash.circle")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.borderless)
+                }
+            }
+
+            // ピリオドプリセット
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(["前半", "後半", "延前", "延後", "PK"], id: \.self) { preset in
+                        Button(preset) {
+                            onPeriodLabel(segment.periodLabel == preset ? nil : preset)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(segment.periodLabel == preset ? .accentColor : .secondary)
+                        .controlSize(.small)
+                    }
+                }
+            }
+
             // タイマー操作行
             HStack(spacing: 8) {
                 Button {
@@ -69,7 +142,7 @@ struct ScoreControlsView: View {
                     VStack(spacing: 2) {
                         Label("キックオフ", systemImage: "play.circle")
                             .font(.caption2.weight(.semibold))
-                        if let start = match.timerStartTime {
+                        if let start = segment.timerStartTime {
                             Text(TimeFormatting.format(seconds: start))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
@@ -87,7 +160,7 @@ struct ScoreControlsView: View {
                     VStack(spacing: 2) {
                         Label("試合終了", systemImage: "stop.circle")
                             .font(.caption2.weight(.semibold))
-                        if let stop = match.timerStopTime {
+                        if let stop = segment.timerStopTime {
                             Text(TimeFormatting.format(seconds: stop))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
@@ -98,9 +171,9 @@ struct ScoreControlsView: View {
                 }
                 .buttonStyle(.bordered)
                 .tint(.orange)
-                .disabled(match.timerStartTime == nil)
+                .disabled(segment.timerStartTime == nil)
 
-                if match.timerStartTime != nil || match.timerStopTime != nil {
+                if segment.timerStartTime != nil || segment.timerStopTime != nil {
                     Button {
                         onTimerClear()
                     } label: {
@@ -111,10 +184,9 @@ struct ScoreControlsView: View {
                     .tint(.secondary)
                 }
             }
-            .padding(.horizontal)
 
             // 開始時間オフセット調整行 (MM:SS)
-            if match.timerStartTime != nil {
+            if segment.timerStartTime != nil {
                 HStack(spacing: 4) {
                     Text("開始時間")
                         .font(.caption2)
@@ -124,7 +196,7 @@ struct ScoreControlsView: View {
 
                     // 分の調整
                     Button {
-                        onTimerOffsetChange(TimeInterval((offsetMinutes - 1) * 60 + offsetSeconds))
+                        onOffsetChange(TimeInterval((offsetMinutes - 1) * 60 + offsetSeconds))
                     } label: {
                         Image(systemName: "minus.circle")
                             .font(.caption)
@@ -137,7 +209,7 @@ struct ScoreControlsView: View {
                         .frame(minWidth: 22)
 
                     Button {
-                        onTimerOffsetChange(TimeInterval((offsetMinutes + 1) * 60 + offsetSeconds))
+                        onOffsetChange(TimeInterval((offsetMinutes + 1) * 60 + offsetSeconds))
                     } label: {
                         Image(systemName: "plus.circle")
                             .font(.caption)
@@ -148,7 +220,7 @@ struct ScoreControlsView: View {
 
                     // 秒の調整
                     Button {
-                        onTimerOffsetChange(TimeInterval(offsetMinutes * 60 + offsetSeconds - 1))
+                        onOffsetChange(TimeInterval(offsetMinutes * 60 + offsetSeconds - 1))
                     } label: {
                         Image(systemName: "minus.circle")
                             .font(.caption)
@@ -163,18 +235,24 @@ struct ScoreControlsView: View {
                     Button {
                         let newSeconds = offsetSeconds + 1
                         if newSeconds >= 60 {
-                            onTimerOffsetChange(TimeInterval((offsetMinutes + 1) * 60))
+                            onOffsetChange(TimeInterval((offsetMinutes + 1) * 60))
                         } else {
-                            onTimerOffsetChange(TimeInterval(offsetMinutes * 60 + newSeconds))
+                            onOffsetChange(TimeInterval(offsetMinutes * 60 + newSeconds))
                         }
                     } label: {
                         Image(systemName: "plus.circle")
                             .font(.caption)
                     }
                 }
-                .padding(.horizontal)
             }
         }
+        .padding(.horizontal)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(.quaternary)
+        )
+        .padding(.horizontal)
     }
 }
 

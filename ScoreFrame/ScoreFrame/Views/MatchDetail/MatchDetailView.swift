@@ -17,6 +17,7 @@ struct MatchDetailView: View {
                         homeScore: match.homeScore,
                         awayScore: match.awayScore,
                         style: match.scoreboardStyle,
+                        currentPeriodLabel: match.timerSegments.first?.periodLabel,
                         thumbnail: thumbnail,
                         videoAspectRatio: videoAspectRatio
                     )

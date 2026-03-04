@@ -6,6 +6,7 @@ struct ScoreboardPreviewView: View {
     let homeScore: Int
     let awayScore: Int
     let style: ScoreboardStyle
+    var currentPeriodLabel: String? = nil
     var thumbnail: UIImage? = nil
     var videoAspectRatio: CGFloat = 16.0 / 9.0
 
@@ -53,7 +54,7 @@ struct ScoreboardPreviewView: View {
 
         return HStack(spacing: 0) {
             // Period label (e.g. 前半, 後半) — leftmost, white bg / black text
-            if let label = style.periodLabel, !label.isEmpty {
+            if let label = currentPeriodLabel, !label.isEmpty {
                 Text(label)
                     .font(.system(size: base * 0.55, weight: .bold))
                     .foregroundStyle(.black)

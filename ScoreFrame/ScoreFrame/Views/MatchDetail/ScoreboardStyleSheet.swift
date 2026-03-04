@@ -32,6 +32,7 @@ struct ScoreboardStyleSheet: View {
                             homeScore: match.homeScore,
                             awayScore: match.awayScore,
                             style: style,
+                            currentPeriodLabel: match.timerSegments.first?.periodLabel,
                             thumbnail: thumbnail,
                             videoAspectRatio: videoAspectRatio
                         )
@@ -87,30 +88,6 @@ struct ScoreboardStyleSheet: View {
                     }
                 }
 
-                Section {
-                    HStack(spacing: 8) {
-                        ForEach(["前半", "後半", "延長", "PK"], id: \.self) { preset in
-                            Button(preset) {
-                                style.periodLabel = (style.periodLabel == preset) ? nil : preset
-                            }
-                            .buttonStyle(.bordered)
-                            .tint(style.periodLabel == preset ? .accentColor : .secondary)
-                        }
-                    }
-
-                    HStack {
-                        Text("カスタム")
-                            .foregroundStyle(.secondary)
-                        TextField("例: 1st", text: periodLabelBinding)
-                            .textInputAutocapitalization(.never)
-                            .multilineTextAlignment(.trailing)
-                    }
-                } header: {
-                    Text("ピリオド表記")
-                } footer: {
-                    Text("スコアボードに前半・後半などの表記を追加します。タップで解除できます。")
-                }
-
                 Section("オプション") {
                     Toggle("タイマー表示", isOn: $style.showMatchTimer)
                 }
@@ -131,15 +108,6 @@ struct ScoreboardStyleSheet: View {
                 }
             }
         }
-    }
-
-    // MARK: - Period Label Binding
-
-    private var periodLabelBinding: Binding<String> {
-        Binding(
-            get: { style.periodLabel ?? "" },
-            set: { style.periodLabel = $0.isEmpty ? nil : $0 }
-        )
     }
 
     // MARK: - Color Bindings

@@ -11,9 +11,7 @@ struct ScoreboardLayerBuilder {
         let style: ScoreboardStyle
         let videoSize: CGSize
         let videoDuration: TimeInterval
-        let timerStartTime: TimeInterval?
-        let timerStopTime: TimeInterval?
-        let timerStartOffset: TimeInterval?
+        let timerSegments: [TimerSegment]
         let homeTeamColor: CGColor?
         let awayTeamColor: CGColor?
     }
@@ -54,14 +52,21 @@ struct ScoreboardLayerBuilder {
 
         let theme = config.style.theme
         let showTimer = config.style.showMatchTimer
-        let periodText = config.style.periodLabel ?? ""
-        let showPeriod = !periodText.isEmpty
+        let segments = config.timerSegments
+
+        // ピリオド表記: 全セグメントのラベルから最長を基準に幅を決定
+        let periodLabels = segments.compactMap { $0.periodLabel }.filter { !$0.isEmpty }
+        let showPeriod = !periodLabels.isEmpty
 
         // ── セクション幅の計算 ──
         let periodPaddingH = base * 0.375
-        let periodWidth: CGFloat = showPeriod
-            ? estimateTextWidth(periodText, fontSize: periodFontSize) + periodPaddingH * 2
-            : 0
+        let periodWidth: CGFloat
+        if showPeriod {
+            let maxLabelWidth = periodLabels.map { estimateTextWidth($0, fontSize: periodFontSize) }.max() ?? 0
+            periodWidth = maxLabelWidth + periodPaddingH * 2
+        } else {
+            periodWidth = 0
+        }
 
         let timerPaddingH = base * 0.5
         let timerTextWidth = estimateTextWidth("00:00", fontSize: timerFontSize, monospaced: true)
@@ -95,20 +100,20 @@ struct ScoreboardLayerBuilder {
             periodBg.backgroundColor = UIColor.white.cgColor
             container.addSublayer(periodBg)
 
-            let periodLabel = makeTextLayer(
-                fontSize: periodFontSize,
-                alignment: .center,
-                color: UIColor.black.cgColor,
-                weight: .bold
-            )
-            periodLabel.string = periodText
-            periodLabel.frame = CGRect(
+            let periodLabelFrame = CGRect(
                 x: 0,
                 y: (containerHeight - periodFontSize - 4) / 2,
                 width: periodWidth,
                 height: periodFontSize + 4
             )
-            container.addSublayer(periodLabel)
+
+            addPeriodLabelLayers(
+                to: container,
+                frame: periodLabelFrame,
+                segments: segments,
+                duration: config.videoDuration,
+                fontSize: periodFontSize
+            )
         }
 
         // ── Timer section (inverted background, after period label) ──
@@ -130,9 +135,7 @@ struct ScoreboardLayerBuilder {
                 duration: config.videoDuration,
                 fontSize: timerFontSize,
                 timerTextColor: invertedTextColor(for: theme),
-                timerStartTime: config.timerStartTime,
-                timerStopTime: config.timerStopTime,
-                timerStartOffset: config.timerStartOffset
+                segments: segments
             )
         }
 
@@ -477,24 +480,15 @@ struct ScoreboardLayerBuilder {
 
     /// Creates per-digit CATextLayers with opacity animations for reliable timer rendering
     /// in AVVideoCompositionCoreAnimationTool export pipeline.
+    /// Supports multiple timer segments with independent start/stop/offset.
     private static func addTimerLayers(
         to container: CALayer,
         frame: CGRect,
         duration: TimeInterval,
         fontSize: CGFloat,
         timerTextColor: CGColor,
-        timerStartTime: TimeInterval? = nil,
-        timerStopTime: TimeInterval? = nil,
-        timerStartOffset: TimeInterval? = nil
+        segments: [TimerSegment]
     ) {
-        let startOffset = timerStartTime ?? 0
-        let initialTime = Int(timerStartOffset ?? 0)
-        let maxMatchTime: Int? = if let stop = timerStopTime {
-            Int(ceil(stop - startOffset)) + initialTime
-        } else {
-            nil
-        }
-
         let totalSeconds = Int(ceil(duration))
         guard totalSeconds > 0 else {
             let staticLabel = makeTextLayer(
@@ -594,10 +588,33 @@ struct ScoreboardLayerBuilder {
             }
         }
 
+        /// マルチセグメント対応: 動画秒数 → 試合経過秒数
+        /// 現在のセグメントの timerStartTime/timerStopTime/timerStartOffset で計算
+        /// セグメント外の区間はフリーズ（直前セグメントの最終値を維持）
         func matchSecond(from videoSecond: Int) -> Int {
-            var s = max(0, videoSecond - Int(startOffset)) + initialTime
-            if let cap = maxMatchTime { s = min(s, cap) }
-            return s
+            let videoTime = TimeInterval(videoSecond)
+            var lastMatchSecond = 0
+
+            for seg in segments {
+                guard let start = seg.timerStartTime else { continue }
+                let stop = seg.timerStopTime ?? duration
+                let offset = Int(seg.timerStartOffset ?? 0)
+
+                if videoTime >= start && videoTime <= stop {
+                    // このセグメントの範囲内
+                    let elapsed = max(0, videoSecond - Int(start))
+                    return elapsed + offset
+                } else if videoTime > stop {
+                    // このセグメントを通過済み → 最終値を記録
+                    let elapsed = max(0, Int(stop) - Int(start))
+                    lastMatchSecond = elapsed + offset
+                } else {
+                    // まだこのセグメントに到達していない
+                    break
+                }
+            }
+
+            return lastMatchSecond
         }
 
         addDigitLayers(xPos: minuteTensX, width: charWidth, maxDigit: 9) { second in
@@ -615,5 +632,55 @@ struct ScoreboardLayerBuilder {
         addDigitLayers(xPos: secondOnesX, width: charWidth, maxDigit: 9) { second in
             (matchSecond(from: second) % 60) % 10
         }
+    }
+
+    // MARK: - Period Label Animation (multi-segment)
+
+    /// Creates opacity-animated CATextLayers for period labels, switching based on segment time ranges.
+    private static func addPeriodLabelLayers(
+        to container: CALayer,
+        frame: CGRect,
+        segments: [TimerSegment],
+        duration: TimeInterval,
+        fontSize: CGFloat
+    ) {
+        // 各セグメントのラベルに対してテキストレイヤーを作成し、
+        // そのセグメントの時間範囲でのみ表示する
+        struct LabelSpan {
+            let label: String
+            let start: TimeInterval
+            let end: TimeInterval
+        }
+
+        var spans: [LabelSpan] = []
+        for (i, seg) in segments.enumerated() {
+            guard let label = seg.periodLabel, !label.isEmpty else { continue }
+            let start = seg.timerStartTime ?? 0
+            // 次のセグメントの開始時刻、またはこのセグメントの終了時刻、または動画終了まで
+            let end: TimeInterval
+            if i + 1 < segments.count, let nextStart = segments[i + 1].timerStartTime {
+                end = nextStart
+            } else {
+                end = duration
+            }
+            spans.append(LabelSpan(label: label, start: start, end: end))
+        }
+
+        // 最初のセグメント開始前の表示: 最初のスパンのラベルを使う
+        if let first = spans.first, first.start > 0 {
+            spans[0] = LabelSpan(label: first.label, start: 0, end: first.end)
+        }
+
+        let states = spans.map { (string: $0.label, start: $0.start, end: $0.end) }
+
+        addOpacityAnimatedTextLayers(
+            to: container,
+            frame: frame,
+            states: states,
+            duration: duration,
+            fontSize: fontSize,
+            textColor: UIColor.black.cgColor,
+            fontWeight: .bold
+        )
     }
 }

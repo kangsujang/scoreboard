@@ -82,9 +82,7 @@ final class VideoExportService {
             style: style,
             videoSize: videoSize,
             videoDuration: videoDuration,
-            timerStartTime: match.timerStartTime,
-            timerStopTime: match.timerStopTime,
-            timerStartOffset: match.timerStartOffset,
+            timerSegments: match.timerSegments,
             homeTeamColor: style.homeTeamColor.flatMap { UIColor($0).cgColor },
             awayTeamColor: style.awayTeamColor.flatMap { UIColor($0).cgColor }
         )

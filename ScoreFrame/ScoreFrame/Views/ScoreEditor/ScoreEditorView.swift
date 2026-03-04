@@ -36,7 +36,10 @@ struct ScoreEditorView: View {
                 }
             }
         }
-        .onAppear { setupPlayer() }
+        .onAppear {
+            setupPlayer()
+            ensureAtLeastOneSegment()
+        }
         .onDisappear { playerVM?.pause() }
     }
 
@@ -52,26 +55,18 @@ struct ScoreEditorView: View {
             PlaybackControlsView(playerVM: playerVM)
                 .padding(.vertical, 6)
 
-            ScoreControlsView(
-                match: match,
-                currentTime: playerVM.currentTime,
-                onGoal: { team in addGoal(team: team, at: playerVM.currentTime) },
-                onUndo: { undoLastGoal() },
-                onTimerStart: { setTimerStart(at: playerVM.currentTime) },
-                onTimerStop: { setTimerStop(at: playerVM.currentTime) },
-                onTimerClear: { clearTimer() },
-                onTimerOffsetChange: { seconds in setTimerOffset(seconds: seconds) }
-            )
-            .padding(.vertical, 6)
+            ScrollView {
+                scoreControls(playerVM: playerVM)
+                    .padding(.vertical, 6)
 
-            Divider()
+                Divider()
 
-            EventListView(
-                events: match.scoreEvents,
-                homeTeamName: match.homeTeamName,
-                awayTeamName: match.awayTeamName
-            )
-            .frame(maxHeight: .infinity)
+                EventListView(
+                    events: match.scoreEvents,
+                    homeTeamName: match.homeTeamName,
+                    awayTeamName: match.awayTeamName
+                )
+            }
         }
         .ignoresSafeArea(.container, edges: .bottom)
     }
@@ -95,30 +90,38 @@ struct ScoreEditorView: View {
             Divider()
 
             // 右: スコアコントロール + イベントリスト
-            VStack(spacing: 0) {
-                ScoreControlsView(
-                    match: match,
-                    currentTime: playerVM.currentTime,
-                    onGoal: { team in addGoal(team: team, at: playerVM.currentTime) },
-                    onUndo: { undoLastGoal() },
-                    onTimerStart: { setTimerStart(at: playerVM.currentTime) },
-                    onTimerStop: { setTimerStop(at: playerVM.currentTime) },
-                    onTimerClear: { clearTimer() },
-                    onTimerOffsetChange: { seconds in setTimerOffset(seconds: seconds) }
-                )
-                .padding(.vertical, 12)
+            ScrollView {
+                VStack(spacing: 0) {
+                    scoreControls(playerVM: playerVM)
+                        .padding(.vertical, 12)
 
-                Divider()
+                    Divider()
 
-                EventListView(
-                    events: match.scoreEvents,
-                    homeTeamName: match.homeTeamName,
-                    awayTeamName: match.awayTeamName
-                )
-                .frame(maxHeight: .infinity)
+                    EventListView(
+                        events: match.scoreEvents,
+                        homeTeamName: match.homeTeamName,
+                        awayTeamName: match.awayTeamName
+                    )
+                }
             }
             .frame(width: 320)
         }
+    }
+
+    private func scoreControls(playerVM: PlayerViewModel) -> some View {
+        ScoreControlsView(
+            match: match,
+            currentTime: playerVM.currentTime,
+            onGoal: { team in addGoal(team: team, at: playerVM.currentTime) },
+            onUndo: { undoLastGoal() },
+            onSegmentTimerStart: { idx in setSegmentTimerStart(at: idx, time: playerVM.currentTime) },
+            onSegmentTimerStop: { idx in setSegmentTimerStop(at: idx, time: playerVM.currentTime) },
+            onSegmentTimerClear: { idx in clearSegmentTimer(at: idx) },
+            onSegmentOffsetChange: { idx, secs in setSegmentOffset(at: idx, seconds: secs) },
+            onSegmentPeriodLabel: { idx, label in setSegmentPeriodLabel(at: idx, label: label) },
+            onAddSegment: { addTimerSegment() },
+            onRemoveSegment: { idx in removeTimerSegment(at: idx) }
+        )
     }
 
     // MARK: - Actions
@@ -138,6 +141,12 @@ struct ScoreEditorView: View {
         }
     }
 
+    private func ensureAtLeastOneSegment() {
+        if match.timerSegments.isEmpty {
+            match.timerSegments = [TimerSegment()]
+        }
+    }
+
     private func addGoal(team: Team, at timestamp: TimeInterval) {
         let event = ScoreEvent(team: team, timestamp: timestamp)
         event.match = match
@@ -153,27 +162,60 @@ struct ScoreEditorView: View {
         modelContext.delete(lastEvent)
     }
 
-    private func setTimerStart(at timestamp: TimeInterval) {
-        match.timerStartTime = timestamp
-        // stop が start 以下なら stop をクリア
-        if let stop = match.timerStopTime, stop <= timestamp {
-            match.timerStopTime = nil
+    // MARK: - Segment Actions
+
+    private func setSegmentTimerStart(at index: Int, time: TimeInterval) {
+        var segments = match.timerSegments
+        guard index < segments.count else { return }
+        segments[index].timerStartTime = time
+        if let stop = segments[index].timerStopTime, stop <= time {
+            segments[index].timerStopTime = nil
         }
+        match.timerSegments = segments
     }
 
-    private func setTimerStop(at timestamp: TimeInterval) {
-        guard let start = match.timerStartTime, timestamp > start else { return }
-        match.timerStopTime = timestamp
+    private func setSegmentTimerStop(at index: Int, time: TimeInterval) {
+        var segments = match.timerSegments
+        guard index < segments.count else { return }
+        guard let start = segments[index].timerStartTime, time > start else { return }
+        segments[index].timerStopTime = time
+        match.timerSegments = segments
     }
 
-    private func clearTimer() {
-        match.timerStartTime = nil
-        match.timerStopTime = nil
-        match.timerStartOffset = nil
+    private func clearSegmentTimer(at index: Int) {
+        var segments = match.timerSegments
+        guard index < segments.count else { return }
+        segments[index].timerStartTime = nil
+        segments[index].timerStopTime = nil
+        segments[index].timerStartOffset = nil
+        match.timerSegments = segments
     }
 
-    private func setTimerOffset(seconds: TimeInterval) {
+    private func setSegmentOffset(at index: Int, seconds: TimeInterval) {
+        var segments = match.timerSegments
+        guard index < segments.count else { return }
         let clamped = max(0, seconds)
-        match.timerStartOffset = clamped > 0 ? clamped : nil
+        segments[index].timerStartOffset = clamped > 0 ? clamped : nil
+        match.timerSegments = segments
+    }
+
+    private func setSegmentPeriodLabel(at index: Int, label: String?) {
+        var segments = match.timerSegments
+        guard index < segments.count else { return }
+        segments[index].periodLabel = label
+        match.timerSegments = segments
+    }
+
+    private func addTimerSegment() {
+        var segments = match.timerSegments
+        segments.append(TimerSegment())
+        match.timerSegments = segments
+    }
+
+    private func removeTimerSegment(at index: Int) {
+        var segments = match.timerSegments
+        guard segments.count > 1, index < segments.count else { return }
+        segments.remove(at: index)
+        match.timerSegments = segments
     }
 }

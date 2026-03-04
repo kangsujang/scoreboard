@@ -7,6 +7,7 @@ struct ScoreEditorView: View {
     @Environment(Router.self) private var router
     @Bindable var match: Match
     @State private var playerVM: PlayerViewModel?
+    @State private var videoAspectRatio: CGFloat = 16.0 / 9.0
 
     var body: some View {
         Group {
@@ -44,7 +45,7 @@ struct ScoreEditorView: View {
     private func iPhoneLayout(playerVM: PlayerViewModel) -> some View {
         VStack(spacing: 0) {
             VideoPlayerView(player: playerVM.player)
-                .aspectRatio(16/9, contentMode: .fit)
+                .aspectRatio(videoAspectRatio, contentMode: .fit)
                 .background(.black)
                 .clipped()
 
@@ -123,8 +124,18 @@ struct ScoreEditorView: View {
     // MARK: - Actions
 
     private func setupPlayer() {
-        guard let url = match.videoURL else { return }
-        playerVM = PlayerViewModel(url: url)
+        let urls = match.videoURLs
+        guard !urls.isEmpty else { return }
+        Task {
+            if let url = urls.first, let size = await ThumbnailGenerator.videoSize(for: url) {
+                videoAspectRatio = size.width / size.height
+            }
+            do {
+                playerVM = try await PlayerViewModel.create(urls: urls)
+            } catch {
+                // プレイヤー作成失敗時は nil のまま（ContentUnavailableView を表示）
+            }
+        }
     }
 
     private func addGoal(team: Team, at timestamp: TimeInterval) {

@@ -55,7 +55,7 @@ struct MatchRowView: View {
     }
 
     private func loadThumbnail() async {
-        guard let url = match.videoURL else { return }
+        guard let url = match.videoURLs.first else { return }
         thumbnail = await ThumbnailGenerator.generate(for: url)
     }
 }

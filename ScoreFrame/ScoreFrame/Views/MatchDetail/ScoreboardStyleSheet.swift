@@ -5,14 +5,16 @@ struct ScoreboardStyleSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var style: ScoreboardStyle
     let thumbnail: UIImage?
+    let videoAspectRatio: CGFloat
 
     // ジェスチャー用ベース値
     @State private var baseScale: CGFloat = 1.0
     @State private var basePosition: CGPoint = .zero
 
-    init(match: Match, thumbnail: UIImage? = nil) {
+    init(match: Match, thumbnail: UIImage? = nil, videoAspectRatio: CGFloat = 16.0 / 9.0) {
         self.match = match
         self.thumbnail = thumbnail
+        self.videoAspectRatio = videoAspectRatio
         let s = match.scoreboardStyle
         self._style = State(initialValue: s)
         self._baseScale = State(initialValue: s.scale)
@@ -30,12 +32,13 @@ struct ScoreboardStyleSheet: View {
                             homeScore: match.homeScore,
                             awayScore: match.awayScore,
                             style: style,
-                            thumbnail: thumbnail
+                            thumbnail: thumbnail,
+                            videoAspectRatio: videoAspectRatio
                         )
                         .simultaneousGesture(dragGesture(in: geo.size))
                         .simultaneousGesture(magnificationGesture)
                     }
-                    .aspectRatio(16/9, contentMode: .fit)
+                    .aspectRatio(videoAspectRatio, contentMode: .fit)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
                 } header: {
@@ -84,6 +87,30 @@ struct ScoreboardStyleSheet: View {
                     }
                 }
 
+                Section {
+                    HStack(spacing: 8) {
+                        ForEach(["前半", "後半", "延長", "PK"], id: \.self) { preset in
+                            Button(preset) {
+                                style.periodLabel = (style.periodLabel == preset) ? nil : preset
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(style.periodLabel == preset ? .accentColor : .secondary)
+                        }
+                    }
+
+                    HStack {
+                        Text("カスタム")
+                            .foregroundStyle(.secondary)
+                        TextField("例: 1st", text: periodLabelBinding)
+                            .textInputAutocapitalization(.never)
+                            .multilineTextAlignment(.trailing)
+                    }
+                } header: {
+                    Text("ピリオド表記")
+                } footer: {
+                    Text("スコアボードに前半・後半などの表記を追加します。タップで解除できます。")
+                }
+
                 Section("オプション") {
                     Toggle("タイマー表示", isOn: $style.showMatchTimer)
                 }
@@ -104,6 +131,15 @@ struct ScoreboardStyleSheet: View {
                 }
             }
         }
+    }
+
+    // MARK: - Period Label Binding
+
+    private var periodLabelBinding: Binding<String> {
+        Binding(
+            get: { style.periodLabel ?? "" },
+            set: { style.periodLabel = $0.isEmpty ? nil : $0 }
+        )
     }
 
     // MARK: - Color Bindings

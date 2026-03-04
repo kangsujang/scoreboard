@@ -38,6 +38,7 @@
 		F0F94F21DA97C1841EF14681 /* ScoreEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 237E1BB08710B801398E5D03 /* ScoreEvent.swift */; };
 		F7AFECFAA0E0B1429B94403F /* PlaybackControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CC1CC7B7FC2A549B0199AB /* PlaybackControlsView.swift */; };
 		F9CE53026CF354435E3A69A6 /* ThumbnailGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C46D066E18FD879B6406271 /* ThumbnailGenerator.swift */; };
+		AA11BB22CC33DD44EE55FF66 /* VideoCompositionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22CC33DD44EE55FF660011 /* VideoCompositionBuilder.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -73,6 +74,7 @@
 		F6CFE2AF562C2664CA526BB3 /* VideoImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoImportService.swift; sourceTree = "<group>"; };
 		F9973B57299EF3067D093522 /* CGSize+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGSize+Extensions.swift"; sourceTree = "<group>"; };
 		FE91A0EB2E1132EE8F406DC2 /* Color+Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Theme.swift"; sourceTree = "<group>"; };
+		BB22CC33DD44EE55FF660011 /* VideoCompositionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCompositionBuilder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -223,6 +225,7 @@
 			children = (
 				EA47322390FF05BF29F1F02B /* ScoreboardLayerBuilder.swift */,
 				3C46D066E18FD879B6406271 /* ThumbnailGenerator.swift */,
+				BB22CC33DD44EE55FF660011 /* VideoCompositionBuilder.swift */,
 				31672A60B662D1093E8F9437 /* VideoExportService.swift */,
 				F6CFE2AF562C2664CA526BB3 /* VideoImportService.swift */,
 			);
@@ -338,6 +341,7 @@
 				D65466C15A58D5611CE53550 /* Team.swift in Sources */,
 				F9CE53026CF354435E3A69A6 /* ThumbnailGenerator.swift in Sources */,
 				1791A6ADC240BE6A0E89B5E5 /* TimeFormatting.swift in Sources */,
+				AA11BB22CC33DD44EE55FF66 /* VideoCompositionBuilder.swift in Sources */,
 				9B77A4687825F78A6786675E /* VideoExportService.swift in Sources */,
 				AEB8B4532AD685AA47EB1F37 /* VideoImportService.swift in Sources */,
 				4CCA7088ED1560A5A20B14A1 /* VideoPlayerView.swift in Sources */,

@@ -33,7 +33,8 @@ final class VideoExportService {
     }
 
     func export(match: Match) async throws -> URL {
-        guard let videoURL = match.videoURL else {
+        let urls = match.videoURLs
+        guard !urls.isEmpty else {
             throw ExportError.noVideoTrack
         }
 
@@ -44,7 +45,7 @@ final class VideoExportService {
 
         do {
             let url = try await performExport(
-                videoURL: videoURL,
+                urls: urls,
                 match: match
             )
             exportedURL = url
@@ -66,48 +67,12 @@ final class VideoExportService {
 
     // MARK: - Core Export Pipeline
 
-    private func performExport(videoURL: URL, match: Match) async throws -> URL {
-        let asset = AVURLAsset(url: videoURL)
-        let composition = AVMutableComposition()
-
-        // Load tracks
-        let videoTracks = try await asset.loadTracks(withMediaType: .video)
-        guard let sourceVideoTrack = videoTracks.first else {
-            throw ExportError.noVideoTrack
-        }
-
-        let duration = try await asset.load(.duration)
-        let timeRange = CMTimeRange(start: .zero, duration: duration)
-
-        // Add video track
-        guard let compositionVideoTrack = composition.addMutableTrack(
-            withMediaType: .video,
-            preferredTrackID: kCMPersistentTrackID_Invalid
-        ) else {
-            throw ExportError.exportSessionCreationFailed
-        }
-        try compositionVideoTrack.insertTimeRange(timeRange, of: sourceVideoTrack, at: .zero)
-
-        // Add audio track if available
-        let audioTracks = try await asset.loadTracks(withMediaType: .audio)
-        if let sourceAudioTrack = audioTracks.first,
-           let compositionAudioTrack = composition.addMutableTrack(
-            withMediaType: .audio,
-            preferredTrackID: kCMPersistentTrackID_Invalid
-           ) {
-            try compositionAudioTrack.insertTimeRange(timeRange, of: sourceAudioTrack, at: .zero)
-        }
-
-        // Get corrected video size
-        let naturalSize = try await sourceVideoTrack.load(.naturalSize)
-        let preferredTransform = try await sourceVideoTrack.load(.preferredTransform)
-        let videoSize = Self.correctedSize(naturalSize: naturalSize, transform: preferredTransform)
-
-        // Apply preferred transform to composition track
-        compositionVideoTrack.preferredTransform = preferredTransform
+    private func performExport(urls: [URL], match: Match) async throws -> URL {
+        let result = try await VideoCompositionBuilder.build(from: urls)
+        let videoSize = result.videoSize
 
         // Build layer tree
-        let videoDuration = duration.seconds
+        let videoDuration = result.duration.seconds
 
         let style = match.scoreboardStyle
         let config = ScoreboardLayerBuilder.Config(
@@ -136,25 +101,11 @@ final class VideoExportService {
         parentLayer.addSublayer(overlayLayer)
 
         // Create video composition
-        let videoComposition = AVMutableVideoComposition()
-        videoComposition.renderSize = videoSize
-        videoComposition.frameDuration = CMTime(value: 1, timescale: 30)
-        videoComposition.animationTool = AVVideoCompositionCoreAnimationTool(
-            postProcessingAsVideoLayer: videoLayer,
-            in: parentLayer
+        let videoComposition = VideoCompositionBuilder.makeVideoComposition(
+            result: result,
+            videoLayer: videoLayer,
+            parentLayer: parentLayer
         )
-
-        let instruction = AVMutableVideoCompositionInstruction()
-        instruction.timeRange = timeRange
-
-        let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compositionVideoTrack)
-        layerInstruction.setTransform(
-            Self.correctedTransform(preferredTransform, naturalSize: naturalSize),
-            at: .zero
-        )
-        instruction.layerInstructions = [layerInstruction]
-
-        videoComposition.instructions = [instruction]
 
         // Export
         let outputURL = FileManager.default.temporaryDirectory
@@ -162,7 +113,7 @@ final class VideoExportService {
             .appendingPathExtension("mp4")
 
         guard let session = AVAssetExportSession(
-            asset: composition,
+            asset: result.composition,
             presetName: AVAssetExportPresetHighestQuality
         ) else {
             throw ExportError.exportSessionCreationFailed
@@ -201,42 +152,5 @@ final class VideoExportService {
                 self?.progress = session.progress
             }
         }
-    }
-
-    // MARK: - Transform Handling
-
-    private static func correctedSize(naturalSize: CGSize, transform: CGAffineTransform) -> CGSize {
-        let isRotated = abs(transform.b) == 1 && abs(transform.c) == 1
-        if isRotated {
-            return CGSize(width: naturalSize.height, height: naturalSize.width)
-        }
-        return naturalSize
-    }
-
-    private static func correctedTransform(_ transform: CGAffineTransform, naturalSize: CGSize) -> CGAffineTransform {
-        let a = transform.a
-        let b = transform.b
-        let c = transform.c
-        let d = transform.d
-
-        // 90° clockwise (common for portrait iPhone videos)
-        if a == 0 && b == 1 && c == -1 && d == 0 {
-            return CGAffineTransform(translationX: naturalSize.height, y: 0)
-                .rotated(by: .pi / 2)
-        }
-
-        // 90° counter-clockwise
-        if a == 0 && b == -1 && c == 1 && d == 0 {
-            return CGAffineTransform(translationX: 0, y: naturalSize.width)
-                .rotated(by: -.pi / 2)
-        }
-
-        // 180° rotation
-        if a == -1 && b == 0 && c == 0 && d == -1 {
-            return CGAffineTransform(translationX: naturalSize.width, y: naturalSize.height)
-                .rotated(by: .pi)
-        }
-
-        return .identity
     }
 }

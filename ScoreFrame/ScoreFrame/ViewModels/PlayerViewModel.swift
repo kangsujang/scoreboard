@@ -21,6 +21,24 @@ final class PlayerViewModel {
         setupObservers()
     }
 
+    private init(playerItem: AVPlayerItem) {
+        self.player = AVPlayer(playerItem: playerItem)
+        setupObservers()
+    }
+
+    static func create(urls: [URL]) async throws -> PlayerViewModel {
+        if urls.count <= 1 {
+            guard let url = urls.first else {
+                throw VideoCompositionBuilder.BuildError.noURLs
+            }
+            return PlayerViewModel(url: url)
+        }
+
+        let result = try await VideoCompositionBuilder.build(from: urls)
+        let item = AVPlayerItem(asset: result.composition)
+        return PlayerViewModel(playerItem: item)
+    }
+
     deinit {
         if let timeObserver {
             player.removeTimeObserver(timeObserver)

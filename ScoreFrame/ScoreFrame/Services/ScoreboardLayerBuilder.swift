@@ -33,17 +33,51 @@ struct ScoreboardLayerBuilder {
     // MARK: - Container
 
     private static func buildContainerLayer(config: Config) -> CALayer {
-        let scale = config.style.scale
-        let padding: CGFloat = 10 * scale
-        let teamFontSize: CGFloat = 18 * scale
-        let scoreFontSize: CGFloat = 24 * scale
-        let timerFontSize: CGFloat = 14 * scale
-        let accentHeight: CGFloat = 3 * scale
-        let circleSize: CGFloat = 34 * scale
-        let circleGap: CGFloat = 4 * scale
+        // ScoreboardPreviewView と同じ baseRatio を使用して縮尺を統一
+        // Preview: base = containerWidth * baseRatio → .scaleEffect(style.scale)
+        // Export:  base = videoWidth   * baseRatio * style.scale
+        let base = config.videoSize.width * ScoreboardPreviewView.baseRatio * config.style.scale
 
-        let containerHeight: CGFloat = 48 * scale
-        let containerWidth: CGFloat = min(config.videoSize.width * 0.55, 480 * scale)
+        // フォントサイズ（プレビューと同じ倍率）
+        let periodFontSize = base * 0.55
+        let timerFontSize  = base * 0.6
+        let teamFontSize   = base * 0.65
+        let scoreFontSize  = base * 0.85
+
+        // レイアウト寸法（プレビューと同じ倍率）
+        let circleSize   = base * 1.4
+        let accentHeight = base * 0.125
+        let gap          = base * 0.375   // メインセクション要素間隔
+        let mainPaddingH = base * 0.5
+        let mainPaddingV = base * 0.3125
+        let cornerRadius = base * 0.375
+
+        let theme = config.style.theme
+        let showTimer = config.style.showMatchTimer
+        let periodText = config.style.periodLabel ?? ""
+        let showPeriod = !periodText.isEmpty
+
+        // ── セクション幅の計算 ──
+        let periodPaddingH = base * 0.375
+        let periodWidth: CGFloat = showPeriod
+            ? estimateTextWidth(periodText, fontSize: periodFontSize) + periodPaddingH * 2
+            : 0
+
+        let timerPaddingH = base * 0.5
+        let timerTextWidth = estimateTextWidth("00:00", fontSize: timerFontSize, monospaced: true)
+        let timerWidth: CGFloat = showTimer ? timerTextWidth + timerPaddingH * 2 : 0
+
+        let homeTextWidth = estimateTextWidth(config.homeTeamName, fontSize: teamFontSize)
+        let awayTextWidth = estimateTextWidth(config.awayTeamName, fontSize: teamFontSize)
+        let teamNamePadding = teamFontSize * 2  // 2文字分の余白（片側）
+        let homeAreaWidth = homeTextWidth + teamNamePadding * 2
+        let awayAreaWidth = awayTextWidth + teamNamePadding * 2
+        let mainContentWidth = homeAreaWidth + gap + circleSize + gap + circleSize + gap + awayAreaWidth
+        let mainWidth = mainContentWidth + mainPaddingH * 2
+
+        // ── コンテナサイズ ──
+        let containerWidth = periodWidth + timerWidth + mainWidth
+        let containerHeight = circleSize + mainPaddingV * 2
 
         let container = CALayer()
         container.frame = containerFrame(
@@ -52,21 +86,40 @@ struct ScoreboardLayerBuilder {
             containerSize: CGSize(width: containerWidth, height: containerHeight)
         )
 
-        applyThemeBackground(to: container, theme: config.style.theme, cornerRadius: 6)
+        applyThemeBackground(to: container, theme: theme, cornerRadius: cornerRadius)
 
-        let theme = config.style.theme
-        let showTimer = config.style.showMatchTimer
-        let timerWidth: CGFloat = showTimer ? containerWidth * 0.22 : 0
+        // ── Period label section (leftmost, white bg / black text) ──
+        if showPeriod {
+            let periodBg = CALayer()
+            periodBg.frame = CGRect(x: 0, y: 0, width: periodWidth, height: containerHeight)
+            periodBg.backgroundColor = UIColor.white.cgColor
+            container.addSublayer(periodBg)
 
-        // ── Timer section (LEFT, inverted background) ──
+            let periodLabel = makeTextLayer(
+                fontSize: periodFontSize,
+                alignment: .center,
+                color: UIColor.black.cgColor,
+                weight: .bold
+            )
+            periodLabel.string = periodText
+            periodLabel.frame = CGRect(
+                x: 0,
+                y: (containerHeight - periodFontSize - 4) / 2,
+                width: periodWidth,
+                height: periodFontSize + 4
+            )
+            container.addSublayer(periodLabel)
+        }
+
+        // ── Timer section (inverted background, after period label) ──
         if showTimer {
             let timerBg = CALayer()
-            timerBg.frame = CGRect(x: 0, y: 0, width: timerWidth, height: containerHeight)
+            timerBg.frame = CGRect(x: periodWidth, y: 0, width: timerWidth, height: containerHeight)
             timerBg.backgroundColor = textColor(for: theme)
             container.addSublayer(timerBg)
 
             let timerFrame = CGRect(
-                x: 0,
+                x: periodWidth,
                 y: (containerHeight - timerFontSize - 4) / 2,
                 width: timerWidth,
                 height: timerFontSize + 4
@@ -84,42 +137,48 @@ struct ScoreboardLayerBuilder {
         }
 
         // ── Main content area (team names + score circles) ──
-        let mainX = timerWidth
-        let mainWidth = containerWidth - timerWidth
-        let contentY: CGFloat = (containerHeight - accentHeight - circleSize) / 2
+        // 垂直位置の計算
+        let centerY = containerHeight / 2
+        let circleY = centerY - circleSize / 2
 
-        // Home team name (always theme text color)
+        let teamTextFrameH = teamFontSize + 4
+        let vStackSpacing = base * 0.125
+        let teamVStackH = teamTextFrameH + vStackSpacing + accentHeight
+        let teamVStackY = centerY - teamVStackH / 2
+        let accentY = teamVStackY + teamTextFrameH + vStackSpacing
+
+        // 左から順に X 座標を進める
+        var x = periodWidth + timerWidth + mainPaddingH
+
+        // Home team name（左右に teamNamePadding 分の余白）
+        x += teamNamePadding
         let homeLabel = makeTextLayer(
             fontSize: teamFontSize,
-            alignment: .right,
+            alignment: .center,
             color: textColor(for: theme),
             weight: .semibold
         )
         homeLabel.string = config.homeTeamName
-        homeLabel.frame = CGRect(
-            x: mainX + padding,
-            y: (containerHeight - accentHeight - teamFontSize - 4) / 2,
-            width: mainWidth * 0.30,
-            height: teamFontSize + 4
-        )
+        homeLabel.frame = CGRect(x: x, y: teamVStackY, width: homeTextWidth, height: teamTextFrameH)
         container.addSublayer(homeLabel)
 
-        // Score circles — centered in main area
-        let circlesWidth = circleSize * 2 + circleGap
-        let circlesCenterX = mainX + mainWidth / 2
-        let homeCircleX = circlesCenterX - circlesWidth / 2
-        let awayCircleX = homeCircleX + circleSize + circleGap
+        let homeAccent = CALayer()
+        homeAccent.frame = CGRect(x: x, y: accentY, width: homeTextWidth, height: accentHeight)
+        homeAccent.backgroundColor = config.homeTeamColor ?? scoreColor(for: theme)
+        container.addSublayer(homeAccent)
+
+        x += homeTextWidth + teamNamePadding + gap
 
         // Home score circle
         let homeCircleBg = CALayer()
-        homeCircleBg.frame = CGRect(x: homeCircleX, y: contentY, width: circleSize, height: circleSize)
+        homeCircleBg.frame = CGRect(x: x, y: circleY, width: circleSize, height: circleSize)
         homeCircleBg.backgroundColor = textColor(for: theme)
         homeCircleBg.cornerRadius = circleSize / 2
         container.addSublayer(homeCircleBg)
 
         let homeScoreFrame = CGRect(
-            x: homeCircleX,
-            y: contentY + (circleSize - scoreFontSize - 4) / 2,
+            x: x,
+            y: circleY + (circleSize - scoreFontSize - 4) / 2,
             width: circleSize,
             height: scoreFontSize + 4
         )
@@ -133,16 +192,18 @@ struct ScoreboardLayerBuilder {
             textColor: invertedTextColor(for: theme)
         )
 
+        x += circleSize + gap
+
         // Away score circle
         let awayCircleBg = CALayer()
-        awayCircleBg.frame = CGRect(x: awayCircleX, y: contentY, width: circleSize, height: circleSize)
+        awayCircleBg.frame = CGRect(x: x, y: circleY, width: circleSize, height: circleSize)
         awayCircleBg.backgroundColor = textColor(for: theme)
         awayCircleBg.cornerRadius = circleSize / 2
         container.addSublayer(awayCircleBg)
 
         let awayScoreFrame = CGRect(
-            x: awayCircleX,
-            y: contentY + (circleSize - scoreFontSize - 4) / 2,
+            x: x,
+            y: circleY + (circleSize - scoreFontSize - 4) / 2,
             width: circleSize,
             height: scoreFontSize + 4
         )
@@ -156,40 +217,22 @@ struct ScoreboardLayerBuilder {
             textColor: invertedTextColor(for: theme)
         )
 
-        // Away team name (always theme text color)
+        x += circleSize + gap
+
+        // Away team name（左右に teamNamePadding 分の余白）
+        x += teamNamePadding
         let awayLabel = makeTextLayer(
             fontSize: teamFontSize,
-            alignment: .left,
+            alignment: .center,
             color: textColor(for: theme),
             weight: .semibold
         )
         awayLabel.string = config.awayTeamName
-        awayLabel.frame = CGRect(
-            x: containerWidth - mainWidth * 0.30 - padding,
-            y: (containerHeight - accentHeight - teamFontSize - 4) / 2,
-            width: mainWidth * 0.30,
-            height: teamFontSize + 4
-        )
+        awayLabel.frame = CGRect(x: x, y: teamVStackY, width: awayTextWidth, height: teamTextFrameH)
         container.addSublayer(awayLabel)
 
-        // ── Accent lines under team names only ──
-        let homeAccent = CALayer()
-        homeAccent.frame = CGRect(
-            x: homeLabel.frame.origin.x,
-            y: containerHeight - accentHeight,
-            width: homeLabel.frame.width,
-            height: accentHeight
-        )
-        homeAccent.backgroundColor = config.homeTeamColor ?? scoreColor(for: theme)
-        container.addSublayer(homeAccent)
-
         let awayAccent = CALayer()
-        awayAccent.frame = CGRect(
-            x: awayLabel.frame.origin.x,
-            y: containerHeight - accentHeight,
-            width: awayLabel.frame.width,
-            height: accentHeight
-        )
+        awayAccent.frame = CGRect(x: x, y: accentY, width: awayTextWidth, height: accentHeight)
         awayAccent.backgroundColor = config.awayTeamColor ?? scoreColor(for: theme)
         container.addSublayer(awayAccent)
 
@@ -263,17 +306,33 @@ struct ScoreboardLayerBuilder {
         }
     }
 
+    // MARK: - Text Measurement
+
+    private static func estimateTextWidth(_ text: String, fontSize: CGFloat, monospaced: Bool = false) -> CGFloat {
+        let font = monospaced
+            ? UIFont.monospacedSystemFont(ofSize: fontSize, weight: .semibold)
+            : UIFont.systemFont(ofSize: fontSize, weight: .semibold)
+        let attributes: [NSAttributedString.Key: Any] = [.font: font]
+        let size = (text as NSString).size(withAttributes: attributes)
+        return ceil(size.width)
+    }
+
     // MARK: - Text Layers
 
     private static func makeTextLayer(
         fontSize: CGFloat,
         alignment: CATextLayerAlignmentMode,
         color: CGColor,
-        weight: UIFont.Weight = .medium
+        weight: UIFont.Weight = .medium,
+        monospaced: Bool = false
     ) -> CATextLayer {
         let layer = CATextLayer()
         layer.fontSize = fontSize
-        layer.font = UIFont.systemFont(ofSize: fontSize, weight: weight)
+        if monospaced {
+            layer.font = UIFont.monospacedSystemFont(ofSize: fontSize, weight: weight)
+        } else {
+            layer.font = UIFont.systemFont(ofSize: fontSize, weight: weight)
+        }
         layer.foregroundColor = color
         layer.alignmentMode = alignment
         layer.contentsScale = UIScreen.main.scale
@@ -442,7 +501,8 @@ struct ScoreboardLayerBuilder {
                 fontSize: fontSize,
                 alignment: .center,
                 color: timerTextColor,
-                weight: .semibold
+                weight: .semibold,
+                monospaced: true
             )
             staticLabel.string = "00:00"
             staticLabel.frame = frame
@@ -450,25 +510,27 @@ struct ScoreboardLayerBuilder {
             return
         }
 
-        // Calculate character widths for positioning
-        let digitWidth = frame.width / 5.0
-        let colonWidth = digitWidth * 0.6
+        // モノスペースフォントの実測値から文字幅を算出し、フレーム中央に配置
+        let textWidth = estimateTextWidth("00:00", fontSize: fontSize, monospaced: true)
+        let charWidth = textWidth / 5.0
+        let textStartX = frame.origin.x + (frame.width - textWidth) / 2
 
-        let minuteTensX = frame.origin.x
-        let minuteOnesX = minuteTensX + digitWidth
-        let colonX = minuteOnesX + digitWidth
-        let secondTensX = colonX + colonWidth
-        let secondOnesX = secondTensX + digitWidth
+        let minuteTensX = textStartX
+        let minuteOnesX = textStartX + charWidth
+        let colonX = textStartX + charWidth * 2
+        let secondTensX = textStartX + charWidth * 3
+        let secondOnesX = textStartX + charWidth * 4
 
         // Static colon layer
         let colonLayer = makeTextLayer(
             fontSize: fontSize,
             alignment: .center,
             color: timerTextColor,
-            weight: .semibold
+            weight: .semibold,
+            monospaced: true
         )
         colonLayer.string = ":"
-        colonLayer.frame = CGRect(x: colonX, y: frame.origin.y, width: colonWidth, height: frame.height)
+        colonLayer.frame = CGRect(x: colonX, y: frame.origin.y, width: charWidth, height: frame.height)
         colonLayer.opacity = 1.0
         container.addSublayer(colonLayer)
 
@@ -483,7 +545,8 @@ struct ScoreboardLayerBuilder {
                     fontSize: fontSize,
                     alignment: .center,
                     color: timerTextColor,
-                    weight: .semibold
+                    weight: .semibold,
+                    monospaced: true
                 )
                 layer.string = "\(digit)"
                 layer.frame = CGRect(x: xPos, y: frame.origin.y, width: width, height: frame.height)
@@ -537,19 +600,19 @@ struct ScoreboardLayerBuilder {
             return s
         }
 
-        addDigitLayers(xPos: minuteTensX, width: digitWidth, maxDigit: 9) { second in
+        addDigitLayers(xPos: minuteTensX, width: charWidth, maxDigit: 9) { second in
             (matchSecond(from: second) / 60) / 10
         }
 
-        addDigitLayers(xPos: minuteOnesX, width: digitWidth, maxDigit: 9) { second in
+        addDigitLayers(xPos: minuteOnesX, width: charWidth, maxDigit: 9) { second in
             (matchSecond(from: second) / 60) % 10
         }
 
-        addDigitLayers(xPos: secondTensX, width: digitWidth, maxDigit: 5) { second in
+        addDigitLayers(xPos: secondTensX, width: charWidth, maxDigit: 5) { second in
             (matchSecond(from: second) % 60) / 10
         }
 
-        addDigitLayers(xPos: secondOnesX, width: digitWidth, maxDigit: 9) { second in
+        addDigitLayers(xPos: secondOnesX, width: charWidth, maxDigit: 9) { second in
             (matchSecond(from: second) % 60) % 10
         }
     }

@@ -3,22 +3,27 @@ import SwiftData
 import PhotosUI
 import AVFoundation
 
+struct VideoEntry: Identifiable {
+    let id = UUID()
+    let url: URL
+    var thumbnail: UIImage?
+}
+
 struct MatchSetupView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(Router.self) private var router
 
     @State private var homeTeamName = ""
     @State private var awayTeamName = ""
-    @State private var selectedItem: PhotosPickerItem?
-    @State private var videoURL: URL?
-    @State private var thumbnail: UIImage?
+    @State private var selectedItems: [PhotosPickerItem] = []
+    @State private var videoEntries: [VideoEntry] = []
     @State private var isImporting = false
     @State private var errorMessage: String?
 
     private var canProceed: Bool {
         !homeTeamName.trimmingCharacters(in: .whitespaces).isEmpty
         && !awayTeamName.trimmingCharacters(in: .whitespaces).isEmpty
-        && videoURL != nil
+        && !videoEntries.isEmpty
     }
 
     var body: some View {
@@ -30,31 +35,58 @@ struct MatchSetupView: View {
                     .textInputAutocapitalization(.words)
             }
 
-            Section("試合動画") {
-                PhotosPicker(selection: $selectedItem, matching: .videos) {
-                    if let thumbnail {
-                        HStack {
-                            Image(uiImage: thumbnail)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 120, height: 68)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                            VStack(alignment: .leading) {
-                                Text("動画を選択済み")
-                                    .font(.subheadline)
-                                Text("タップして変更")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+            Section {
+                if !videoEntries.isEmpty {
+                    ForEach(videoEntries) { entry in
+                        HStack(spacing: 12) {
+                            if let thumb = entry.thumbnail {
+                                Image(uiImage: thumb)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 80, height: 45)
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                            } else {
+                                Rectangle()
+                                    .fill(.quaternary)
+                                    .frame(width: 80, height: 45)
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    .overlay {
+                                        Image(systemName: "video")
+                                            .foregroundStyle(.secondary)
+                                    }
                             }
+
+                            Text(entry.url.lastPathComponent)
+                                .font(.caption)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
                         }
-                    } else {
-                        Label(
-                            isImporting ? "読み込み中..." : "動画を選択",
-                            systemImage: "video.badge.plus"
-                        )
+                    }
+                    .onMove { from, to in
+                        videoEntries.move(fromOffsets: from, toOffset: to)
+                    }
+                    .onDelete { offsets in
+                        videoEntries.remove(atOffsets: offsets)
                     }
                 }
+
+                PhotosPicker(
+                    selection: $selectedItems,
+                    maxSelectionCount: 10,
+                    matching: .videos
+                ) {
+                    Label(
+                        isImporting ? "読み込み中..." : "動画を追加",
+                        systemImage: "video.badge.plus"
+                    )
+                }
                 .disabled(isImporting)
+            } header: {
+                Text("試合動画")
+            } footer: {
+                if videoEntries.count > 1 {
+                    Text("ドラッグで並び替え、スワイプで削除できます。動画は上から順に結合されます。")
+                }
             }
 
             if let errorMessage {
@@ -81,40 +113,40 @@ struct MatchSetupView: View {
         }
         .navigationTitle("新規試合")
         .navigationBarTitleDisplayMode(.inline)
-        .onChange(of: selectedItem) { _, newItem in
-            guard let newItem else { return }
+        .environment(\.editMode, .constant(.active))
+        .onChange(of: selectedItems) { _, newItems in
+            guard !newItems.isEmpty else { return }
             Task {
-                await importVideo(from: newItem)
+                await importVideos(from: newItems)
+                selectedItems = []
             }
         }
     }
 
-    private func importVideo(from item: PhotosPickerItem) async {
+    private func importVideos(from items: [PhotosPickerItem]) async {
         isImporting = true
         errorMessage = nil
 
-        do {
-            guard let movie = try await item.loadTransferable(type: VideoTransferable.self) else {
-                errorMessage = "動画の読み込みに失敗しました"
-                isImporting = false
-                return
-            }
+        for item in items {
+            do {
+                guard let movie = try await item.loadTransferable(type: VideoTransferable.self) else {
+                    continue
+                }
 
-            let sandboxURL = try await VideoImportService.copyToSandbox(from: movie.url)
-            await MainActor.run {
-                videoURL = sandboxURL
+                let sandboxURL = try await VideoImportService.copyToSandbox(from: movie.url)
+                let thumb = await ThumbnailGenerator.generate(for: sandboxURL)
+                await MainActor.run {
+                    videoEntries.append(VideoEntry(url: sandboxURL, thumbnail: thumb))
+                }
+            } catch {
+                await MainActor.run {
+                    errorMessage = "動画のインポートに失敗: \(error.localizedDescription)"
+                }
             }
+        }
 
-            let thumb = await ThumbnailGenerator.generate(for: sandboxURL)
-            await MainActor.run {
-                thumbnail = thumb
-                isImporting = false
-            }
-        } catch {
-            await MainActor.run {
-                errorMessage = "動画のインポートに失敗: \(error.localizedDescription)"
-                isImporting = false
-            }
+        await MainActor.run {
+            isImporting = false
         }
     }
 
@@ -123,7 +155,7 @@ struct MatchSetupView: View {
             homeTeamName: homeTeamName.trimmingCharacters(in: .whitespaces),
             awayTeamName: awayTeamName.trimmingCharacters(in: .whitespaces)
         )
-        match.videoURL = videoURL
+        match.videoURLs = videoEntries.map(\.url)
         modelContext.insert(match)
         router.navigate(to: .scoreEditor(match))
     }

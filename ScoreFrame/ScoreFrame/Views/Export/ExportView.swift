@@ -5,6 +5,7 @@ struct ExportView: View {
     let match: Match
     @State private var viewModel: ExportViewModel?
     @State private var player: AVPlayer?
+    @State private var videoAspectRatio: CGFloat = 16.0 / 9.0
 
     var body: some View {
         Group {
@@ -21,6 +22,12 @@ struct ExportView: View {
             let vm = ExportViewModel(match: match)
             viewModel = vm
             vm.startExport()
+            Task {
+                if let url = match.videoURLs.first,
+                   let size = await ThumbnailGenerator.videoSize(for: url) {
+                    videoAspectRatio = size.width / size.height
+                }
+            }
         }
         .onDisappear {
             player?.pause()
@@ -81,7 +88,7 @@ struct ExportView: View {
         VStack(spacing: 16) {
             if let player {
                 VideoPlayer(player: player)
-                    .aspectRatio(16/9, contentMode: .fit)
+                    .aspectRatio(videoAspectRatio, contentMode: .fit)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 

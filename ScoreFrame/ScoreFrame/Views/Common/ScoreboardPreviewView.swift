@@ -7,6 +7,11 @@ struct ScoreboardPreviewView: View {
     let awayScore: Int
     let style: ScoreboardStyle
     var thumbnail: UIImage? = nil
+    var videoAspectRatio: CGFloat = 16.0 / 9.0
+
+    /// プレビューとエクスポートで共通の比率定数
+    /// baseFontSize = containerWidth * baseRatio
+    static let baseRatio: CGFloat = 0.044
 
     var body: some View {
         GeometryReader { geo in
@@ -29,7 +34,7 @@ struct ScoreboardPreviewView: View {
                 }
 
                 // Scoreboard overlay
-                scoreboardContent
+                scoreboardContent(containerWidth: geo.size.width)
                     .scaleEffect(style.scale, anchor: .topLeading)
                     .offset(
                         x: style.positionX * geo.size.width,
@@ -37,69 +42,85 @@ struct ScoreboardPreviewView: View {
                     )
             }
         }
-        .aspectRatio(16/9, contentMode: .fit)
+        .aspectRatio(videoAspectRatio, contentMode: .fit)
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
-    private var scoreboardContent: some View {
-        HStack(spacing: 0) {
-            // Timer section (inverted: light bg, dark text) — LEFT side
+    private func scoreboardContent(containerWidth: CGFloat) -> some View {
+        let base = containerWidth * Self.baseRatio
+        // メインセクション（スコア丸 + 上下パディング）で決まる高さ
+        let containerH = base * 1.4 + base * 0.3125 * 2
+
+        return HStack(spacing: 0) {
+            // Period label (e.g. 前半, 後半) — leftmost, white bg / black text
+            if let label = style.periodLabel, !label.isEmpty {
+                Text(label)
+                    .font(.system(size: base * 0.55, weight: .bold))
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, base * 0.375)
+                    .frame(maxHeight: .infinity)
+                    .background(.white)
+            }
+
+            // Timer section (inverted: light bg, dark text)
             if style.showMatchTimer {
                 Text("00:00")
-                    .font(.system(size: baseFontSize * 0.6, weight: .semibold, design: .monospaced))
+                    .font(.system(size: base * 0.6, weight: .semibold, design: .monospaced))
                     .foregroundStyle(Color.scoreboardTimerText(for: style.theme))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, base * 0.5)
+                    .frame(maxHeight: .infinity)
                     .background(Color.scoreboardText(for: style.theme))
             }
 
             // Main section: team names + score circles
-            HStack(spacing: 6) {
+            HStack(spacing: base * 0.375) {
                 // Home team name with underline
                 teamLabel(
                     name: homeTeamName,
-                    color: style.homeTeamColor ?? Color.scoreboardScore(for: style.theme)
+                    color: style.homeTeamColor ?? Color.scoreboardScore(for: style.theme),
+                    base: base
                 )
 
                 // Home score circle
-                scoreCircle(homeScore)
+                scoreCircle(homeScore, base: base)
                 // Away score circle
-                scoreCircle(awayScore)
+                scoreCircle(awayScore, base: base)
 
                 // Away team name with underline
                 teamLabel(
                     name: awayTeamName,
-                    color: style.awayTeamColor ?? Color.scoreboardScore(for: style.theme)
+                    color: style.awayTeamColor ?? Color.scoreboardScore(for: style.theme),
+                    base: base
                 )
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
+            .padding(.horizontal, base * 0.5)
+            .padding(.vertical, base * 0.3125)
         }
-        .fixedSize()
+        .frame(height: containerH)
+        .fixedSize(horizontal: true, vertical: false)
         .background(Color.scoreboardBackground(for: style.theme))
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .clipShape(RoundedRectangle(cornerRadius: base * 0.375))
     }
 
-    private func teamLabel(name: String, color: Color) -> some View {
-        VStack(spacing: 2) {
+    private func teamLabel(name: String, color: Color, base: CGFloat) -> some View {
+        VStack(spacing: base * 0.125) {
             Text(name)
-                .font(.system(size: baseFontSize * 0.65, weight: .semibold))
+                .font(.system(size: base * 0.65, weight: .semibold))
                 .foregroundStyle(Color.scoreboardText(for: style.theme))
                 .lineLimit(1)
 
             Rectangle()
                 .fill(color)
-                .frame(height: 2)
+                .frame(height: base * 0.125)
         }
+        .padding(.horizontal, base * 0.65 * 2) // 2文字分の余白
     }
 
-    private func scoreCircle(_ score: Int) -> some View {
+    private func scoreCircle(_ score: Int, base: CGFloat) -> some View {
         Text("\(score)")
-            .font(.system(size: baseFontSize * 0.85, weight: .bold))
+            .font(.system(size: base * 0.85, weight: .bold))
             .foregroundStyle(Color.scoreboardTimerText(for: style.theme))
-            .frame(width: baseFontSize * 1.4, height: baseFontSize * 1.4)
+            .frame(width: base * 1.4, height: base * 1.4)
             .background(Circle().fill(Color.scoreboardText(for: style.theme)))
     }
-
-    private var baseFontSize: CGFloat { 16 }
 }

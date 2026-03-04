@@ -7,6 +7,7 @@ final class Match {
     var homeTeamName: String
     var awayTeamName: String
     var videoBookmark: Data?
+    var videoBookmarksData: Data?
     var createdAt: Date
     var scoreboardStyleData: Data?
     var timerStartTime: TimeInterval?   // キックオフの動画内タイムスタンプ
@@ -40,6 +41,34 @@ final class Match {
         }
         set {
             videoBookmark = try? newValue?.bookmarkData()
+        }
+    }
+
+    var videoURLs: [URL] {
+        get {
+            // 新形式: videoBookmarksData から復元
+            if let data = videoBookmarksData,
+               let bookmarks = try? JSONDecoder().decode([Data].self, from: data) {
+                let urls = bookmarks.compactMap { bookmark -> URL? in
+                    var isStale = false
+                    return try? URL(
+                        resolvingBookmarkData: bookmark,
+                        bookmarkDataIsStale: &isStale
+                    )
+                }
+                if !urls.isEmpty { return urls }
+            }
+            // 旧形式フォールバック: 単一の videoBookmark
+            if let url = videoURL {
+                return [url]
+            }
+            return []
+        }
+        set {
+            let bookmarks = newValue.compactMap { try? $0.bookmarkData() }
+            videoBookmarksData = try? JSONEncoder().encode(bookmarks)
+            // 後方互換: 最初のURLを旧プロパティにも保存
+            videoBookmark = bookmarks.first
         }
     }
 

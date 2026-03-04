@@ -5,6 +5,7 @@ struct MatchDetailView: View {
     @Bindable var match: Match
     @State private var showStyleSheet = false
     @State private var thumbnail: UIImage?
+    @State private var videoAspectRatio: CGFloat = 16.0 / 9.0
 
     var body: some View {
         List {
@@ -16,7 +17,8 @@ struct MatchDetailView: View {
                         homeScore: match.homeScore,
                         awayScore: match.awayScore,
                         style: match.scoreboardStyle,
-                        thumbnail: thumbnail
+                        thumbnail: thumbnail,
+                        videoAspectRatio: videoAspectRatio
                     )
 
                     HStack {
@@ -96,21 +98,24 @@ struct MatchDetailView: View {
                 } label: {
                     Label("エクスポート", systemImage: "square.and.arrow.up")
                 }
-                .disabled(match.videoURL == nil)
+                .disabled(match.videoURLs.isEmpty)
             }
         }
         .listStyle(.insetGrouped)
         .navigationTitle("試合詳細")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showStyleSheet) {
-            ScoreboardStyleSheet(match: match, thumbnail: thumbnail)
+            ScoreboardStyleSheet(match: match, thumbnail: thumbnail, videoAspectRatio: videoAspectRatio)
         }
-        .task(id: match.videoBookmark) {
-            guard let url = match.videoURL else {
+        .task(id: match.videoBookmarksData ?? match.videoBookmark) {
+            guard let url = match.videoURLs.first else {
                 thumbnail = nil
                 return
             }
             thumbnail = await ThumbnailGenerator.generate(for: url)
+            if let size = await ThumbnailGenerator.videoSize(for: url) {
+                videoAspectRatio = size.width / size.height
+            }
         }
     }
 

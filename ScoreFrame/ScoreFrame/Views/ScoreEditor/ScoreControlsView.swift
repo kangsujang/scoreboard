@@ -5,6 +5,8 @@ struct ScoreControlsView: View {
     let currentTime: TimeInterval
     let onGoal: (Team) -> Void
     let onUndo: () -> Void
+    let onPKKick: (Team, Bool) -> Void
+    let onPKUndo: () -> Void
     let onSegmentStart: (Int) -> Void
     let onSegmentTimerStart: (Int) -> Void
     let onSegmentTimerStop: (Int) -> Void
@@ -13,6 +15,10 @@ struct ScoreControlsView: View {
     let onSegmentPeriodLabel: (Int, String?) -> Void
     let onAddSegment: () -> Void
     let onRemoveSegment: (Int) -> Void
+
+    private var isPKMode: Bool {
+        match.currentPeriodLabel(at: currentTime)?.lowercased() == "pk"
+    }
 
     var body: some View {
         VStack(spacing: 8) {
@@ -38,25 +44,50 @@ struct ScoreControlsView: View {
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
 
-            HStack(spacing: 12) {
-                GoalButton(teamName: match.homeTeamName, color: .blue) {
-                    onGoal(.home)
-                }
+            if isPKMode {
+                PKStateView(match: match, currentTime: currentTime)
+                    .padding(.horizontal)
 
-                Button {
-                    onUndo()
-                } label: {
-                    Label("取消", systemImage: "arrow.uturn.backward")
-                        .font(.caption)
-                }
-                .buttonStyle(.bordered)
-                .disabled(match.scoreEvents.isEmpty)
+                HStack(spacing: 12) {
+                    PKTeamButtons(teamName: match.homeTeamName, color: .blue) { isGoal in
+                        onPKKick(.home, isGoal)
+                    }
 
-                GoalButton(teamName: match.awayTeamName, color: .red) {
-                    onGoal(.away)
+                    Button {
+                        onPKUndo()
+                    } label: {
+                        Label("取消", systemImage: "arrow.uturn.backward")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(match.pkKicks.isEmpty)
+
+                    PKTeamButtons(teamName: match.awayTeamName, color: .red) { isGoal in
+                        onPKKick(.away, isGoal)
+                    }
                 }
+                .padding(.horizontal)
+            } else {
+                HStack(spacing: 12) {
+                    GoalButton(teamName: match.homeTeamName, color: .blue) {
+                        onGoal(.home)
+                    }
+
+                    Button {
+                        onUndo()
+                    } label: {
+                        Label("取消", systemImage: "arrow.uturn.backward")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(match.scoreEvents.isEmpty)
+
+                    GoalButton(teamName: match.awayTeamName, color: .red) {
+                        onGoal(.away)
+                    }
+                }
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
 
             // セグメントリスト
             ForEach(Array(match.timerSegments.enumerated()), id: \.offset) { index, segment in
@@ -276,6 +307,99 @@ private struct SegmentControlRow: View {
         .padding(.horizontal)
     }
 }
+
+// MARK: - PK State Display
+
+private struct PKStateView: View {
+    let match: Match
+    let currentTime: TimeInterval
+
+    var body: some View {
+        let visibleKicks = match.pkKicksAt(time: currentTime)
+        let homeKicks = visibleKicks.filter { $0.team == .home }.sorted { $0.order < $1.order }
+        let awayKicks = visibleKicks.filter { $0.team == .away }.sorted { $0.order < $1.order }
+        let homeGoals = homeKicks.filter(\.isGoal).count
+        let awayGoals = awayKicks.filter(\.isGoal).count
+
+        VStack(spacing: 4) {
+            Text("PK \(homeGoals) - \(awayGoals)")
+                .font(.caption.weight(.bold))
+                .monospacedDigit()
+
+            VStack(alignment: .leading, spacing: 2) {
+                PKMarkRow(teamName: match.homeTeamName, kicks: homeKicks)
+                PKMarkRow(teamName: match.awayTeamName, kicks: awayKicks)
+            }
+        }
+        .padding(8)
+        .background(RoundedRectangle(cornerRadius: 8).fill(.quaternary))
+    }
+}
+
+private struct PKMarkRow: View {
+    let teamName: String
+    let kicks: [PKKick]
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text(teamName)
+                .font(.caption2.weight(.semibold))
+                .lineLimit(1)
+                .frame(width: 60, alignment: .leading)
+            ForEach(kicks) { kick in
+                Text(kick.isGoal ? "◯" : "✗")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(kick.isGoal ? .green : .red)
+                    .frame(width: 18)
+            }
+        }
+    }
+}
+
+// MARK: - PK Team Buttons
+
+private struct PKTeamButtons: View {
+    let teamName: String
+    let color: Color
+    let onKick: (Bool) -> Void
+    @State private var tapCount = 0
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Text(teamName)
+                .font(.caption2.weight(.semibold))
+                .lineLimit(1)
+            HStack(spacing: 6) {
+                Button {
+                    tapCount += 1
+                    onKick(true)
+                } label: {
+                    Text("◯")
+                        .font(.title3.weight(.bold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.green)
+
+                Button {
+                    tapCount += 1
+                    onKick(false)
+                } label: {
+                    Text("✗")
+                        .font(.title3.weight(.bold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.red)
+            }
+        }
+        .sensoryFeedback(.impact(weight: .heavy), trigger: tapCount)
+    }
+}
+
+// MARK: - Goal Button
 
 private struct GoalButton: View {
     let teamName: String

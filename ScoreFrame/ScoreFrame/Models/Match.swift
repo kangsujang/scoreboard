@@ -15,6 +15,7 @@ final class Match {
     var timerStartOffset: TimeInterval? // タイマー開始時の試合経過時間（後方互換用）
     var timerSegmentsData: Data?        // [TimerSegment] を JSON エンコード保存
     var matchInfo: String?              // 大会名・日程などの試合情報
+    var pkKicksData: Data?              // [PKKick] を JSON エンコード保存
 
     @Relationship(deleteRule: .cascade, inverse: \ScoreEvent.match)
     var scoreEvents: [ScoreEvent]
@@ -141,6 +142,39 @@ final class Match {
         self.awayTeamName = awayTeamName
         self.createdAt = Date()
         self.scoreEvents = []
+    }
+
+    var pkKicks: [PKKick] {
+        get {
+            guard let data = pkKicksData,
+                  let kicks = try? JSONDecoder().decode([PKKick].self, from: data) else {
+                return []
+            }
+            return kicks
+        }
+        set {
+            pkKicksData = try? JSONEncoder().encode(newValue)
+        }
+    }
+
+    var homePKKicks: [PKKick] {
+        pkKicks.filter { $0.team == .home }.sorted { $0.order < $1.order }
+    }
+
+    var awayPKKicks: [PKKick] {
+        pkKicks.filter { $0.team == .away }.sorted { $0.order < $1.order }
+    }
+
+    var homePKScore: Int {
+        pkKicks.filter { $0.team == .home && $0.isGoal }.count
+    }
+
+    var awayPKScore: Int {
+        pkKicks.filter { $0.team == .away && $0.isGoal }.count
+    }
+
+    func pkKicksAt(time: TimeInterval) -> [PKKick] {
+        pkKicks.filter { $0.timestamp <= time }
     }
 
     func scoreAt(time: TimeInterval) -> (home: Int, away: Int) {

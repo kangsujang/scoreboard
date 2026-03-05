@@ -47,6 +47,7 @@ struct ScoreboardStyleSheet: View {
                             style: style,
                             currentPeriodLabel: match.timerSegments.first?.periodLabel,
                             matchInfo: match.matchInfo,
+                            pkKicks: match.pkKicks,
                             thumbnail: thumbnail,
                             videoAspectRatio: videoAspectRatio
                         )

@@ -114,6 +114,8 @@ struct ScoreEditorView: View {
             currentTime: playerVM.currentTime,
             onGoal: { team in addGoal(team: team, at: playerVM.currentTime) },
             onUndo: { undoLastGoal() },
+            onPKKick: { team, isGoal in addPKKick(team: team, isGoal: isGoal, at: playerVM.currentTime) },
+            onPKUndo: { undoLastPKKick() },
             onSegmentStart: { idx in setSegmentStart(at: idx, time: playerVM.currentTime) },
             onSegmentTimerStart: { idx in setSegmentTimerStart(at: idx, time: playerVM.currentTime) },
             onSegmentTimerStop: { idx in setSegmentTimerStop(at: idx, time: playerVM.currentTime) },
@@ -161,6 +163,22 @@ struct ScoreEditorView: View {
         }
         match.scoreEvents.removeAll { $0.id == lastEvent.id }
         modelContext.delete(lastEvent)
+    }
+
+    // MARK: - PK Actions
+
+    private func addPKKick(team: Team, isGoal: Bool, at timestamp: TimeInterval) {
+        var kicks = match.pkKicks
+        let order = kicks.filter { $0.team == team }.count + 1
+        kicks.append(PKKick(team: team, order: order, isGoal: isGoal, timestamp: timestamp))
+        match.pkKicks = kicks
+    }
+
+    private func undoLastPKKick() {
+        var kicks = match.pkKicks
+        guard !kicks.isEmpty else { return }
+        kicks.removeLast()
+        match.pkKicks = kicks
     }
 
     // MARK: - Segment Actions

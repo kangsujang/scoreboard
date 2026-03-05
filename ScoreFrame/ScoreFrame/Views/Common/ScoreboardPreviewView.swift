@@ -8,6 +8,7 @@ struct ScoreboardPreviewView: View {
     let style: ScoreboardStyle
     var currentPeriodLabel: String? = nil
     var matchInfo: String? = nil
+    var pkKicks: [PKKick] = []
     var thumbnail: UIImage? = nil
     var videoAspectRatio: CGFloat = 16.0 / 9.0
 
@@ -35,13 +36,19 @@ struct ScoreboardPreviewView: View {
                         }
                 }
 
-                // Scoreboard overlay
-                scoreboardContent(containerWidth: geo.size.width)
-                    .scaleEffect(style.scale, anchor: .topLeading)
-                    .offset(
-                        x: style.positionX * geo.size.width,
-                        y: style.positionY * geo.size.height
-                    )
+                // Scoreboard overlay + PK
+                VStack(alignment: .leading, spacing: geo.size.width * Self.baseRatio * 0.25) {
+                    scoreboardContent(containerWidth: geo.size.width)
+
+                    if currentPeriodLabel?.lowercased() == "pk", !pkKicks.isEmpty {
+                        pkContent(containerWidth: geo.size.width)
+                    }
+                }
+                .scaleEffect(style.scale, anchor: .topLeading)
+                .offset(
+                    x: style.positionX * geo.size.width,
+                    y: style.positionY * geo.size.height
+                )
 
                 // 試合情報（独立位置・スケール）
                 if let info = matchInfo, !info.isEmpty {
@@ -75,7 +82,8 @@ struct ScoreboardPreviewView: View {
             }
 
             // Timer section (inverted: light bg, dark text)
-            if style.showMatchTimer {
+            // PK中はタイマーを非表示
+            if style.showMatchTimer, currentPeriodLabel?.lowercased() != "pk" {
                 Text("00:00")
                     .font(.system(size: base * 0.6, weight: .semibold, design: .monospaced))
                     .foregroundStyle(Color.scoreboardTimerText(for: style.theme))
@@ -145,5 +153,38 @@ struct ScoreboardPreviewView: View {
             .foregroundStyle(Color.scoreboardTimerText(for: style.theme))
             .frame(width: base * 1.4, height: base * 1.4)
             .background(Circle().fill(Color.scoreboardText(for: style.theme)))
+    }
+
+    // MARK: - PK Display
+
+    private func pkContent(containerWidth: CGFloat) -> some View {
+        let base = containerWidth * Self.baseRatio
+        let homePK = pkKicks.filter { $0.team == .home }.sorted { $0.order < $1.order }
+        let awayPK = pkKicks.filter { $0.team == .away }.sorted { $0.order < $1.order }
+
+        return VStack(alignment: .leading, spacing: base * 0.2) {
+            pkRow(teamName: homeTeamName, kicks: homePK, base: base)
+            pkRow(teamName: awayTeamName, kicks: awayPK, base: base)
+        }
+        .padding(.horizontal, base * 0.4)
+        .padding(.vertical, base * 0.25)
+        .background(Color.scoreboardBackground(for: style.theme))
+        .clipShape(RoundedRectangle(cornerRadius: base * 0.375))
+    }
+
+    private func pkRow(teamName: String, kicks: [PKKick], base: CGFloat) -> some View {
+        HStack(spacing: base * 0.15) {
+            Text(teamName)
+                .font(.system(size: base * 0.5, weight: .semibold))
+                .foregroundStyle(Color.scoreboardText(for: style.theme))
+                .lineLimit(1)
+                .frame(minWidth: base * 2.5, alignment: .leading)
+            ForEach(kicks) { kick in
+                Text(kick.isGoal ? "◯" : "✗")
+                    .font(.system(size: base * 0.55, weight: .bold))
+                    .foregroundStyle(kick.isGoal ? .green : .red)
+                    .frame(width: base * 0.7)
+            }
+        }
     }
 }

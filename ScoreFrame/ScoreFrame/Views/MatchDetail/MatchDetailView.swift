@@ -19,6 +19,7 @@ struct MatchDetailView: View {
                         style: match.scoreboardStyle,
                         currentPeriodLabel: match.timerSegments.first?.periodLabel,
                         matchInfo: match.matchInfo,
+                        pkKicks: match.pkKicks,
                         thumbnail: thumbnail,
                         videoAspectRatio: videoAspectRatio
                     )
@@ -82,6 +83,15 @@ struct MatchDetailView: View {
                 }
             }
 
+            if !match.pkKicks.isEmpty {
+                Section("PK戦 (\(match.homePKScore) - \(match.awayPKScore))") {
+                    VStack(alignment: .leading, spacing: 4) {
+                        pkResultRow(teamName: match.homeTeamName, kicks: match.homePKKicks)
+                        pkResultRow(teamName: match.awayTeamName, kicks: match.awayPKKicks)
+                    }
+                }
+            }
+
             Section("アクション") {
                 Button {
                     router.navigate(to: .scoreEditor(match))
@@ -118,6 +128,22 @@ struct MatchDetailView: View {
             if let size = await ThumbnailGenerator.videoSize(for: url) {
                 videoAspectRatio = size.width / size.height
             }
+        }
+    }
+
+    private func pkResultRow(teamName: String, kicks: [PKKick]) -> some View {
+        HStack(spacing: 6) {
+            Text(teamName)
+                .font(.subheadline.weight(.semibold))
+                .frame(width: 80, alignment: .leading)
+                .lineLimit(1)
+            ForEach(kicks) { kick in
+                Text(kick.isGoal ? "◯" : "✗")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(kick.isGoal ? .green : .red)
+                    .frame(width: 22)
+            }
+            Spacer()
         }
     }
 

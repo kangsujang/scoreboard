@@ -15,6 +15,7 @@ struct ScoreboardLayerBuilder {
         let homeTeamColor: CGColor?
         let awayTeamColor: CGColor?
         let matchInfo: String?
+        let pkKicks: [PKKick]
     }
 
     // MARK: - Public
@@ -25,6 +26,12 @@ struct ScoreboardLayerBuilder {
 
         let container = buildContainerLayer(config: config)
         overlayLayer.addSublayer(container)
+
+        // PK overlay (positioned below main scoreboard)
+        if !config.pkKicks.isEmpty {
+            let pkLayer = buildPKLayer(config: config, mainContainerFrame: container.frame)
+            overlayLayer.addSublayer(pkLayer)
+        }
 
         // Match info (independent position & scale)
         if let info = config.matchInfo, !info.isEmpty {
@@ -84,7 +91,8 @@ struct ScoreboardLayerBuilder {
 
         let timerPaddingH = base * 0.5
         let timerTextWidth = estimateTextWidth("00:00", fontSize: timerFontSize, monospaced: true)
-        let timerWidth: CGFloat = showTimer ? timerTextWidth + timerPaddingH * 2 : 0
+        let allSegmentsPK = !segments.isEmpty && segments.allSatisfy { ($0.periodLabel ?? "").lowercased() == "pk" }
+        let timerWidth: CGFloat = (showTimer && !allSegmentsPK) ? timerTextWidth + timerPaddingH * 2 : 0
 
         let homeTextWidth = estimateTextWidth(config.homeTeamName, fontSize: teamFontSize)
         let awayTextWidth = estimateTextWidth(config.awayTeamName, fontSize: teamFontSize)
@@ -131,26 +139,37 @@ struct ScoreboardLayerBuilder {
         }
 
         // ── Timer section (inverted background, after period label) ──
-        if showTimer {
+        // 全セグメントPKの場合は timerWidth=0 で既にスキップ済み
+        if showTimer && !allSegmentsPK {
+            let timerWrapper = CALayer()
+            timerWrapper.frame = CGRect(x: periodWidth, y: 0, width: timerWidth, height: containerHeight)
+
             let timerBg = CALayer()
-            timerBg.frame = CGRect(x: periodWidth, y: 0, width: timerWidth, height: containerHeight)
+            timerBg.frame = CGRect(x: 0, y: 0, width: timerWidth, height: containerHeight)
             timerBg.backgroundColor = textColor(for: theme)
-            container.addSublayer(timerBg)
+            timerWrapper.addSublayer(timerBg)
 
             let timerFrame = CGRect(
-                x: periodWidth,
+                x: 0,
                 y: (containerHeight - timerFontSize - 4) / 2,
                 width: timerWidth,
                 height: timerFontSize + 4
             )
             addTimerLayers(
-                to: container,
+                to: timerWrapper,
                 frame: timerFrame,
                 duration: config.videoDuration,
                 fontSize: timerFontSize,
                 timerTextColor: invertedTextColor(for: theme),
                 segments: segments
             )
+
+            // PKセグメントが混在する場合、PK区間でタイマーを非表示
+            if segments.contains(where: { ($0.periodLabel ?? "").lowercased() == "pk" }) {
+                addPKHideAnimation(to: timerWrapper, segments: segments, duration: config.videoDuration)
+            }
+
+            container.addSublayer(timerWrapper)
         }
 
         // ── Main content area (team names + score circles) ──
@@ -752,5 +771,237 @@ struct ScoreboardLayerBuilder {
             textColor: UIColor.black.cgColor,
             fontWeight: .bold
         )
+    }
+
+    // MARK: - PK Overlay Layer
+
+    private static func buildPKLayer(config: Config, mainContainerFrame: CGRect) -> CALayer {
+        let base = config.videoSize.width * ScoreboardPreviewView.baseRatio * config.style.scale
+        let teamFontSize = base * 0.5
+        let markSize = base * 0.55
+        let markWidth = base * 0.7
+        let markSpacing = base * 0.15
+        let rowSpacing = base * 0.2
+        let paddingH = base * 0.4
+        let paddingV = base * 0.25
+        let cornerRadius = base * 0.375
+
+        let homePK = config.pkKicks.filter { $0.team == .home }.sorted { $0.order < $1.order }
+        let awayPK = config.pkKicks.filter { $0.team == .away }.sorted { $0.order < $1.order }
+        let maxKicks = max(homePK.count, awayPK.count, 1)
+
+        let teamNameWidth = max(
+            estimateTextWidth(config.homeTeamName, fontSize: teamFontSize),
+            estimateTextWidth(config.awayTeamName, fontSize: teamFontSize)
+        )
+
+        let marksWidth = CGFloat(maxKicks) * (markWidth + markSpacing)
+        let containerWidth = paddingH + teamNameWidth + markSpacing + marksWidth + paddingH
+        let rowHeight = markSize + 4
+        let containerHeight = paddingV + rowHeight + rowSpacing + rowHeight + paddingV
+
+        let gap = base * 0.25
+        let containerX = mainContainerFrame.origin.x
+        let containerY = mainContainerFrame.maxY + gap
+
+        let container = CALayer()
+        container.frame = CGRect(x: containerX, y: containerY, width: containerWidth, height: containerHeight)
+        applyThemeBackground(to: container, theme: config.style.theme, cornerRadius: cornerRadius)
+
+        // Home row
+        buildPKRow(
+            in: container, teamName: config.homeTeamName, kicks: homePK,
+            y: paddingV, teamFontSize: teamFontSize, markSize: markSize,
+            markWidth: markWidth, markSpacing: markSpacing, paddingH: paddingH,
+            teamNameWidth: teamNameWidth, theme: config.style.theme,
+            videoDuration: config.videoDuration
+        )
+
+        // Away row
+        buildPKRow(
+            in: container, teamName: config.awayTeamName, kicks: awayPK,
+            y: paddingV + rowHeight + rowSpacing, teamFontSize: teamFontSize,
+            markSize: markSize, markWidth: markWidth, markSpacing: markSpacing,
+            paddingH: paddingH, teamNameWidth: teamNameWidth,
+            theme: config.style.theme, videoDuration: config.videoDuration
+        )
+
+        // PKセグメント開始時のみ表示
+        addPKShowAnimation(to: container, segments: config.timerSegments, duration: config.videoDuration)
+
+        return container
+    }
+
+    private static func buildPKRow(
+        in container: CALayer,
+        teamName: String,
+        kicks: [PKKick],
+        y: CGFloat,
+        teamFontSize: CGFloat,
+        markSize: CGFloat,
+        markWidth: CGFloat,
+        markSpacing: CGFloat,
+        paddingH: CGFloat,
+        teamNameWidth: CGFloat,
+        theme: ScoreboardStyle.Theme,
+        videoDuration: TimeInterval
+    ) {
+        let nameLayer = makeTextLayer(
+            fontSize: teamFontSize, alignment: .natural,
+            color: textColor(for: theme), weight: .semibold
+        )
+        nameLayer.string = teamName
+        nameLayer.frame = CGRect(x: paddingH, y: y, width: teamNameWidth, height: markSize + 4)
+        container.addSublayer(nameLayer)
+
+        for (i, kick) in kicks.enumerated() {
+            let x = paddingH + teamNameWidth + markSpacing + CGFloat(i) * (markWidth + markSpacing)
+            let markText = kick.isGoal ? "◯" : "✗"
+            let markColor = kick.isGoal
+                ? UIColor.systemGreen.cgColor
+                : UIColor.systemRed.cgColor
+
+            let markLayer = makeTextLayer(
+                fontSize: markSize, alignment: .center,
+                color: markColor, weight: .bold
+            )
+            markLayer.string = markText
+            markLayer.frame = CGRect(x: x, y: y, width: markWidth, height: markSize + 4)
+            markLayer.opacity = 0
+
+            let fraction = videoDuration > 0 ? kick.timestamp / videoDuration : 0
+            let animation = CAKeyframeAnimation(keyPath: "opacity")
+            animation.keyTimes = [0.0, NSNumber(value: max(0, fraction)), 1.0]
+            animation.values = [Float(0), Float(1), Float(1)] as [Float]
+            animation.calculationMode = .discrete
+            animation.duration = videoDuration
+            animation.beginTime = AVCoreAnimationBeginTimeAtZero
+            animation.isRemovedOnCompletion = false
+            animation.fillMode = .forwards
+            markLayer.add(animation, forKey: "markAppear")
+
+            container.addSublayer(markLayer)
+        }
+    }
+
+    /// PKセグメント中のみPKオーバーレイを表示するアニメーション
+    private static func addPKShowAnimation(
+        to layer: CALayer,
+        segments: [TimerSegment],
+        duration: TimeInterval
+    ) {
+        guard duration > 0, !segments.isEmpty else { return }
+
+        struct Span {
+            let start: TimeInterval
+            let end: TimeInterval
+            let isPK: Bool
+        }
+
+        var spans: [Span] = []
+        for (i, seg) in segments.enumerated() {
+            let start = seg.effectiveStartTime ?? 0
+            let end: TimeInterval
+            if i + 1 < segments.count, let nextStart = segments[i + 1].effectiveStartTime {
+                end = nextStart
+            } else {
+                end = duration
+            }
+            let isPK = (seg.periodLabel ?? "").lowercased() == "pk"
+            spans.append(Span(start: start, end: end, isPK: isPK))
+        }
+
+        if spans[0].start > 0 {
+            spans[0] = Span(start: 0, end: spans[0].end, isPK: spans[0].isPK)
+        }
+
+        var keyTimes: [NSNumber] = []
+        var values: [Float] = []
+
+        for span in spans {
+            let startFrac = span.start / duration
+            keyTimes.append(NSNumber(value: min(startFrac, 1.0)))
+            values.append(span.isPK ? 1.0 : 0.0)
+        }
+
+        if let lastTime = keyTimes.last?.doubleValue, lastTime < 1.0 {
+            keyTimes.append(1.0)
+            values.append(values.last ?? 0.0)
+        }
+
+        guard keyTimes.count >= 2 else { return }
+
+        layer.opacity = 0
+        let animation = CAKeyframeAnimation(keyPath: "opacity")
+        animation.keyTimes = keyTimes
+        animation.values = values
+        animation.calculationMode = .discrete
+        animation.duration = duration
+        animation.beginTime = AVCoreAnimationBeginTimeAtZero
+        animation.isRemovedOnCompletion = false
+        animation.fillMode = .forwards
+        layer.add(animation, forKey: "pkShow")
+    }
+
+    // MARK: - PK Hide Animation
+
+    /// PKセグメント中はタイマーセクション全体を非表示にするopacityアニメーションを追加
+    private static func addPKHideAnimation(
+        to layer: CALayer,
+        segments: [TimerSegment],
+        duration: TimeInterval
+    ) {
+        guard duration > 0, !segments.isEmpty else { return }
+
+        struct Span {
+            let start: TimeInterval
+            let end: TimeInterval
+            let isPK: Bool
+        }
+
+        var spans: [Span] = []
+        for (i, seg) in segments.enumerated() {
+            let start = seg.effectiveStartTime ?? 0
+            let end: TimeInterval
+            if i + 1 < segments.count, let nextStart = segments[i + 1].effectiveStartTime {
+                end = nextStart
+            } else {
+                end = duration
+            }
+            let isPK = (seg.periodLabel ?? "").lowercased() == "pk"
+            spans.append(Span(start: start, end: end, isPK: isPK))
+        }
+
+        // 最初のスパン開始前は最初のスパンの状態を使う
+        if spans[0].start > 0 {
+            spans[0] = Span(start: 0, end: spans[0].end, isPK: spans[0].isPK)
+        }
+
+        var keyTimes: [NSNumber] = []
+        var values: [Float] = []
+
+        for span in spans {
+            let startFrac = span.start / duration
+            keyTimes.append(NSNumber(value: min(startFrac, 1.0)))
+            values.append(span.isPK ? 0.0 : 1.0)
+        }
+
+        if let lastTime = keyTimes.last?.doubleValue, lastTime < 1.0 {
+            keyTimes.append(1.0)
+            values.append(values.last ?? 1.0)
+        }
+
+        guard keyTimes.count >= 2 else { return }
+
+        let animation = CAKeyframeAnimation(keyPath: "opacity")
+        animation.keyTimes = keyTimes
+        animation.values = values
+        animation.calculationMode = .discrete
+        animation.duration = duration
+        animation.beginTime = AVCoreAnimationBeginTimeAtZero
+        animation.isRemovedOnCompletion = false
+        animation.fillMode = .forwards
+
+        layer.add(animation, forKey: "pkHideTimer")
     }
 }

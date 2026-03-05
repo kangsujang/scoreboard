@@ -8,6 +8,7 @@ enum VideoCompositionBuilder {
         let videoSize: CGSize
         let duration: CMTime
         let segmentTransforms: [(track: AVMutableCompositionTrack, transform: CGAffineTransform, naturalSize: CGSize)]
+        let nominalFrameRate: Float
     }
 
     enum BuildError: LocalizedError {
@@ -48,6 +49,7 @@ enum VideoCompositionBuilder {
 
         var currentTime = CMTime.zero
         var referenceSize: CGSize?
+        var referenceFrameRate: Float?
         var segments: [(track: AVMutableCompositionTrack, transform: CGAffineTransform, naturalSize: CGSize)] = []
 
         for url in urls {
@@ -73,6 +75,7 @@ enum VideoCompositionBuilder {
             let corrected = correctedSize(naturalSize: naturalSize, transform: preferredTransform)
             if referenceSize == nil {
                 referenceSize = corrected
+                referenceFrameRate = try await sourceVideoTrack.load(.nominalFrameRate)
             }
 
             segments.append((
@@ -85,12 +88,14 @@ enum VideoCompositionBuilder {
         }
 
         let videoSize = referenceSize ?? CGSize(width: 1920, height: 1080)
+        let frameRate = (referenceFrameRate ?? 0) > 0 ? referenceFrameRate! : 30.0
 
         return Result(
             composition: composition,
             videoSize: videoSize,
             duration: currentTime,
-            segmentTransforms: segments
+            segmentTransforms: segments,
+            nominalFrameRate: frameRate
         )
     }
 
@@ -103,7 +108,8 @@ enum VideoCompositionBuilder {
     ) -> AVMutableVideoComposition {
         let videoComposition = AVMutableVideoComposition()
         videoComposition.renderSize = result.videoSize
-        videoComposition.frameDuration = CMTime(value: 1, timescale: 30)
+        let timescale = Int32(ceil(result.nominalFrameRate))
+        videoComposition.frameDuration = CMTime(value: 1, timescale: timescale)
         videoComposition.animationTool = AVVideoCompositionCoreAnimationTool(
             postProcessingAsVideoLayer: videoLayer,
             in: parentLayer

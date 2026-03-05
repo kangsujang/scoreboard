@@ -7,9 +7,20 @@ struct ScoreboardStyleSheet: View {
     let thumbnail: UIImage?
     let videoAspectRatio: CGFloat
 
-    // ジェスチャー用ベース値
+    // 編集対象
+    enum EditTarget: String, CaseIterable {
+        case scoreboard = "スコアボード"
+        case matchInfo = "試合情報"
+    }
+    @State private var editTarget: EditTarget = .scoreboard
+
+    // ジェスチャー用ベース値（スコアボード）
     @State private var baseScale: CGFloat = 1.0
     @State private var basePosition: CGPoint = .zero
+
+    // ジェスチャー用ベース値（試合情報）
+    @State private var baseMatchInfoScale: CGFloat = 1.0
+    @State private var baseMatchInfoPosition: CGPoint = .zero
 
     init(match: Match, thumbnail: UIImage? = nil, videoAspectRatio: CGFloat = 16.0 / 9.0) {
         self.match = match
@@ -19,6 +30,8 @@ struct ScoreboardStyleSheet: View {
         self._style = State(initialValue: s)
         self._baseScale = State(initialValue: s.scale)
         self._basePosition = State(initialValue: CGPoint(x: s.positionX, y: s.positionY))
+        self._baseMatchInfoScale = State(initialValue: s.matchInfoScale)
+        self._baseMatchInfoPosition = State(initialValue: CGPoint(x: s.matchInfoPositionX, y: s.matchInfoPositionY))
     }
 
     var body: some View {
@@ -33,6 +46,7 @@ struct ScoreboardStyleSheet: View {
                             awayScore: match.awayScore,
                             style: style,
                             currentPeriodLabel: match.timerSegments.first?.periodLabel,
+                            matchInfo: match.matchInfo,
                             thumbnail: thumbnail,
                             videoAspectRatio: videoAspectRatio
                         )
@@ -45,18 +59,35 @@ struct ScoreboardStyleSheet: View {
                 } header: {
                     Text("プレビュー")
                 } footer: {
-                    HStack {
-                        Text("ピンチでサイズ変更・ドラッグで位置調整")
-                            .font(.caption)
-                        Spacer()
-                        Button("リセット") {
-                            style.positionX = 0.02
-                            style.positionY = 0.02
-                            style.scale = 1.0
-                            baseScale = 1.0
-                            basePosition = CGPoint(x: 0.02, y: 0.02)
+                    VStack(spacing: 8) {
+                        Picker("編集対象", selection: $editTarget) {
+                            ForEach(EditTarget.allCases, id: \.self) { target in
+                                Text(target.rawValue).tag(target)
+                            }
                         }
-                        .font(.caption)
+                        .pickerStyle(.segmented)
+
+                        HStack {
+                            Text("ピンチでサイズ変更・ドラッグで位置調整")
+                                .font(.caption)
+                            Spacer()
+                            Button("リセット") {
+                                if editTarget == .scoreboard {
+                                    style.positionX = 0.02
+                                    style.positionY = 0.02
+                                    style.scale = 1.0
+                                    baseScale = 1.0
+                                    basePosition = CGPoint(x: 0.02, y: 0.02)
+                                } else {
+                                    style.matchInfoPositionX = 0.02
+                                    style.matchInfoPositionY = 0.12
+                                    style.matchInfoScale = 1.0
+                                    baseMatchInfoScale = 1.0
+                                    baseMatchInfoPosition = CGPoint(x: 0.02, y: 0.12)
+                                }
+                            }
+                            .font(.caption)
+                        }
                     }
                 }
 
@@ -88,6 +119,14 @@ struct ScoreboardStyleSheet: View {
                     }
                 }
 
+                Section {
+                    TextField("大会名・日程など", text: matchInfoBinding)
+                } header: {
+                    Text("試合情報")
+                } footer: {
+                    Text("スコアボード下部に表示されます")
+                }
+
                 Section("オプション") {
                     Toggle("タイマー表示", isOn: $style.showMatchTimer)
                 }
@@ -108,6 +147,15 @@ struct ScoreboardStyleSheet: View {
                 }
             }
         }
+    }
+
+    // MARK: - Match Info Binding
+
+    private var matchInfoBinding: Binding<String> {
+        Binding(
+            get: { match.matchInfo ?? "" },
+            set: { match.matchInfo = $0.isEmpty ? nil : $0 }
+        )
     }
 
     // MARK: - Color Bindings
@@ -131,10 +179,18 @@ struct ScoreboardStyleSheet: View {
     private var magnificationGesture: some Gesture {
         MagnificationGesture()
             .onChanged { value in
-                style.scale = clamp(baseScale * value, min: 0.5, max: 2.5)
+                if editTarget == .scoreboard {
+                    style.scale = clamp(baseScale * value, min: 0.5, max: 2.5)
+                } else {
+                    style.matchInfoScale = clamp(baseMatchInfoScale * value, min: 0.5, max: 2.5)
+                }
             }
             .onEnded { _ in
-                baseScale = style.scale
+                if editTarget == .scoreboard {
+                    baseScale = style.scale
+                } else {
+                    baseMatchInfoScale = style.matchInfoScale
+                }
             }
     }
 
@@ -144,11 +200,20 @@ struct ScoreboardStyleSheet: View {
                 guard size.width > 0, size.height > 0 else { return }
                 let dx = value.translation.width / size.width
                 let dy = value.translation.height / size.height
-                style.positionX = clamp(basePosition.x + dx, min: 0, max: 0.95)
-                style.positionY = clamp(basePosition.y + dy, min: 0, max: 0.95)
+                if editTarget == .scoreboard {
+                    style.positionX = clamp(basePosition.x + dx, min: 0, max: 0.95)
+                    style.positionY = clamp(basePosition.y + dy, min: 0, max: 0.95)
+                } else {
+                    style.matchInfoPositionX = clamp(baseMatchInfoPosition.x + dx, min: 0, max: 0.95)
+                    style.matchInfoPositionY = clamp(baseMatchInfoPosition.y + dy, min: 0, max: 0.95)
+                }
             }
             .onEnded { _ in
-                basePosition = CGPoint(x: style.positionX, y: style.positionY)
+                if editTarget == .scoreboard {
+                    basePosition = CGPoint(x: style.positionX, y: style.positionY)
+                } else {
+                    baseMatchInfoPosition = CGPoint(x: style.matchInfoPositionX, y: style.matchInfoPositionY)
+                }
             }
     }
 

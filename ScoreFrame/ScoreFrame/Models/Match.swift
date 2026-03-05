@@ -14,6 +14,7 @@ final class Match {
     var timerStopTime: TimeInterval?    // 試合終了の動画内タイムスタンプ（後方互換用）
     var timerStartOffset: TimeInterval? // タイマー開始時の試合経過時間（後方互換用）
     var timerSegmentsData: Data?        // [TimerSegment] を JSON エンコード保存
+    var matchInfo: String?              // 大会名・日程などの試合情報
 
     @Relationship(deleteRule: .cascade, inverse: \ScoreEvent.match)
     var scoreEvents: [ScoreEvent]
@@ -98,7 +99,7 @@ final class Match {
 
     func segmentIndex(at videoTime: TimeInterval) -> Int? {
         for (i, seg) in timerSegments.enumerated() {
-            guard let start = seg.timerStartTime else { continue }
+            guard let start = seg.effectiveStartTime else { continue }
             let end = seg.timerStopTime ?? .infinity
             if videoTime >= start && videoTime <= end {
                 return i
@@ -109,10 +110,10 @@ final class Match {
 
     func currentPeriodLabel(at videoTime: TimeInterval) -> String? {
         guard let idx = segmentIndex(at: videoTime) else {
-            // セグメント外 → 直前のセグメントのラベルを返す（フリーズ区間）
+            // セグメント外 → 直前のセグメントのラベルを返す
             var lastLabel: String?
             for seg in timerSegments {
-                guard let start = seg.timerStartTime else { continue }
+                guard let start = seg.effectiveStartTime else { continue }
                 if start <= videoTime {
                     lastLabel = seg.periodLabel
                 }

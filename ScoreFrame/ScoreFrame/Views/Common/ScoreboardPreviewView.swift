@@ -7,6 +7,7 @@ struct ScoreboardPreviewView: View {
     let awayScore: Int
     let style: ScoreboardStyle
     var currentPeriodLabel: String? = nil
+    var matchInfo: String? = nil
     var thumbnail: UIImage? = nil
     var videoAspectRatio: CGFloat = 16.0 / 9.0
 
@@ -41,6 +42,16 @@ struct ScoreboardPreviewView: View {
                         x: style.positionX * geo.size.width,
                         y: style.positionY * geo.size.height
                     )
+
+                // 試合情報（独立位置・スケール）
+                if let info = matchInfo, !info.isEmpty {
+                    matchInfoContent(info: info, containerWidth: geo.size.width)
+                        .scaleEffect(style.matchInfoScale, anchor: .topLeading)
+                        .offset(
+                            x: style.matchInfoPositionX * geo.size.width,
+                            y: style.matchInfoPositionY * geo.size.height
+                        )
+                }
             }
         }
         .aspectRatio(videoAspectRatio, contentMode: .fit)
@@ -101,6 +112,17 @@ struct ScoreboardPreviewView: View {
         .fixedSize(horizontal: true, vertical: false)
         .background(Color.scoreboardBackground(for: style.theme))
         .clipShape(RoundedRectangle(cornerRadius: base * 0.375))
+    }
+
+    private func matchInfoContent(info: String, containerWidth: CGFloat) -> some View {
+        let base = containerWidth * Self.baseRatio
+        return Text(info)
+            .font(.system(size: base * 0.45, weight: .medium))
+            .foregroundStyle(Color.scoreboardText(for: style.theme))
+            .padding(.horizontal, base * 0.5)
+            .padding(.vertical, base * 0.2)
+            .background(Color.scoreboardBackground(for: style.theme))
+            .clipShape(RoundedRectangle(cornerRadius: base * 0.375))
     }
 
     private func teamLabel(name: String, color: Color, base: CGFloat) -> some View {

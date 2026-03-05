@@ -5,6 +5,7 @@ struct ScoreControlsView: View {
     let currentTime: TimeInterval
     let onGoal: (Team) -> Void
     let onUndo: () -> Void
+    let onSegmentStart: (Int) -> Void
     let onSegmentTimerStart: (Int) -> Void
     let onSegmentTimerStop: (Int) -> Void
     let onSegmentTimerClear: (Int) -> Void
@@ -62,6 +63,7 @@ struct ScoreControlsView: View {
                 SegmentControlRow(
                     index: index,
                     segment: segment,
+                    onSegmentStart: { onSegmentStart(index) },
                     onTimerStart: { onSegmentTimerStart(index) },
                     onTimerStop: { onSegmentTimerStop(index) },
                     onTimerClear: { onSegmentTimerClear(index) },
@@ -90,6 +92,7 @@ struct ScoreControlsView: View {
 private struct SegmentControlRow: View {
     let index: Int
     let segment: TimerSegment
+    let onSegmentStart: () -> Void
     let onTimerStart: () -> Void
     let onTimerStop: () -> Void
     let onTimerClear: () -> Void
@@ -137,6 +140,24 @@ private struct SegmentControlRow: View {
             // タイマー操作行
             HStack(spacing: 8) {
                 Button {
+                    onSegmentStart()
+                } label: {
+                    VStack(spacing: 2) {
+                        Label("区切り開始", systemImage: "flag.circle")
+                            .font(.caption2.weight(.semibold))
+                        if let segStart = segment.segmentStartTime {
+                            Text(TimeFormatting.format(seconds: segStart))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                }
+                .buttonStyle(.bordered)
+                .tint(.purple)
+
+                Button {
                     onTimerStart()
                 } label: {
                     VStack(spacing: 2) {
@@ -171,9 +192,9 @@ private struct SegmentControlRow: View {
                 }
                 .buttonStyle(.bordered)
                 .tint(.orange)
-                .disabled(segment.timerStartTime == nil)
+                .disabled(segment.timerStartTime == nil && segment.segmentStartTime == nil)
 
-                if segment.timerStartTime != nil || segment.timerStopTime != nil {
+                if segment.segmentStartTime != nil || segment.timerStartTime != nil || segment.timerStopTime != nil {
                     Button {
                         onTimerClear()
                     } label: {

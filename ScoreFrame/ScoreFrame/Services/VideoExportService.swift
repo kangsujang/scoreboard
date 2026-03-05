@@ -84,7 +84,8 @@ final class VideoExportService {
             videoDuration: videoDuration,
             timerSegments: match.timerSegments,
             homeTeamColor: style.homeTeamColor.flatMap { UIColor($0).cgColor },
-            awayTeamColor: style.awayTeamColor.flatMap { UIColor($0).cgColor }
+            awayTeamColor: style.awayTeamColor.flatMap { UIColor($0).cgColor },
+            matchInfo: match.matchInfo
         )
 
         let parentLayer = CALayer()

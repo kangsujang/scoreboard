@@ -14,6 +14,7 @@ struct ScoreboardLayerBuilder {
         let timerSegments: [TimerSegment]
         let homeTeamColor: CGColor?
         let awayTeamColor: CGColor?
+        let matchInfo: String?
     }
 
     // MARK: - Public
@@ -24,6 +25,19 @@ struct ScoreboardLayerBuilder {
 
         let container = buildContainerLayer(config: config)
         overlayLayer.addSublayer(container)
+
+        // Match info (independent position & scale)
+        if let info = config.matchInfo, !info.isEmpty {
+            let base = config.videoSize.width * ScoreboardPreviewView.baseRatio * config.style.matchInfoScale
+            let infoLayer = buildMatchInfoLayer(
+                info: info,
+                base: base,
+                theme: config.style.theme,
+                style: config.style,
+                videoSize: config.videoSize
+            )
+            overlayLayer.addSublayer(infoLayer)
+        }
 
         return overlayLayer
     }
@@ -257,6 +271,56 @@ struct ScoreboardLayerBuilder {
             origin: CGPoint(x: max(x, 0), y: max(y, 0)),
             size: containerSize
         )
+    }
+
+    // MARK: - Match Info
+
+    private static func buildMatchInfoLayer(
+        info: String,
+        base: CGFloat,
+        theme: ScoreboardStyle.Theme,
+        style: ScoreboardStyle,
+        videoSize: CGSize
+    ) -> CALayer {
+        let fontSize = base * 0.45
+        let paddingH = base * 0.5
+        let paddingV = base * 0.2
+        let cornerRadius = base * 0.375
+
+        let textWidth = estimateTextWidth(info, fontSize: fontSize)
+        let layerWidth = textWidth + paddingH * 2
+        let layerHeight = fontSize + 4 + paddingV * 2
+
+        let x = min(style.matchInfoPositionX * videoSize.width,
+                     videoSize.width - layerWidth)
+        let y = min(style.matchInfoPositionY * videoSize.height,
+                     videoSize.height - layerHeight)
+
+        let infoContainer = CALayer()
+        infoContainer.frame = CGRect(
+            x: max(x, 0),
+            y: max(y, 0),
+            width: layerWidth,
+            height: layerHeight
+        )
+        applyThemeBackground(to: infoContainer, theme: theme, cornerRadius: cornerRadius)
+
+        let textLayer = makeTextLayer(
+            fontSize: fontSize,
+            alignment: .natural,
+            color: textColor(for: theme),
+            weight: .medium
+        )
+        textLayer.string = info
+        textLayer.frame = CGRect(
+            x: paddingH,
+            y: paddingV,
+            width: textWidth,
+            height: fontSize + 4
+        )
+        infoContainer.addSublayer(textLayer)
+
+        return infoContainer
     }
 
     // MARK: - Theme
@@ -589,27 +653,33 @@ struct ScoreboardLayerBuilder {
         }
 
         /// マルチセグメント対応: 動画秒数 → 試合経過秒数
-        /// 現在のセグメントの timerStartTime/timerStopTime/timerStartOffset で計算
+        /// effectiveStartTime〜timerStartTime の間はオフセット値（初期値）を表示
+        /// timerStartTime 以降はタイマー計測を開始
         /// セグメント外の区間はフリーズ（直前セグメントの最終値を維持）
         func matchSecond(from videoSecond: Int) -> Int {
             let videoTime = TimeInterval(videoSecond)
             var lastMatchSecond = 0
 
             for seg in segments {
-                guard let start = seg.timerStartTime else { continue }
+                let effStart = seg.effectiveStartTime
+                guard let kickoff = seg.timerStartTime ?? effStart else { continue }
+                let segStart = effStart ?? kickoff
                 let stop = seg.timerStopTime ?? duration
                 let offset = Int(seg.timerStartOffset ?? 0)
 
-                if videoTime >= start && videoTime <= stop {
-                    // このセグメントの範囲内
-                    let elapsed = max(0, videoSecond - Int(start))
+                if videoTime >= segStart && videoTime <= stop {
+                    if videoTime < kickoff {
+                        // 区切り開始〜キックオフ前: オフセット値（初期値）を表示
+                        return offset
+                    }
+                    // キックオフ以降: タイマー計測
+                    let elapsed = max(0, videoSecond - Int(kickoff))
                     return elapsed + offset
                 } else if videoTime > stop {
                     // このセグメントを通過済み → 最終値を記録
-                    let elapsed = max(0, Int(stop) - Int(start))
+                    let elapsed = max(0, Int(stop) - Int(kickoff))
                     lastMatchSecond = elapsed + offset
                 } else {
-                    // まだこのセグメントに到達していない
                     break
                 }
             }
@@ -655,10 +725,10 @@ struct ScoreboardLayerBuilder {
         var spans: [LabelSpan] = []
         for (i, seg) in segments.enumerated() {
             guard let label = seg.periodLabel, !label.isEmpty else { continue }
-            let start = seg.timerStartTime ?? 0
-            // 次のセグメントの開始時刻、またはこのセグメントの終了時刻、または動画終了まで
+            let start = seg.effectiveStartTime ?? 0
+            // 次のセグメントの実効開始時刻、または動画終了まで
             let end: TimeInterval
-            if i + 1 < segments.count, let nextStart = segments[i + 1].timerStartTime {
+            if i + 1 < segments.count, let nextStart = segments[i + 1].effectiveStartTime {
                 end = nextStart
             } else {
                 end = duration

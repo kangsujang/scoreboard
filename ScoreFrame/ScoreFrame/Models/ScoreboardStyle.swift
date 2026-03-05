@@ -17,6 +17,11 @@ struct ScoreboardStyle: Codable, Equatable {
     // 連続スケール (0.5〜2.5)
     var scale: CGFloat = 1.0
 
+    // 試合情報の位置・スケール (独立制御)
+    var matchInfoPositionX: CGFloat = 0.02
+    var matchInfoPositionY: CGFloat = 0.12
+    var matchInfoScale: CGFloat = 1.0
+
     // 旧プロパティ — Codable 互換のため残す（UIからは使わない）
     var position: Position = .topLeft
     var fontSize: FontSize = .medium
@@ -90,6 +95,7 @@ struct ScoreboardStyle: Codable, Equatable {
     enum CodingKeys: String, CodingKey {
         case theme, showMatchTimer, periodLabel, positionX, positionY, scale, position, fontSize
         case homeTeamColorHex, awayTeamColorHex
+        case matchInfoPositionX, matchInfoPositionY, matchInfoScale
     }
 
     init() {}
@@ -106,5 +112,8 @@ struct ScoreboardStyle: Codable, Equatable {
         fontSize = try container.decodeIfPresent(FontSize.self, forKey: .fontSize) ?? .medium
         homeTeamColorHex = try container.decodeIfPresent(String.self, forKey: .homeTeamColorHex)
         awayTeamColorHex = try container.decodeIfPresent(String.self, forKey: .awayTeamColorHex)
+        matchInfoPositionX = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoPositionX) ?? 0.02
+        matchInfoPositionY = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoPositionY) ?? 0.12
+        matchInfoScale = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoScale) ?? 1.0
     }
 }

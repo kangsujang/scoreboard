@@ -15,6 +15,7 @@ struct MatchSetupView: View {
 
     @State private var homeTeamName = ""
     @State private var awayTeamName = ""
+    @State private var matchInfo = ""
     @State private var selectedItems: [PhotosPickerItem] = []
     @State private var videoEntries: [VideoEntry] = []
     @State private var isImporting = false
@@ -33,6 +34,14 @@ struct MatchSetupView: View {
                     .textInputAutocapitalization(.words)
                 TextField("アウェイチーム", text: $awayTeamName)
                     .textInputAutocapitalization(.words)
+            }
+
+            Section {
+                TextField("例: 第100回全国高校サッカー選手権 決勝", text: $matchInfo)
+            } header: {
+                Text("試合情報")
+            } footer: {
+                Text("大会名や日程など、スコアボードに表示する情報")
             }
 
             Section {
@@ -155,6 +164,10 @@ struct MatchSetupView: View {
             homeTeamName: homeTeamName.trimmingCharacters(in: .whitespaces),
             awayTeamName: awayTeamName.trimmingCharacters(in: .whitespaces)
         )
+        let trimmedInfo = matchInfo.trimmingCharacters(in: .whitespaces)
+        if !trimmedInfo.isEmpty {
+            match.matchInfo = trimmedInfo
+        }
         match.videoURLs = videoEntries.map(\.url)
         modelContext.insert(match)
         router.navigate(to: .scoreEditor(match))

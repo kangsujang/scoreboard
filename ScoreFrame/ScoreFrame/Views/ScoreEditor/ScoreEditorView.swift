@@ -114,6 +114,7 @@ struct ScoreEditorView: View {
             currentTime: playerVM.currentTime,
             onGoal: { team in addGoal(team: team, at: playerVM.currentTime) },
             onUndo: { undoLastGoal() },
+            onSegmentStart: { idx in setSegmentStart(at: idx, time: playerVM.currentTime) },
             onSegmentTimerStart: { idx in setSegmentTimerStart(at: idx, time: playerVM.currentTime) },
             onSegmentTimerStop: { idx in setSegmentTimerStop(at: idx, time: playerVM.currentTime) },
             onSegmentTimerClear: { idx in clearSegmentTimer(at: idx) },
@@ -164,6 +165,17 @@ struct ScoreEditorView: View {
 
     // MARK: - Segment Actions
 
+    private func setSegmentStart(at index: Int, time: TimeInterval) {
+        var segments = match.timerSegments
+        guard index < segments.count else { return }
+        segments[index].segmentStartTime = time
+        // キックオフが区切り開始より前ならクリア
+        if let kickoff = segments[index].timerStartTime, kickoff < time {
+            segments[index].timerStartTime = nil
+        }
+        match.timerSegments = segments
+    }
+
     private func setSegmentTimerStart(at index: Int, time: TimeInterval) {
         var segments = match.timerSegments
         guard index < segments.count else { return }
@@ -185,6 +197,7 @@ struct ScoreEditorView: View {
     private func clearSegmentTimer(at index: Int) {
         var segments = match.timerSegments
         guard index < segments.count else { return }
+        segments[index].segmentStartTime = nil
         segments[index].timerStartTime = nil
         segments[index].timerStopTime = nil
         segments[index].timerStartOffset = nil

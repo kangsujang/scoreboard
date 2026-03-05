@@ -7,6 +7,7 @@ final class PlayerViewModel {
     private(set) var currentTime: TimeInterval = 0
     private(set) var duration: TimeInterval = 0
     private(set) var isPlaying = false
+    var playbackRate: Float = 1.0
 
     // nonisolated(unsafe) needed for deinit access from @MainActor @Observable class
     private nonisolated(unsafe) var timeObserver: Any?
@@ -48,7 +49,7 @@ final class PlayerViewModel {
     }
 
     func play() {
-        player.play()
+        player.rate = playbackRate
     }
 
     func pause() {

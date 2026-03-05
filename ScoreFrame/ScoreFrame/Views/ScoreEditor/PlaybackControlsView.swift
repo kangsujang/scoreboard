@@ -47,6 +47,30 @@ struct PlaybackControlsView: View {
 
                 Spacer()
 
+                Menu {
+                    ForEach([1.0, 1.25, 1.5, 2.0, 4.0], id: \.self) { rate in
+                        Button {
+                            playerVM.playbackRate = Float(rate)
+                            if playerVM.isPlaying {
+                                playerVM.player.rate = Float(rate)
+                            }
+                        } label: {
+                            HStack {
+                                Text(rate == 1.0 ? "1x" : "\(rate, specifier: "%g")x")
+                                if playerVM.playbackRate == Float(rate) {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    Text(playerVM.playbackRate == 1.0 ? "1x" : "\(Double(playerVM.playbackRate), specifier: "%g")x")
+                        .font(.caption2.weight(.medium))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(.quaternary, in: RoundedRectangle(cornerRadius: 4))
+                }
+
                 Text(TimeFormatting.format(seconds: playerVM.duration))
                     .monospacedDigit()
                     .font(.caption2)

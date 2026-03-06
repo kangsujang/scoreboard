@@ -206,20 +206,23 @@ struct ScoreboardLayerBuilder {
         x += homeTextWidth + teamNamePadding + gap
 
         // Home score circle
+        let homeCircleWrapper = CALayer()
+        homeCircleWrapper.frame = CGRect(x: x, y: circleY, width: circleSize, height: circleSize)
+
         let homeCircleBg = CALayer()
-        homeCircleBg.frame = CGRect(x: x, y: circleY, width: circleSize, height: circleSize)
+        homeCircleBg.frame = CGRect(x: 0, y: 0, width: circleSize, height: circleSize)
         homeCircleBg.backgroundColor = textColor(for: theme)
         homeCircleBg.cornerRadius = circleSize / 2
-        container.addSublayer(homeCircleBg)
+        homeCircleWrapper.addSublayer(homeCircleBg)
 
         let homeScoreFrame = CGRect(
-            x: x,
-            y: circleY + (circleSize - scoreFontSize - 4) / 2,
+            x: 0,
+            y: (circleSize - scoreFontSize - 4) / 2,
             width: circleSize,
             height: scoreFontSize + 4
         )
         addSingleTeamScoreLayers(
-            to: container,
+            to: homeCircleWrapper,
             frame: homeScoreFrame,
             events: config.events,
             team: .home,
@@ -228,23 +231,34 @@ struct ScoreboardLayerBuilder {
             textColor: invertedTextColor(for: theme)
         )
 
+        addScorePulseAnimation(
+            to: homeCircleWrapper,
+            events: config.events,
+            team: .home,
+            duration: config.videoDuration
+        )
+        container.addSublayer(homeCircleWrapper)
+
         x += circleSize + gap
 
         // Away score circle
+        let awayCircleWrapper = CALayer()
+        awayCircleWrapper.frame = CGRect(x: x, y: circleY, width: circleSize, height: circleSize)
+
         let awayCircleBg = CALayer()
-        awayCircleBg.frame = CGRect(x: x, y: circleY, width: circleSize, height: circleSize)
+        awayCircleBg.frame = CGRect(x: 0, y: 0, width: circleSize, height: circleSize)
         awayCircleBg.backgroundColor = textColor(for: theme)
         awayCircleBg.cornerRadius = circleSize / 2
-        container.addSublayer(awayCircleBg)
+        awayCircleWrapper.addSublayer(awayCircleBg)
 
         let awayScoreFrame = CGRect(
-            x: x,
-            y: circleY + (circleSize - scoreFontSize - 4) / 2,
+            x: 0,
+            y: (circleSize - scoreFontSize - 4) / 2,
             width: circleSize,
             height: scoreFontSize + 4
         )
         addSingleTeamScoreLayers(
-            to: container,
+            to: awayCircleWrapper,
             frame: awayScoreFrame,
             events: config.events,
             team: .away,
@@ -252,6 +266,14 @@ struct ScoreboardLayerBuilder {
             fontSize: scoreFontSize,
             textColor: invertedTextColor(for: theme)
         )
+
+        addScorePulseAnimation(
+            to: awayCircleWrapper,
+            events: config.events,
+            team: .away,
+            duration: config.videoDuration
+        )
+        container.addSublayer(awayCircleWrapper)
 
         x += circleSize + gap
 
@@ -468,6 +490,64 @@ struct ScoreboardLayerBuilder {
             textColor: textColor,
             fontWeight: .bold
         )
+    }
+
+    // MARK: - Score Pulse Animation
+
+    /// Adds a scale pulse animation to the score circle wrapper at each goal timestamp.
+    private static func addScorePulseAnimation(
+        to layer: CALayer,
+        events: [ScoreEvent],
+        team: Team,
+        duration: TimeInterval
+    ) {
+        let teamEvents = events.filter { $0.team == team }.sorted { $0.timestamp < $1.timestamp }
+        guard !teamEvents.isEmpty, duration > 0 else { return }
+
+        let pulseDuration: TimeInterval = 0.3
+        var keyTimes: [NSNumber] = [0.0]
+        var values: [Float] = [1.0]
+
+        for event in teamEvents {
+            let startFrac = event.timestamp / duration
+            let peakFrac = (event.timestamp + pulseDuration * 0.4) / duration
+            let endFrac = (event.timestamp + pulseDuration) / duration
+
+            guard startFrac < 1.0 else { continue }
+
+            keyTimes.append(NSNumber(value: min(startFrac, 1.0)))
+            values.append(1.0)
+            keyTimes.append(NSNumber(value: min(peakFrac, 1.0)))
+            values.append(1.2)
+            keyTimes.append(NSNumber(value: min(endFrac, 1.0)))
+            values.append(1.0)
+        }
+
+        if let lastTime = keyTimes.last?.doubleValue, lastTime < 1.0 {
+            keyTimes.append(1.0)
+            values.append(1.0)
+        }
+
+        guard keyTimes.count >= 3 else { return }
+
+        // anchorPoint を中心に設定してスケールが中心基点になるようにする
+        let bounds = layer.bounds
+        layer.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        layer.position = CGPoint(
+            x: layer.frame.origin.x + bounds.width / 2,
+            y: layer.frame.origin.y + bounds.height / 2
+        )
+
+        let animation = CAKeyframeAnimation(keyPath: "transform.scale")
+        animation.keyTimes = keyTimes
+        animation.values = values
+        animation.calculationMode = .linear
+        animation.duration = duration
+        animation.beginTime = AVCoreAnimationBeginTimeAtZero
+        animation.isRemovedOnCompletion = false
+        animation.fillMode = .forwards
+
+        layer.add(animation, forKey: "scorePulse")
     }
 
     // MARK: - Opacity Animation Helper

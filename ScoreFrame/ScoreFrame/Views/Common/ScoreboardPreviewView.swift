@@ -151,8 +151,11 @@ struct ScoreboardPreviewView: View {
         Text("\(score)")
             .font(.system(size: base * 0.85, weight: .bold))
             .foregroundStyle(Color.scoreboardTimerText(for: style.theme))
+            .contentTransition(.numericText())
             .frame(width: base * 1.4, height: base * 1.4)
             .background(Circle().fill(Color.scoreboardText(for: style.theme)))
+            .scaleEffect(1.0)
+            .animation(.bouncy(duration: 0.4, extraBounce: 0.2), value: score)
     }
 
     // MARK: - PK Display

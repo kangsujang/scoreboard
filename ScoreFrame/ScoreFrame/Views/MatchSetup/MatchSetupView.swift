@@ -20,6 +20,10 @@ struct MatchSetupView: View {
     @State private var videoEntries: [VideoEntry] = []
     @State private var isImporting = false
     @State private var errorMessage: String?
+    @State private var showStyleSheet = false
+    @State private var createdMatch: Match?
+    @State private var thumbnail: UIImage?
+    @State private var setupVideoAspectRatio: CGFloat = 16.0 / 9.0
 
     private var canProceed: Bool {
         !homeTeamName.trimmingCharacters(in: .whitespaces).isEmpty
@@ -112,7 +116,7 @@ struct MatchSetupView: View {
                 } label: {
                     HStack {
                         Spacer()
-                        Text("スコア記録開始")
+                        Text("次へ: スコアボード設定")
                             .font(.headline)
                         Spacer()
                     }
@@ -128,6 +132,17 @@ struct MatchSetupView: View {
             Task {
                 await importVideos(from: newItems)
                 selectedItems = []
+            }
+        }
+        .sheet(isPresented: $showStyleSheet) {
+            if let match = createdMatch {
+                ScoreboardStyleSheet(
+                    match: match,
+                    thumbnail: thumbnail,
+                    videoAspectRatio: setupVideoAspectRatio
+                ) {
+                    router.navigate(to: .scoreEditor(match))
+                }
             }
         }
     }
@@ -170,7 +185,16 @@ struct MatchSetupView: View {
         }
         match.videoURLs = videoEntries.map(\.url)
         modelContext.insert(match)
-        router.navigate(to: .scoreEditor(match))
+        createdMatch = match
+        thumbnail = videoEntries.first?.thumbnail
+        if let url = videoEntries.first?.url {
+            Task {
+                if let size = await ThumbnailGenerator.videoSize(for: url) {
+                    setupVideoAspectRatio = size.width / size.height
+                }
+            }
+        }
+        showStyleSheet = true
     }
 }
 

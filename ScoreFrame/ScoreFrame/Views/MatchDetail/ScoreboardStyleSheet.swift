@@ -6,6 +6,7 @@ struct ScoreboardStyleSheet: View {
     @State private var style: ScoreboardStyle
     let thumbnail: UIImage?
     let videoAspectRatio: CGFloat
+    var onSave: (() -> Void)?
 
     // 編集対象
     enum EditTarget: String, CaseIterable {
@@ -22,10 +23,11 @@ struct ScoreboardStyleSheet: View {
     @State private var baseMatchInfoScale: CGFloat = 1.0
     @State private var baseMatchInfoPosition: CGPoint = .zero
 
-    init(match: Match, thumbnail: UIImage? = nil, videoAspectRatio: CGFloat = 16.0 / 9.0) {
+    init(match: Match, thumbnail: UIImage? = nil, videoAspectRatio: CGFloat = 16.0 / 9.0, onSave: (() -> Void)? = nil) {
         self.match = match
         self.thumbnail = thumbnail
         self.videoAspectRatio = videoAspectRatio
+        self.onSave = onSave
         let s = match.scoreboardStyle
         self._style = State(initialValue: s)
         self._baseScale = State(initialValue: s.scale)
@@ -145,6 +147,7 @@ struct ScoreboardStyleSheet: View {
                     Button("保存") {
                         match.scoreboardStyle = style
                         dismiss()
+                        onSave?()
                     }
                 }
             }

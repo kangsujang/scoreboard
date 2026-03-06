@@ -47,9 +47,8 @@ struct ScoreEditorView: View {
 
     private func iPhoneLayout(playerVM: PlayerViewModel) -> some View {
         VStack(spacing: 0) {
-            VideoPlayerView(player: playerVM.player)
+            videoWithOverlay(playerVM: playerVM)
                 .aspectRatio(videoAspectRatio, contentMode: .fit)
-                .background(.black)
                 .clipped()
 
             PlaybackControlsView(playerVM: playerVM)
@@ -77,8 +76,7 @@ struct ScoreEditorView: View {
         HStack(spacing: 0) {
             // 左: 動画 + 再生コントロール
             VStack(spacing: 0) {
-                VideoPlayerView(player: playerVM.player)
-                    .background(.black)
+                videoWithOverlay(playerVM: playerVM)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 PlaybackControlsView(playerVM: playerVM)
@@ -105,6 +103,28 @@ struct ScoreEditorView: View {
                 }
             }
             .frame(width: 320)
+        }
+    }
+
+    private func videoWithOverlay(playerVM: PlayerViewModel) -> some View {
+        ZStack {
+            VideoPlayerView(player: playerVM.player)
+                .background(.black)
+
+            let currentTime = playerVM.currentTime
+            let score = match.scoreAt(time: currentTime)
+            ScoreboardPreviewView(
+                homeTeamName: match.homeTeamName,
+                awayTeamName: match.awayTeamName,
+                homeScore: score.home,
+                awayScore: score.away,
+                style: match.scoreboardStyle,
+                currentPeriodLabel: match.currentPeriodLabel(at: currentTime),
+                matchInfo: match.matchInfo,
+                pkKicks: match.pkKicksAt(time: currentTime),
+                videoAspectRatio: videoAspectRatio
+            )
+            .allowsHitTesting(false)
         }
     }
 

@@ -54,30 +54,88 @@ struct MatchDetailView: View {
                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
             }
 
-            Section("スコアイベント (\(match.scoreEvents.count))") {
-                if match.scoreEvents.isEmpty {
-                    Text("得点記録がありません")
+            Section("イベント") {
+                if timelineItems.isEmpty {
+                    Text("イベント記録がありません")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(eventsWithScore, id: \.event.id) { item in
-                        HStack {
-                            Text(TimeFormatting.format(seconds: item.event.timestamp))
-                                .monospacedDigit()
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .frame(width: 50, alignment: .leading)
+                    ForEach(timelineItems) { item in
+                        switch item.kind {
+                        case .goal(let team, let homeScore, let awayScore, let periodLabel):
+                            HStack {
+                                Text(TimeFormatting.format(seconds: item.timestamp))
+                                    .monospacedDigit()
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 50, alignment: .leading)
 
-                            Image(systemName: "soccerball")
-                                .foregroundStyle(item.event.team == .home ? .blue : .red)
+                                Image(systemName: "soccerball")
+                                    .foregroundStyle(team == .home ? .blue : .red)
 
-                            Text(item.event.team == .home ? match.homeTeamName : match.awayTeamName)
-                                .font(.subheadline)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(team == .home ? match.homeTeamName : match.awayTeamName)
+                                        .font(.subheadline)
+                                    if let periodLabel {
+                                        Text(periodLabel)
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
 
-                            Spacer()
+                                Spacer()
 
-                            Text("\(item.homeScore) - \(item.awayScore)")
-                                .font(.subheadline.weight(.semibold))
-                                .monospacedDigit()
+                                Text("\(homeScore) - \(awayScore)")
+                                    .font(.subheadline.weight(.semibold))
+                                    .monospacedDigit()
+                            }
+                        case .segmentStart(let label):
+                            HStack {
+                                Text(TimeFormatting.format(seconds: item.timestamp))
+                                    .monospacedDigit()
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 50, alignment: .leading)
+
+                                Image(systemName: "flag.fill")
+                                    .foregroundStyle(.purple)
+
+                                Text(label)
+                                    .font(.subheadline.weight(.medium))
+
+                                Spacer()
+                            }
+                        case .kickoff(let label):
+                            HStack {
+                                Text(TimeFormatting.format(seconds: item.timestamp))
+                                    .monospacedDigit()
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 50, alignment: .leading)
+
+                                Image(systemName: "play.fill")
+                                    .foregroundStyle(.green)
+
+                                Text(label)
+                                    .font(.subheadline.weight(.medium))
+
+                                Spacer()
+                            }
+                        case .periodEnd(let label):
+                            HStack {
+                                Text(TimeFormatting.format(seconds: item.timestamp))
+                                    .monospacedDigit()
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 50, alignment: .leading)
+
+                                Image(systemName: "stop.fill")
+                                    .foregroundStyle(.orange)
+
+                                Text(label)
+                                    .font(.subheadline.weight(.medium))
+
+                                Spacer()
+                            }
                         }
                     }
                 }
@@ -147,22 +205,75 @@ struct MatchDetailView: View {
         }
     }
 
-    private var eventsWithScore: [EventWithScoreItem] {
+    private func periodLabel(at timestamp: TimeInterval, segments: [TimerSegment]) -> String? {
+        for (i, seg) in segments.enumerated().reversed() {
+            let start = seg.effectiveStartTime ?? 0
+            if timestamp >= start {
+                return seg.periodLabel ?? (segments.count > 1 ? "セグメント \(i + 1)" : nil)
+            }
+        }
+        return segments.first?.periodLabel
+    }
+
+    private var timelineItems: [TimelineItem] {
+        var items: [TimelineItem] = []
+
+        // セグメントイベント
+        for (i, seg) in match.timerSegments.enumerated() {
+            let label = seg.periodLabel ?? "セグメント \(i + 1)"
+
+            if let start = seg.segmentStartTime {
+                items.append(TimelineItem(
+                    timestamp: start,
+                    kind: .segmentStart(label: label)
+                ))
+            }
+
+            if let kickoff = seg.timerStartTime {
+                items.append(TimelineItem(
+                    timestamp: kickoff,
+                    kind: .kickoff(label: "\(label) キックオフ")
+                ))
+            }
+
+            if let stop = seg.timerStopTime {
+                items.append(TimelineItem(
+                    timestamp: stop,
+                    kind: .periodEnd(label: "\(label) 終了")
+                ))
+            }
+        }
+
+        // スコアイベント
+        let segments = match.timerSegments
         let sorted = match.sortedEvents
         var home = 0
         var away = 0
-        return sorted.map { event in
+        for event in sorted {
             switch event.team {
             case .home: home += 1
             case .away: away += 1
             }
-            return EventWithScoreItem(event: event, homeScore: home, awayScore: away)
+            let period = periodLabel(at: event.timestamp, segments: segments)
+            items.append(TimelineItem(
+                timestamp: event.timestamp,
+                kind: .goal(team: event.team, homeScore: home, awayScore: away, periodLabel: period)
+            ))
         }
+
+        return items.sorted { $0.timestamp < $1.timestamp }
     }
 }
 
-private struct EventWithScoreItem {
-    let event: ScoreEvent
-    let homeScore: Int
-    let awayScore: Int
+private struct TimelineItem: Identifiable {
+    let id = UUID()
+    let timestamp: TimeInterval
+    let kind: Kind
+
+    enum Kind {
+        case goal(team: Team, homeScore: Int, awayScore: Int, periodLabel: String?)
+        case segmentStart(label: String)
+        case kickoff(label: String)
+        case periodEnd(label: String)
+    }
 }

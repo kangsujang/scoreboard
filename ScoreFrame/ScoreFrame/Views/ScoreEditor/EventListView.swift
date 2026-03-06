@@ -14,7 +14,7 @@ struct EventListView: View {
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            List {
+            LazyVStack(spacing: 0) {
                 ForEach(sortedEventsWithScore, id: \.event.id) { item in
                     HStack {
                         Text(TimeFormatting.format(seconds: item.event.timestamp))
@@ -35,10 +35,10 @@ struct EventListView: View {
                             .font(.subheadline.weight(.semibold))
                             .monospacedDigit()
                     }
-                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
                 }
             }
-            .listStyle(.plain)
         }
     }
 

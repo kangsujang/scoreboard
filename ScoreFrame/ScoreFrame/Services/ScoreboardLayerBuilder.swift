@@ -99,7 +99,15 @@ struct ScoreboardLayerBuilder {
         let teamNamePadding = teamFontSize * 2  // 2文字分の余白（片側）
         let homeAreaWidth = homeTextWidth + teamNamePadding * 2
         let awayAreaWidth = awayTextWidth + teamNamePadding * 2
-        let mainContentWidth = homeAreaWidth + gap + circleSize + gap + circleSize + gap + awayAreaWidth
+        let showScore = config.style.showScore
+        let vsFontSize = base * 0.6
+        let vsTextWidth = estimateTextWidth("vs", fontSize: vsFontSize)
+        let mainContentWidth: CGFloat
+        if showScore {
+            mainContentWidth = homeAreaWidth + gap + circleSize + gap + circleSize + gap + awayAreaWidth
+        } else {
+            mainContentWidth = homeAreaWidth + gap + vsTextWidth + gap + awayAreaWidth
+        }
         let mainWidth = mainContentWidth + mainPaddingH * 2
 
         // ── コンテナサイズ ──
@@ -205,77 +213,98 @@ struct ScoreboardLayerBuilder {
 
         x += homeTextWidth + teamNamePadding + gap
 
-        // Home score circle
-        let homeCircleWrapper = CALayer()
-        homeCircleWrapper.frame = CGRect(x: x, y: circleY, width: circleSize, height: circleSize)
+        if showScore {
+            // Home score circle
+            let homeCircleWrapper = CALayer()
+            homeCircleWrapper.frame = CGRect(x: x, y: circleY, width: circleSize, height: circleSize)
 
-        let homeCircleBg = CALayer()
-        homeCircleBg.frame = CGRect(x: 0, y: 0, width: circleSize, height: circleSize)
-        homeCircleBg.backgroundColor = textColor(for: theme)
-        homeCircleBg.cornerRadius = circleSize / 2
-        homeCircleWrapper.addSublayer(homeCircleBg)
+            let homeCircleBg = CALayer()
+            homeCircleBg.frame = CGRect(x: 0, y: 0, width: circleSize, height: circleSize)
+            homeCircleBg.backgroundColor = textColor(for: theme)
+            homeCircleBg.cornerRadius = circleSize / 2
+            homeCircleWrapper.addSublayer(homeCircleBg)
 
-        let homeScoreFrame = CGRect(
-            x: 0,
-            y: (circleSize - scoreFontSize - 4) / 2,
-            width: circleSize,
-            height: scoreFontSize + 4
-        )
-        addSingleTeamScoreLayers(
-            to: homeCircleWrapper,
-            frame: homeScoreFrame,
-            events: config.events,
-            team: .home,
-            duration: config.videoDuration,
-            fontSize: scoreFontSize,
-            textColor: invertedTextColor(for: theme)
-        )
+            let homeScoreFrame = CGRect(
+                x: 0,
+                y: (circleSize - scoreFontSize - 4) / 2,
+                width: circleSize,
+                height: scoreFontSize + 4
+            )
+            addSingleTeamScoreLayers(
+                to: homeCircleWrapper,
+                frame: homeScoreFrame,
+                events: config.events,
+                team: .home,
+                duration: config.videoDuration,
+                fontSize: scoreFontSize,
+                textColor: invertedTextColor(for: theme)
+            )
 
-        addScorePulseAnimation(
-            to: homeCircleWrapper,
-            events: config.events,
-            team: .home,
-            duration: config.videoDuration
-        )
-        container.addSublayer(homeCircleWrapper)
+            addScorePulseAnimation(
+                to: homeCircleWrapper,
+                events: config.events,
+                team: .home,
+                duration: config.videoDuration
+            )
+            container.addSublayer(homeCircleWrapper)
 
-        x += circleSize + gap
+            x += circleSize + gap
 
-        // Away score circle
-        let awayCircleWrapper = CALayer()
-        awayCircleWrapper.frame = CGRect(x: x, y: circleY, width: circleSize, height: circleSize)
+            // Away score circle
+            let awayCircleWrapper = CALayer()
+            awayCircleWrapper.frame = CGRect(x: x, y: circleY, width: circleSize, height: circleSize)
 
-        let awayCircleBg = CALayer()
-        awayCircleBg.frame = CGRect(x: 0, y: 0, width: circleSize, height: circleSize)
-        awayCircleBg.backgroundColor = textColor(for: theme)
-        awayCircleBg.cornerRadius = circleSize / 2
-        awayCircleWrapper.addSublayer(awayCircleBg)
+            let awayCircleBg = CALayer()
+            awayCircleBg.frame = CGRect(x: 0, y: 0, width: circleSize, height: circleSize)
+            awayCircleBg.backgroundColor = textColor(for: theme)
+            awayCircleBg.cornerRadius = circleSize / 2
+            awayCircleWrapper.addSublayer(awayCircleBg)
 
-        let awayScoreFrame = CGRect(
-            x: 0,
-            y: (circleSize - scoreFontSize - 4) / 2,
-            width: circleSize,
-            height: scoreFontSize + 4
-        )
-        addSingleTeamScoreLayers(
-            to: awayCircleWrapper,
-            frame: awayScoreFrame,
-            events: config.events,
-            team: .away,
-            duration: config.videoDuration,
-            fontSize: scoreFontSize,
-            textColor: invertedTextColor(for: theme)
-        )
+            let awayScoreFrame = CGRect(
+                x: 0,
+                y: (circleSize - scoreFontSize - 4) / 2,
+                width: circleSize,
+                height: scoreFontSize + 4
+            )
+            addSingleTeamScoreLayers(
+                to: awayCircleWrapper,
+                frame: awayScoreFrame,
+                events: config.events,
+                team: .away,
+                duration: config.videoDuration,
+                fontSize: scoreFontSize,
+                textColor: invertedTextColor(for: theme)
+            )
 
-        addScorePulseAnimation(
-            to: awayCircleWrapper,
-            events: config.events,
-            team: .away,
-            duration: config.videoDuration
-        )
-        container.addSublayer(awayCircleWrapper)
+            addScorePulseAnimation(
+                to: awayCircleWrapper,
+                events: config.events,
+                team: .away,
+                duration: config.videoDuration
+            )
+            container.addSublayer(awayCircleWrapper)
 
-        x += circleSize + gap
+            x += circleSize + gap
+        } else {
+            // "vs" separator
+            let vsLayer = makeTextLayer(
+                fontSize: vsFontSize,
+                alignment: .center,
+                color: textColor(for: theme),
+                weight: .semibold
+            )
+            vsLayer.string = "vs"
+            vsLayer.opacity = 0.6
+            let vsFrameH = vsFontSize + 4
+            vsLayer.frame = CGRect(
+                x: x,
+                y: centerY - vsFrameH / 2,
+                width: vsTextWidth,
+                height: vsFrameH
+            )
+            container.addSublayer(vsLayer)
+            x += vsTextWidth + gap
+        }
 
         // Away team name（左右に teamNamePadding 分の余白）
         x += teamNamePadding

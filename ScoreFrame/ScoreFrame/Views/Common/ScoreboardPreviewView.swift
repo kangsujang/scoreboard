@@ -101,10 +101,16 @@ struct ScoreboardPreviewView: View {
                     base: base
                 )
 
-                // Home score circle
-                scoreCircle(homeScore, base: base)
-                // Away score circle
-                scoreCircle(awayScore, base: base)
+                if style.showScore {
+                    // Home score circle
+                    scoreCircle(homeScore, base: base)
+                    // Away score circle
+                    scoreCircle(awayScore, base: base)
+                } else {
+                    Text("vs")
+                        .font(.system(size: base * 0.6, weight: .semibold))
+                        .foregroundStyle(Color.scoreboardText(for: style.theme).opacity(0.6))
+                }
 
                 // Away team name with underline
                 teamLabel(

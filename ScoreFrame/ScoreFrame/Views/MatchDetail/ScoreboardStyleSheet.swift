@@ -129,6 +129,7 @@ struct ScoreboardStyleSheet: View {
                 }
 
                 Section("オプション") {
+                    Toggle("スコア表示", isOn: $style.showScore)
                     Toggle("タイマー表示", isOn: $style.showMatchTimer)
                 }
             }

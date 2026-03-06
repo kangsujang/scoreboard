@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ScoreboardStyle: Codable, Equatable {
     var theme: Theme = .dark
+    var showScore: Bool = true
     var showMatchTimer: Bool = true
     var periodLabel: String?
 
@@ -93,7 +94,7 @@ struct ScoreboardStyle: Codable, Equatable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case theme, showMatchTimer, periodLabel, positionX, positionY, scale, position, fontSize
+        case theme, showScore, showMatchTimer, periodLabel, positionX, positionY, scale, position, fontSize
         case homeTeamColorHex, awayTeamColorHex
         case matchInfoPositionX, matchInfoPositionY, matchInfoScale
     }
@@ -103,6 +104,7 @@ struct ScoreboardStyle: Codable, Equatable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         theme = try container.decodeIfPresent(Theme.self, forKey: .theme) ?? .dark
+        showScore = try container.decodeIfPresent(Bool.self, forKey: .showScore) ?? true
         showMatchTimer = try container.decodeIfPresent(Bool.self, forKey: .showMatchTimer) ?? true
         periodLabel = try container.decodeIfPresent(String.self, forKey: .periodLabel)
         positionX = try container.decodeIfPresent(CGFloat.self, forKey: .positionX) ?? 0.02

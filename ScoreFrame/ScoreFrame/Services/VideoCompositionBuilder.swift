@@ -19,11 +19,11 @@ enum VideoCompositionBuilder {
         var errorDescription: String? {
             switch self {
             case .noURLs:
-                return "動画URLが指定されていません"
+                return String(localized: "動画URLが指定されていません")
             case .noVideoTrack(let url):
-                return "動画トラックが見つかりません: \(url.lastPathComponent)"
+                return String(localized: "動画トラックが見つかりません: \(url.lastPathComponent)")
             case .trackCreationFailed:
-                return "コンポジショントラックの作成に失敗しました"
+                return String(localized: "コンポジショントラックの作成に失敗しました")
             }
         }
     }

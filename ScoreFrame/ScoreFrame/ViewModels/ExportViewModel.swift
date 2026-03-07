@@ -43,7 +43,7 @@ final class ExportViewModel {
                 try await PhotoLibrarySaver.save(videoAt: url)
                 savedToPhotos = true
             } catch PhotoLibrarySaver.SaveError.notAuthorized {
-                saveError = "写真ライブラリへのアクセスが許可されていません。設定アプリから許可してください。"
+                saveError = String(localized: "写真ライブラリへのアクセスが許可されていません。設定アプリから許可してください。")
             } catch {
                 saveError = error.localizedDescription
             }
@@ -57,7 +57,7 @@ private enum PhotoLibrarySaver {
         case notAuthorized
 
         var errorDescription: String? {
-            "写真ライブラリへのアクセスが許可されていません"
+            String(localized: "写真ライブラリへのアクセスが許可されていません")
         }
     }
 

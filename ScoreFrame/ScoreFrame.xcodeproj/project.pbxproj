@@ -40,6 +40,8 @@
 		F7AFECFAA0E0B1429B94403F /* PlaybackControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CC1CC7B7FC2A549B0199AB /* PlaybackControlsView.swift */; };
 		F9CE53026CF354435E3A69A6 /* ThumbnailGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C46D066E18FD879B6406271 /* ThumbnailGenerator.swift */; };
 		AA11BB22CC33DD44EE55FF66 /* VideoCompositionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22CC33DD44EE55FF660011 /* VideoCompositionBuilder.swift */; };
+		AAAA1111BBBB2222CCCC0001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AAAA1111BBBB2222CCCC0002 /* Localizable.xcstrings */; };
+		AAAA1111BBBB2222CCCC0003 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AAAA1111BBBB2222CCCC0004 /* InfoPlist.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -77,6 +79,8 @@
 		FE91A0EB2E1132EE8F406DC2 /* Color+Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Theme.swift"; sourceTree = "<group>"; };
 		BB22CC33DD44EE55FF660011 /* VideoCompositionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCompositionBuilder.swift; sourceTree = "<group>"; };
 		DD22EE33FF44AA55BB66CC11 /* TimerSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerSegment.swift; sourceTree = "<group>"; };
+		AAAA1111BBBB2222CCCC0002 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		AAAA1111BBBB2222CCCC0004 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -96,6 +100,8 @@
 			isa = PBXGroup;
 			children = (
 				65C76BEA4CB36A2D5D5BF956 /* Assets.xcassets */,
+				AAAA1111BBBB2222CCCC0004 /* InfoPlist.xcstrings */,
+				AAAA1111BBBB2222CCCC0002 /* Localizable.xcstrings */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -285,11 +291,14 @@
 			};
 			buildConfigurationList = 5BEF7C76950349E42BEF02DB /* Build configuration list for PBXProject "ScoreFrame" */;
 			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = en;
+			developmentRegion = ja;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
 				en,
+				ja,
+				ko,
+				"zh-Hans",
 			);
 			mainGroup = 9064018BD7E5D507EA85F6F4;
 			minimizedProjectReferenceProxies = 1;
@@ -307,6 +316,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				4F61E7C5C95CBADB281AE40E /* Assets.xcassets in Resources */,
+				AAAA1111BBBB2222CCCC0001 /* Localizable.xcstrings in Resources */,
+				AAAA1111BBBB2222CCCC0003 /* InfoPlist.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

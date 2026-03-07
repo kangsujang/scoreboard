@@ -21,13 +21,13 @@ final class VideoExportService {
         var errorDescription: String? {
             switch self {
             case .noVideoTrack:
-                return "動画トラックが見つかりません"
+                return String(localized: "動画トラックが見つかりません")
             case .exportSessionCreationFailed:
-                return "エクスポートセッションの作成に失敗しました"
+                return String(localized: "エクスポートセッションの作成に失敗しました")
             case .exportFailed(let reason):
-                return "エクスポートに失敗: \(reason)"
+                return String(localized: "エクスポートに失敗: \(reason)")
             case .cancelled:
-                return "エクスポートがキャンセルされました"
+                return String(localized: "エクスポートがキャンセルされました")
             }
         }
     }

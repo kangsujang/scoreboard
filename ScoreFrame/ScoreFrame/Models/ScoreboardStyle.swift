@@ -34,9 +34,9 @@ struct ScoreboardStyle: Codable, Equatable {
 
         var displayName: String {
             switch self {
-            case .topLeft: return "左上"
-            case .topCenter: return "中央上"
-            case .topRight: return "右上"
+            case .topLeft: return String(localized: "左上")
+            case .topCenter: return String(localized: "中央上")
+            case .topRight: return String(localized: "右上")
             }
         }
     }
@@ -64,9 +64,9 @@ struct ScoreboardStyle: Codable, Equatable {
 
         var displayName: String {
             switch self {
-            case .small: return "小"
-            case .medium: return "中"
-            case .large: return "大"
+            case .small: return String(localized: "小")
+            case .medium: return String(localized: "中")
+            case .large: return String(localized: "大")
             }
         }
 

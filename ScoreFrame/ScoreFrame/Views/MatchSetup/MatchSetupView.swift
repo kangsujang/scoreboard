@@ -164,7 +164,7 @@ struct MatchSetupView: View {
                 }
             } catch {
                 await MainActor.run {
-                    errorMessage = "動画のインポートに失敗: \(error.localizedDescription)"
+                    errorMessage = String(localized: "動画のインポートに失敗: \(error.localizedDescription)")
                 }
             }
         }

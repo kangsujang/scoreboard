@@ -9,9 +9,16 @@ struct ScoreboardStyleSheet: View {
     var onSave: (() -> Void)?
 
     // 編集対象
-    enum EditTarget: String, CaseIterable {
-        case scoreboard = "スコアボード"
-        case matchInfo = "試合情報"
+    enum EditTarget: CaseIterable {
+        case scoreboard
+        case matchInfo
+
+        var displayName: LocalizedStringKey {
+            switch self {
+            case .scoreboard: return "スコアボード"
+            case .matchInfo: return "試合情報"
+            }
+        }
     }
     @State private var editTarget: EditTarget = .scoreboard
 
@@ -65,7 +72,7 @@ struct ScoreboardStyleSheet: View {
                     VStack(spacing: 8) {
                         Picker("編集対象", selection: $editTarget) {
                             ForEach(EditTarget.allCases, id: \.self) { target in
-                                Text(target.rawValue).tag(target)
+                                Text(target.displayName).tag(target)
                             }
                         }
                         .pickerStyle(.segmented)

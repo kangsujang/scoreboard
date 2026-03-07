@@ -16,6 +16,14 @@ struct ScoreControlsView: View {
     let onAddSegment: () -> Void
     let onRemoveSegment: (Int) -> Void
 
+    static let periodPresets: [String] = [
+        String(localized: "前半"),
+        String(localized: "後半"),
+        String(localized: "延前"),
+        String(localized: "延後"),
+        "PK"
+    ]
+
     private var isPKMode: Bool {
         match.currentPeriodLabel(at: currentTime)?.lowercased() == "pk"
     }
@@ -89,7 +97,7 @@ struct ScoreControlsView: View {
                 .padding(.horizontal)
             }
 
-            // セグメントリスト
+            // Segment list
             ForEach(Array(match.timerSegments.enumerated()), id: \.offset) { index, segment in
                 SegmentControlRow(
                     index: index,
@@ -157,7 +165,7 @@ private struct SegmentControlRow: View {
             // ピリオドプリセット
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
-                    ForEach(["前半", "後半", "延前", "延後", "PK"], id: \.self) { preset in
+                    ForEach(ScoreControlsView.periodPresets, id: \.self) { preset in
                         Button(preset) {
                             onPeriodLabel(segment.periodLabel == preset ? nil : preset)
                         }

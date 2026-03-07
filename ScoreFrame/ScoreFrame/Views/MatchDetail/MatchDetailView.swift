@@ -209,7 +209,7 @@ struct MatchDetailView: View {
         for (i, seg) in segments.enumerated().reversed() {
             let start = seg.effectiveStartTime ?? 0
             if timestamp >= start {
-                return seg.periodLabel ?? (segments.count > 1 ? "セグメント \(i + 1)" : nil)
+                return seg.periodLabel ?? (segments.count > 1 ? String(localized: "セグメント \(i + 1)") : nil)
             }
         }
         return segments.first?.periodLabel
@@ -220,7 +220,7 @@ struct MatchDetailView: View {
 
         // セグメントイベント
         for (i, seg) in match.timerSegments.enumerated() {
-            let label = seg.periodLabel ?? "セグメント \(i + 1)"
+            let label = seg.periodLabel ?? String(localized: "セグメント \(i + 1)")
 
             if let start = seg.segmentStartTime {
                 items.append(TimelineItem(
@@ -232,14 +232,14 @@ struct MatchDetailView: View {
             if let kickoff = seg.timerStartTime {
                 items.append(TimelineItem(
                     timestamp: kickoff,
-                    kind: .kickoff(label: "\(label) キックオフ")
+                    kind: .kickoff(label: String(localized: "\(label) キックオフ"))
                 ))
             }
 
             if let stop = seg.timerStopTime {
                 items.append(TimelineItem(
                     timestamp: stop,
-                    kind: .periodEnd(label: "\(label) 終了")
+                    kind: .periodEnd(label: String(localized: "\(label) 終了"))
                 ))
             }
         }

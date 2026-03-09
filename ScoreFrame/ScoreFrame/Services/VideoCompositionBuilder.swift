@@ -132,6 +132,32 @@ enum VideoCompositionBuilder {
         return videoComposition
     }
 
+    // MARK: - Video Composition (Without Overlay)
+
+    static func makeVideoCompositionWithoutOverlay(
+        result: Result
+    ) -> AVMutableVideoComposition {
+        let videoComposition = AVMutableVideoComposition()
+        videoComposition.renderSize = result.videoSize
+        let timescale = Int32(ceil(result.nominalFrameRate))
+        videoComposition.frameDuration = CMTime(value: 1, timescale: timescale)
+
+        let instruction = AVMutableVideoCompositionInstruction()
+        instruction.timeRange = CMTimeRange(start: .zero, duration: result.duration)
+
+        if let first = result.segmentTransforms.first {
+            let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: first.track)
+            layerInstruction.setTransform(
+                correctedTransform(first.transform, naturalSize: first.naturalSize),
+                at: .zero
+            )
+            instruction.layerInstructions = [layerInstruction]
+        }
+
+        videoComposition.instructions = [instruction]
+        return videoComposition
+    }
+
     // MARK: - Transform Handling
 
     static func correctedSize(naturalSize: CGSize, transform: CGAffineTransform) -> CGSize {

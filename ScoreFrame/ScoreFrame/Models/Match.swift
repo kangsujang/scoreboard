@@ -16,6 +16,7 @@ final class Match {
     var timerSegmentsData: Data?        // [TimerSegment] を JSON エンコード保存
     var matchInfo: String?              // 大会名・日程などの試合情報
     var pkKicksData: Data?              // [PKKick] を JSON エンコード保存
+    var skipOverlay: Bool = false       // スコアボードオーバーレイを付けず動画のみ結合
 
     @Relationship(deleteRule: .cascade, inverse: \ScoreEvent.match)
     var scoreEvents: [ScoreEvent]

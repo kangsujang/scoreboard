@@ -71,41 +71,50 @@ final class VideoExportService {
         let result = try await VideoCompositionBuilder.build(from: urls)
         let videoSize = result.videoSize
 
-        // Build layer tree
-        let videoDuration = result.duration.seconds
+        // Create video composition (with or without overlay)
+        let videoComposition: AVMutableVideoComposition
 
-        let style = match.scoreboardStyle
-        let config = ScoreboardLayerBuilder.Config(
-            homeTeamName: match.homeTeamName,
-            awayTeamName: match.awayTeamName,
-            events: match.sortedEvents,
-            style: style,
-            videoSize: videoSize,
-            videoDuration: videoDuration,
-            timerSegments: match.timerSegments,
-            homeTeamColor: style.homeTeamColor.flatMap { UIColor($0).cgColor },
-            awayTeamColor: style.awayTeamColor.flatMap { UIColor($0).cgColor },
-            matchInfo: match.matchInfo,
-            pkKicks: match.pkKicks
-        )
+        if match.skipOverlay {
+            // オーバーレイなし: 動画のみ結合
+            videoComposition = VideoCompositionBuilder.makeVideoCompositionWithoutOverlay(
+                result: result
+            )
+        } else {
+            // Build layer tree
+            let videoDuration = result.duration.seconds
 
-        let parentLayer = CALayer()
-        parentLayer.frame = CGRect(origin: .zero, size: videoSize)
-        parentLayer.isGeometryFlipped = true
+            let style = match.scoreboardStyle
+            let config = ScoreboardLayerBuilder.Config(
+                homeTeamName: match.homeTeamName,
+                awayTeamName: match.awayTeamName,
+                events: match.sortedEvents,
+                style: style,
+                videoSize: videoSize,
+                videoDuration: videoDuration,
+                timerSegments: match.timerSegments,
+                homeTeamColor: style.homeTeamColor.flatMap { UIColor($0).cgColor },
+                awayTeamColor: style.awayTeamColor.flatMap { UIColor($0).cgColor },
+                matchInfo: match.matchInfo,
+                pkKicks: match.pkKicks
+            )
 
-        let videoLayer = CALayer()
-        videoLayer.frame = CGRect(origin: .zero, size: videoSize)
-        parentLayer.addSublayer(videoLayer)
+            let parentLayer = CALayer()
+            parentLayer.frame = CGRect(origin: .zero, size: videoSize)
+            parentLayer.isGeometryFlipped = true
 
-        let overlayLayer = ScoreboardLayerBuilder.buildOverlayLayer(config: config)
-        parentLayer.addSublayer(overlayLayer)
+            let videoLayer = CALayer()
+            videoLayer.frame = CGRect(origin: .zero, size: videoSize)
+            parentLayer.addSublayer(videoLayer)
 
-        // Create video composition
-        let videoComposition = VideoCompositionBuilder.makeVideoComposition(
-            result: result,
-            videoLayer: videoLayer,
-            parentLayer: parentLayer
-        )
+            let overlayLayer = ScoreboardLayerBuilder.buildOverlayLayer(config: config)
+            parentLayer.addSublayer(overlayLayer)
+
+            videoComposition = VideoCompositionBuilder.makeVideoComposition(
+                result: result,
+                videoLayer: videoLayer,
+                parentLayer: parentLayer
+            )
+        }
 
         // Export
         let outputURL = FileManager.default.temporaryDirectory

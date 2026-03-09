@@ -150,18 +150,31 @@ struct MatchDetailView: View {
                 }
             }
 
+            Section("エクスポート設定") {
+                Toggle(isOn: $match.skipOverlay) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("動画のみ結合")
+                        Text("スコアボードを付けず元の動画をそのまま結合します")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
             Section("アクション") {
                 Button {
                     router.navigate(to: .scoreEditor(match))
                 } label: {
                     Label("スコア編集", systemImage: "pencil")
                 }
+                .disabled(match.skipOverlay)
 
                 Button {
                     showStyleSheet = true
                 } label: {
                     Label("スコアボード設定", systemImage: "paintbrush")
                 }
+                .disabled(match.skipOverlay)
 
                 Button {
                     router.navigate(to: .export(match))

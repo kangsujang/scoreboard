@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import PhotosUI
 import AVFoundation
+import UniformTypeIdentifiers
 
 struct VideoEntry: Identifiable {
     let id = UUID()
@@ -21,6 +22,7 @@ struct MatchSetupView: View {
     @State private var isImporting = false
     @State private var errorMessage: String?
     @State private var showStyleSheet = false
+    @State private var showFileImporter = false
     @State private var createdMatch: Match?
     @State private var thumbnail: UIImage?
     @State private var setupVideoAspectRatio: CGFloat = 16.0 / 9.0
@@ -89,8 +91,18 @@ struct MatchSetupView: View {
                     matching: .videos
                 ) {
                     Label(
-                        isImporting ? "読み込み中..." : "動画を追加",
-                        systemImage: "video.badge.plus"
+                        isImporting ? "読み込み中..." : "写真ライブラリから追加",
+                        systemImage: "photo.on.rectangle"
+                    )
+                }
+                .disabled(isImporting)
+
+                Button {
+                    showFileImporter = true
+                } label: {
+                    Label(
+                        "ファイルから追加",
+                        systemImage: "folder"
                     )
                 }
                 .disabled(isImporting)
@@ -134,6 +146,20 @@ struct MatchSetupView: View {
                 selectedItems = []
             }
         }
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [.movie, .video, .mpeg4Movie, .quickTimeMovie, .avi],
+            allowsMultipleSelection: true
+        ) { result in
+            switch result {
+            case .success(let urls):
+                Task {
+                    await importVideosFromFiles(urls: urls)
+                }
+            case .failure(let error):
+                errorMessage = "ファイルの読み込みに失敗: \(error.localizedDescription)"
+            }
+        }
         .sheet(isPresented: $showStyleSheet) {
             if let match = createdMatch {
                 ScoreboardStyleSheet(
@@ -165,6 +191,29 @@ struct MatchSetupView: View {
             } catch {
                 await MainActor.run {
                     errorMessage = String(localized: "動画のインポートに失敗: \(error.localizedDescription)")
+                }
+            }
+        }
+
+        await MainActor.run {
+            isImporting = false
+        }
+    }
+
+    private func importVideosFromFiles(urls: [URL]) async {
+        isImporting = true
+        errorMessage = nil
+
+        for url in urls {
+            do {
+                let sandboxURL = try await VideoImportService.copyToSandbox(from: url)
+                let thumb = await ThumbnailGenerator.generate(for: sandboxURL)
+                await MainActor.run {
+                    videoEntries.append(VideoEntry(url: sandboxURL, thumbnail: thumb))
+                }
+            } catch {
+                await MainActor.run {
+                    errorMessage = "動画のインポートに失敗: \(error.localizedDescription)"
                 }
             }
         }

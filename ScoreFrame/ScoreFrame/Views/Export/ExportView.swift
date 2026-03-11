@@ -31,6 +31,7 @@ struct ExportView: View {
         }
         .onDisappear {
             player?.pause()
+            viewModel?.cleanupExportedFile()
         }
     }
 

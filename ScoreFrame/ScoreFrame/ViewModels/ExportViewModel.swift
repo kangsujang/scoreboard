@@ -34,6 +34,10 @@ final class ExportViewModel {
         exportService.cancel()
     }
 
+    func cleanupExportedFile() {
+        exportService.cleanupExportedFile()
+    }
+
     func saveToPhotos() {
         guard let url = exportedURL else { return }
         saveError = nil

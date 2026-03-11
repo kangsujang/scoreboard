@@ -65,6 +65,12 @@ final class VideoExportService {
         progressTimer = nil
     }
 
+    func cleanupExportedFile() {
+        guard let url = exportedURL else { return }
+        try? FileManager.default.removeItem(at: url)
+        exportedURL = nil
+    }
+
     // MARK: - Core Export Pipeline
 
     private func performExport(urls: [URL], match: Match) async throws -> URL {

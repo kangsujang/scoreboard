@@ -27,13 +27,7 @@ struct ScoreboardPreviewView: View {
                         .frame(width: geo.size.width, height: geo.size.height)
                         .clipped()
                 } else {
-                    Rectangle()
-                        .fill(.green.opacity(0.3))
-                        .overlay {
-                            Image(systemName: "sportscourt")
-                                .font(.system(size: 60))
-                                .foregroundStyle(.green.opacity(0.2))
-                        }
+                    Color.clear
                 }
 
                 // Scoreboard overlay + PK

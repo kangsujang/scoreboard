@@ -21,7 +21,6 @@ struct MatchSetupView: View {
     @State private var videoEntries: [VideoEntry] = []
     @State private var isImporting = false
     @State private var errorMessage: String?
-    @State private var showStyleSheet = false
     @State private var showFileImporter = false
     @State private var createdMatch: Match?
     @State private var thumbnail: UIImage?
@@ -160,15 +159,13 @@ struct MatchSetupView: View {
                 errorMessage = "ファイルの読み込みに失敗: \(error.localizedDescription)"
             }
         }
-        .sheet(isPresented: $showStyleSheet) {
-            if let match = createdMatch {
-                ScoreboardStyleSheet(
-                    match: match,
-                    thumbnail: thumbnail,
-                    videoAspectRatio: setupVideoAspectRatio
-                ) {
-                    router.navigate(to: .scoreEditor(match))
-                }
+        .sheet(item: $createdMatch) { match in
+            ScoreboardStyleSheet(
+                match: match,
+                thumbnail: thumbnail,
+                videoAspectRatio: setupVideoAspectRatio
+            ) {
+                router.navigate(to: .scoreEditor(match))
             }
         }
     }
@@ -243,7 +240,6 @@ struct MatchSetupView: View {
                 }
             }
         }
-        showStyleSheet = true
     }
 }
 

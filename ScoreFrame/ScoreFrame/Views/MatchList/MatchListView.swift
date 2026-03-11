@@ -73,7 +73,7 @@ struct MatchListView: View {
     }
 
     private func deleteMatch(_ match: Match) {
-        if let url = match.videoURL {
+        for url in match.videoURLs {
             VideoImportService.deleteVideo(at: url)
         }
         modelContext.delete(match)

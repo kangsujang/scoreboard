@@ -21,16 +21,17 @@ struct MatchRowView: View {
                         .font(.subheadline.weight(.semibold))
                 }
 
-                Text(match.createdAt, style: .date)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            Text("\(match.scoreEvents.count) ゴール")
+                HStack(spacing: 4) {
+                    Text(match.createdAt, style: .date)
+                    if let info = match.matchInfo, !info.isEmpty {
+                        Text("·")
+                        Text(info)
+                            .lineLimit(1)
+                    }
+                }
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            }
         }
         .padding(.vertical, 4)
         .task {

@@ -164,7 +164,7 @@ struct MatchSetupView: View {
                     await importVideosFromFiles(urls: urls)
                 }
             case .failure(let error):
-                errorMessage = "ファイルの読み込みに失敗: \(error.localizedDescription)"
+                errorMessage = String(localized: "ファイルの読み込みに失敗: \(error.localizedDescription)")
             }
         }
         .sheet(item: $createdMatch) { match in

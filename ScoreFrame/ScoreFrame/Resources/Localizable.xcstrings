@@ -1,2005 +1,2192 @@
 {
-  "sourceLanguage" : "ja",
-  "strings" : {
-    "-" : {
-
-    },
-    ":" : {
-
-    },
-    "%@ %lld - %lld %@" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ %2$lld - %3$lld %4$@"
+  "sourceLanguage": "ja",
+  "strings": {
+    "-": {},
+    ":": {},
+    "%@ %lld - %lld %@": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ %2$lld - %3$lld %4$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$lld - %3$lld %4$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$lld - %3$lld %4$@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$lld - %3$lld %4$@"
           }
         }
       }
     },
-    "%@ キックオフ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Kick Off"
+    "%@ キックオフ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ Kick Off"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 킥오프"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 킥오프"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 开球"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 开球"
           }
         }
       }
     },
-    "%@ 終了" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ End"
+    "%@ 終了": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ End"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 종료"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 종료"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 结束"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 结束"
           }
         }
       }
-    },
-    "%gx" : {
-
-    },
-    "%lld" : {
-
     },
-    "%lld - %lld" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld - %2$lld"
+    "%gx": {},
+    "%lld": {},
+    "%lld - %lld": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld - %2$lld"
           }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld - %2$lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld - %2$lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld - %2$lld"
+          }
         }
       }
-    },
-    "%lld ゴール" : {
-
-    },
-    "%lld%%" : {
-
-    },
-    "◯" : {
-
-    },
-    "✗" : {
-
-    },
-    "00:00" : {
-
     },
-    "1x" : {
-
-    },
-    "PK %lld - %lld" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "PK %1$lld - %2$lld"
+    "%lld ゴール": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Goals"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 골"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 进球"
           }
         }
       }
     },
-    "PK戦 (%lld - %lld)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PK Shootout (%lld - %lld)"
+    "%lld%%": {},
+    "◯": {},
+    "✗": {},
+    "00:00": {},
+    "1x": {},
+    "PK %lld - %lld": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "new",
+            "value": "PK %1$lld - %2$lld"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "승부차기 (%lld - %lld)"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PK %lld - %lld"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "点球大战 (%lld - %lld)"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PK %lld - %lld"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PK %lld - %lld"
+          }
         }
       }
     },
-    "ScoreFrame" : {
-
+    "PK戦 (%lld - %lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Penalty Shootout (%lld - %lld)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "승부차기 (%lld - %lld)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点球大战 (%lld - %lld)"
+          }
+        }
+      }
     },
-    "vs" : {
-
+    "ScoreFrame": {},
+    "vs": {},
+    "アウェイ: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Away: %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "어웨이: %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "客队: %@"
+          }
+        }
+      }
     },
-    "アウェイ: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Away: %@"
+    "アウェイチーム": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Away Team"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "원정: %@"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "원정 팀"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "客队：%@"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "客队"
           }
         }
       }
     },
-    "アウェイチーム" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Away Team"
+    "アクション": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actions"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "원정 팀"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "客队"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "操作"
           }
         }
       }
     },
-    "アクション" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actions"
+    "イベント": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Events"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "작업"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이벤트"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "操作"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "事件"
           }
         }
       }
     },
-    "イベント" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Events"
+    "イベント記録がありません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No events recorded"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이벤트"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록된 이벤트가 없습니다"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "事件"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无事件记录"
           }
         }
       }
     },
-    "イベント記録がありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No events recorded"
+    "エクスポート": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "기록된 이벤트가 없습니다"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내보내기"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "暂无事件记录"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导出"
           }
         }
       }
     },
-    "エクスポート" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export"
+    "エクスポートがキャンセルされました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export was cancelled"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "내보내기"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내보내기가 취소되었습니다"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "导出"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导出已取消"
           }
         }
       }
     },
-    "エクスポートがキャンセルされました" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export was cancelled"
+    "エクスポートセッションの作成に失敗しました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to create export session"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "내보내기가 취소되었습니다"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내보내기 세션 생성에 실패했습니다"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "导出已取消"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建导出会话失败"
           }
         }
       }
     },
-    "エクスポートセッションの作成に失敗しました" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to create export session"
+    "エクスポートに失敗: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export failed: %@"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "내보내기 세션 생성에 실패했습니다"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내보내기 실패: %@"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "创建导出会话失败"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导出失败：%@"
           }
         }
       }
     },
-    "エクスポートに失敗: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export failed: %@"
+    "エクスポートに失敗しました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export Failed"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "내보내기 실패: %@"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내보내기 실패"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "导出失败：%@"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导出失败"
           }
         }
       }
     },
-    "エクスポートに失敗しました" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export Failed"
+    "エクスポート中...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporting..."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "내보내기 실패"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내보내는 중..."
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "导出失败"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导出中..."
           }
         }
       }
     },
-    "エクスポート中..." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exporting..."
+    "エクスポート完了": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export Complete"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "내보내는 중..."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내보내기 완료"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "导出中..."
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导出完成"
           }
         }
       }
     },
-    "エクスポート完了" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export Complete"
+    "エクスポート設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export Settings"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "내보내기 완료"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내보내기 설정"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "导出完成"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导出设置"
           }
         }
       }
     },
-    "エクスポート設定" : {
-
+    "オプション": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Options"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "옵션"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选项"
+          }
+        }
+      }
     },
-    "オプション" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Options"
+    "キックオフ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kick Off"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "옵션"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "킥오프"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "选项"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开球"
           }
         }
       }
     },
-    "キックオフ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kick Off"
+    "キャンセル": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "킥오프"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "취소"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "开球"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消"
           }
         }
       }
     },
-    "キャンセル" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
+    "ゴール+": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goal+"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "취소"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "골+"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "取消"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "进球+"
           }
         }
       }
     },
-    "ゴール+" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Goal+"
+    "ゴールボタンで得点を記録しましょう": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use the goal button to record scores"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "골+"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "골 버튼으로 득점을 기록하세요"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "进球+"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用进球按钮记录得分"
           }
         }
       }
     },
-    "ゴールボタンで得点を記録しましょう" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use the goal button to record scores"
+    "この試合データを削除しますか？元に戻すことはできません。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Are you sure you want to delete this match? This cannot be undone."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "골 버튼으로 득점을 기록하세요"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 경기 데이터를 삭제하시겠습니까? 되돌릴 수 없습니다."
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "使用进球按钮记录得分"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确定要删除此比赛数据吗？此操作无法撤销。"
           }
         }
       }
     },
-    "この試合データを削除しますか？元に戻すことはできません。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Are you sure you want to delete this match? This cannot be undone."
+    "コンポジショントラックの作成に失敗しました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to create composition track"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 경기 데이터를 삭제하시겠습니까? 되돌릴 수 없습니다."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "컴포지션 트랙 생성에 실패했습니다"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "确定要删除此比赛数据吗？此操作无法撤销。"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建合成轨道失败"
           }
         }
       }
     },
-    "コンポジショントラックの作成に失敗しました" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to create composition track"
+    "スコアボード": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scoreboard"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "컴포지션 트랙 생성에 실패했습니다"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스코어보드"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "创建合成轨道失败"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记分牌"
           }
         }
       }
     },
-    "スコアボード" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scoreboard"
+    "スコアボードを付けず元の動画をそのまま結合します": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Merge original videos without scoreboard overlay"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "스코어보드"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스코어보드 없이 원본 동영상을 그대로 결합합니다"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "记分牌"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不添加记分板，直接合并原始视频"
           }
         }
       }
     },
-    "スコアボードを付けず元の動画をそのまま結合します" : {
-
+    "スコアボード下部に表示されます": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Displayed below the scoreboard"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스코어보드 하단에 표시됩니다"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示在记分牌下方"
+          }
+        }
+      }
     },
-    "スコアボード下部に表示されます" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Displayed below the scoreboard"
+    "スコアボード設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scoreboard Settings"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "스코어보드 하단에 표시됩니다"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스코어보드 설정"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "显示在记分牌下方"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记分牌设置"
           }
         }
       }
     },
-    "スコアボード設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scoreboard Settings"
+    "スコア編集": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Score"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "스코어보드 설정"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스코어 편집"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "记分牌设置"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑比分"
           }
         }
       }
     },
-    "スコア編集" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit Score"
+    "スコア表示": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show Score"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "스코어 편집"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스코어 표시"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "编辑比分"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示比分"
           }
         }
       }
     },
-    "スコア表示" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show Score"
+    "スコア記録": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Score Recording"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "스코어 표시"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스코어 기록"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "显示比分"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "比分记录"
           }
         }
       }
     },
-    "スコア記録" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Score Recording"
+    "セグメント %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segment %lld"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "스코어 기록"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "세그먼트 %lld"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "比分记录"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "片段 %lld"
           }
         }
       }
     },
-    "セグメント %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Segment %lld"
+    "セグメント追加": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Segment"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "구간 %lld"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "구간 추가"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "时段 %lld"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加时段"
           }
         }
       }
     },
-    "セグメント追加" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Segment"
+    "タイマー表示": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show Timer"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "구간 추가"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "타이머 표시"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "添加时段"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示计时器"
           }
         }
       }
     },
-    "タイマー表示" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show Timer"
+    "チームカラー": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team Colors"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "타이머 표시"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "팀 컬러"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "显示计时器"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "队伍颜色"
           }
         }
       }
     },
-    "チームカラー" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Team Colors"
+    "チーム名": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team Names"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "팀 컬러"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "팀 이름"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "队伍颜色"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "队名"
           }
         }
       }
     },
-    "チーム名" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Team Names"
+    "テーマ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Theme"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "팀 이름"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "테마"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "队名"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主题"
           }
         }
       }
     },
-    "テーマ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Theme"
+    "デフォルトに戻す": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset to Default"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "테마"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기본값으로 복원"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "主题"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "恢复默认"
           }
         }
       }
     },
-    "デフォルトに戻す" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset to Default"
+    "ドラッグで並び替え、スワイプで削除できます。動画は上から順に結合されます。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag to reorder, swipe to delete. Videos are merged from top to bottom."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "기본값으로 복원"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "드래그하여 순서 변경, 스와이프하여 삭제할 수 있습니다. 영상은 위에서부터 순서대로 결합됩니다."
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "恢复默认"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拖动排序，滑动删除。视频将从上到下依次合并。"
           }
         }
       }
     },
-    "ドラッグで並び替え、スワイプで削除できます。動画は上から順に結合されます。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drag to reorder, swipe to delete. Videos are merged from top to bottom."
+    "ピンチでサイズ変更・ドラッグで位置調整": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pinch to resize, drag to reposition"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "드래그하여 순서 변경, 스와이프하여 삭제할 수 있습니다. 영상은 위에서부터 순서대로 결합됩니다."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "핀치로 크기 변경, 드래그로 위치 조정"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "拖动排序，滑动删除。视频将从上到下依次合并。"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "捏合缩放，拖动调整位置"
           }
         }
       }
     },
-    "ピンチでサイズ変更・ドラッグで位置調整" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pinch to resize, drag to reposition"
+    "ファイルから追加": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add from Files"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "핀치로 크기 변경, 드래그로 위치 조정"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "파일에서 추가"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "捏合缩放，拖动调整位置"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从文件添加"
           }
         }
       }
     },
-    "ファイルから追加" : {
-
+    "プレビュー": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preview"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "미리보기"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "预览"
+          }
+        }
+      }
     },
-    "プレビュー" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preview"
+    "ホーム: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home: %@"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "미리보기"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "홈: %@"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "预览"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主队: %@"
           }
         }
       }
     },
-    "ホーム: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Home: %@"
+    "ホームチーム": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home Team"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "홈: %@"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "홈 팀"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "主队：%@"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主队"
           }
         }
       }
     },
-    "ホームチーム" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Home Team"
+    "まだ得点がありません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No goals yet"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "홈 팀"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 득점이 없습니다"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "主队"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无进球"
           }
         }
       }
     },
-    "まだ得点がありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No goals yet"
+    "リセット": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "아직 득점이 없습니다"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "초기화"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "暂无进球"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重置"
           }
         }
       }
     },
-    "リセット" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset"
+    "一覧": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "List"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "초기화"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "목록"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重置"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "列表"
           }
         }
       }
     },
-    "一覧" : {
-
+    "中": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Medium"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "중"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中"
+          }
+        }
+      }
     },
-    "中" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Medium"
+    "中央上": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top Center"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "중"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "중앙 상단"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "中"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上方居中"
           }
         }
       }
     },
-    "中央上" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Top Center"
+    "例: 第100回全国高校サッカー選手権 決勝": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. 100th National Championship Final"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "중앙 상단"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예: 제100회 전국고교축구선수권 결승"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "上方居中"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "例：第100届全国高中足球锦标赛 决赛"
           }
         }
       }
     },
-    "例: 第100回全国高校サッカー選手権 決勝" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "e.g. 100th National Championship Final"
+    "保存": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "예: 제100회 전국고교축구선수권 결승"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "例：第100届全国高中足球锦标赛 决赛"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存"
           }
         }
       }
     },
-    "保存" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save"
+    "保存済み": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "저장"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장됨"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "保存"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保存"
           }
         }
       }
     },
-    "保存済み" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saved"
+    "共有": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "저장됨"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "공유"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已保存"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分享"
           }
         }
       }
     },
-    "共有" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share"
+    "再試行": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "공유"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "재시도"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "分享"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重试"
           }
         }
       }
     },
-    "再試行" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retry"
+    "写真に保存": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save to Photos"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "재시도"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사진에 저장"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重试"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存到相册"
           }
         }
       }
     },
-    "写真に保存" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save to Photos"
+    "写真ライブラリから追加": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add from Photo Library"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "사진에 저장"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사진 보관함에서 추가"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "保存到相册"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从照片图库添加"
           }
         }
       }
     },
-    "写真ライブラリから追加" : {
-
+    "写真ライブラリへのアクセスが許可されていません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photo library access is not authorized"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사진 라이브러리 접근이 허용되지 않았습니다"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未授权访问照片库"
+          }
+        }
+      }
     },
-    "写真ライブラリへのアクセスが許可されていません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photo library access is not authorized"
+    "写真ライブラリへのアクセスが許可されていません。設定アプリから許可してください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photo library access is not authorized. Please allow access in Settings."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "사진 라이브러리 접근이 허용되지 않았습니다"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사진 라이브러리 접근이 허용되지 않았습니다. 설정에서 허용해 주세요."
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未授权访问照片库"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未授权访问照片库。请在设置中允许访问。"
           }
         }
       }
     },
-    "写真ライブラリへのアクセスが許可されていません。設定アプリから許可してください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photo library access is not authorized. Please allow access in Settings."
+    "削除": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "사진 라이브러리 접근이 허용되지 않았습니다. 설정에서 허용해 주세요."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "삭제"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未授权访问照片库。请在设置中允许访问。"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除"
           }
         }
       }
     },
-    "削除" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete"
+    "前半": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1st Half"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "삭제"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전반전"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "删除"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上半场"
           }
         }
       }
     },
-    "前半" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1st Half"
+    "動画URLが指定されていません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No video URL specified"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "전반전"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영상 URL이 지정되지 않았습니다"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "上半场"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未指定视频URL"
           }
         }
       }
     },
-    "動画URLが指定されていません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No video URL specified"
+    "動画が見つかりません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video Not Found"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "영상 URL이 지정되지 않았습니다"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영상을 찾을 수 없습니다"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未指定视频URL"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未找到视频"
           }
         }
       }
     },
-    "動画が見つかりません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Video Not Found"
+    "動画トラックが見つかりません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video track not found"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "영상을 찾을 수 없습니다"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영상 트랙을 찾을 수 없습니다"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未找到视频"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未找到视频轨道"
           }
         }
       }
     },
-    "動画トラックが見つかりません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Video track not found"
+    "動画トラックが見つかりません: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video track not found: %@"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "영상 트랙을 찾을 수 없습니다"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영상 트랙을 찾을 수 없습니다: %@"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未找到视频轨道"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未找到视频轨道：%@"
           }
         }
       }
     },
-    "動画トラックが見つかりません: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Video track not found: %@"
+    "動画のインポートに失敗: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to import video: %@"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "영상 트랙을 찾을 수 없습니다: %@"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "동영상 가져오기 실패: %@"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未找到视频轨道：%@"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "视频导入失败: %@"
           }
         }
       }
     },
-    "動画のインポートに失敗: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to import video: %@"
+    "動画のみ結合": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Merge Videos Only"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "영상 가져오기 실패: %@"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "동영상만 결합"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "导入视频失败：%@"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仅合并视频"
           }
         }
       }
     },
-    "動画のみ結合" : {
-
+    "動画を追加": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Video"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영상 추가"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加视频"
+          }
+        }
+      }
     },
-    "動画を追加" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Video"
+    "区切り開始": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segment Start"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "영상 추가"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "구간 시작"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "添加视频"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "时段开始"
           }
         }
       }
     },
-    "区切り開始" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Segment Start"
+    "取消": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "구간 시작"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "실행취소"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "时段开始"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "撤销"
           }
         }
       }
     },
-    "取消" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Undo"
+    "右上": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top Right"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "실행취소"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "우측 상단"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "撤销"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "右上"
           }
         }
       }
     },
-    "右上" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Top Right"
+    "右上の＋ボタンから試合を作成しましょう": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap the + button to create a match"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "우측 상단"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오른쪽 상단의 + 버튼으로 경기를 생성하세요"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "右上"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点击右上角的+按钮创建比赛"
           }
         }
       }
     },
-    "右上の＋ボタンから試合を作成しましょう" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap the + button to create a match"
+    "大": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Large"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "오른쪽 상단의 + 버튼으로 경기를 생성하세요"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "대"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "点击右上角的+按钮创建比赛"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "大"
           }
         }
       }
     },
-    "大" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Large"
+    "大会名・日程など": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tournament, date, etc."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "대"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "대회명, 일정 등"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "大"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "赛事名称、日程等"
           }
         }
       }
     },
-    "大会名・日程など" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tournament, date, etc."
+    "大会名や日程など、スコアボードに表示する情報": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tournament name, date, etc. to display on the scoreboard"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "대회명, 일정 등"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "대회명이나 일정 등 스코어보드에 표시할 정보"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "赛事名称、日程等"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "赛事名称、日程等显示在记分牌上的信息"
           }
         }
       }
     },
-    "大会名や日程など、スコアボードに表示する情報" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tournament name, date, etc. to display on the scoreboard"
+    "完了": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "대회명이나 일정 등 스코어보드에 표시할 정보"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "완료"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "赛事名称、日程等显示在记分牌上的信息"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完成"
           }
         }
       }
     },
-    "完了" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Done"
+    "小": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Small"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "완료"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "소"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "完成"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "小"
           }
         }
       }
     },
-    "小" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Small"
+    "左上": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top Left"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "소"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "좌측 상단"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "小"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左上"
           }
         }
       }
     },
-    "左上" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Top Left"
+    "延前": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ET 1st"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "좌측 상단"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "연장 전반"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "左上"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加时上半场"
           }
         }
       }
     },
-    "延前" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ET 1st"
+    "延後": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ET 2nd"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "연장 전반"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "연장 후반"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "加时上半场"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加时下半场"
           }
         }
       }
     },
-    "延後" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ET 2nd"
+    "後半": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2nd Half"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "연장 후반"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "후반전"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "加时下半场"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下半场"
           }
         }
       }
     },
-    "後半" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2nd Half"
+    "新規試合": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Match"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "후반전"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새 경기"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "下半场"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建比赛"
           }
         }
       }
     },
-    "新規試合" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Match"
+    "次へ: スコアボード設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next: Scoreboard Settings"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "새 경기"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음: 스코어보드 설정"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新建比赛"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下一步：记分牌设置"
           }
         }
       }
     },
-    "次へ: スコアボード設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next: Scoreboard Settings"
+    "準備中...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing..."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다음: 스코어보드 설정"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "준비 중..."
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "下一步：记分牌设置"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备中..."
           }
         }
       }
     },
-    "準備中..." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preparing..."
+    "編集対象": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Target"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "준비 중..."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "편집 대상"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "准备中..."
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑对象"
           }
         }
       }
     },
-    "編集対象" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit Target"
+    "試合がありません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Matches"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "편집 대상"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경기가 없습니다"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "编辑对象"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无比赛"
           }
         }
       }
     },
-    "試合がありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Matches"
+    "試合に動画が設定されていません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No video has been set for this match"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "경기가 없습니다"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경기에 영상이 설정되지 않았습니다"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "暂无比赛"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未为此比赛设置视频"
           }
         }
       }
     },
-    "試合に動画が設定されていません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No video has been set for this match"
+    "試合を作成": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create Match"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "경기에 영상이 설정되지 않았습니다"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경기 생성"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "尚未为此比赛设置视频"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建比赛"
           }
         }
       }
     },
-    "試合を作成" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create Match"
+    "試合を削除": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Match"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "경기 생성"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경기 삭제"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "创建比赛"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除比赛"
           }
         }
       }
     },
-    "試合を削除" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete Match"
+    "試合動画": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Match Videos"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "경기 삭제"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경기 영상"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "删除比赛"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "比赛视频"
           }
         }
       }
     },
-    "試合動画" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Match Videos"
+    "試合情報": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Match Info"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "경기 영상"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경기 정보"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "比赛视频"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "比赛信息"
           }
         }
       }
     },
-    "試合情報" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Match Info"
+    "試合終了": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End of Match"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "경기 정보"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경기 종료"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "比赛信息"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "比赛结束"
           }
         }
       }
     },
-    "試合終了" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "End of Match"
+    "試合詳細": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Match Details"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "경기 종료"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경기 상세"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "比赛结束"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "比赛详情"
           }
         }
       }
     },
-    "試合詳細" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Match Details"
+    "読み込み中...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading..."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "경기 상세"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "불러오는 중..."
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "比赛详情"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加载中..."
           }
         }
       }
     },
-    "読み込み中..." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loading..."
+    "開始時間": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start Time"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "불러오는 중..."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시작 시간"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "加载中..."
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开始时间"
           }
         }
       }
     },
-    "開始時間" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start Time"
+    "ファイルの読み込みに失敗: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to load file: %@"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "시작 시간"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "파일 불러오기 실패: %@"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "开始时间"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文件读取失败: %@"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

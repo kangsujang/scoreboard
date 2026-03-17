@@ -25,6 +25,28 @@ struct VideoImportService {
         return destinationURL
     }
 
+    static func creationDate(for url: URL) async -> Date? {
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if accessing { url.stopAccessingSecurityScopedResource() }
+        }
+        let asset = AVURLAsset(url: url)
+        if let items = try? await asset.load(.metadata) {
+            if let item = items.first(where: { $0.commonKey == .commonKeyCreationDate }),
+               let dateValue = try? await item.load(.value) {
+                if let date = dateValue as? Date {
+                    return date
+                }
+                if let str = try? await item.load(.stringValue),
+                   let date = ISO8601DateFormatter().date(from: str) {
+                    return date
+                }
+            }
+        }
+        let values = try? url.resourceValues(forKeys: [.creationDateKey, .contentModificationDateKey])
+        return values?.creationDate ?? values?.contentModificationDate
+    }
+
     static func deleteVideo(at url: URL) {
         try? FileManager.default.removeItem(at: url)
     }

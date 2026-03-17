@@ -187,6 +187,19 @@ struct MatchDetailView: View {
         .listStyle(.insetGrouped)
         .navigationTitle("試合詳細")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button {
+                    router.popToRoot()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                        Text("一覧")
+                    }
+                }
+            }
+        }
+        .navigationBarBackButtonHidden(true)
         .sheet(isPresented: $showStyleSheet) {
             ScoreboardStyleSheet(match: match, thumbnail: thumbnail, videoAspectRatio: videoAspectRatio)
         }

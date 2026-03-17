@@ -8,6 +8,7 @@ struct VideoEntry: Identifiable {
     let id = UUID()
     let url: URL
     var thumbnail: UIImage?
+    var creationDate: Date?
 }
 
 struct MatchSetupView: View {
@@ -70,10 +71,17 @@ struct MatchSetupView: View {
                                     }
                             }
 
-                            Text(entry.url.lastPathComponent)
-                                .font(.caption)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
+                            VStack(alignment: .leading, spacing: 2) {
+                                if let date = entry.creationDate {
+                                    Text(date, format: .dateTime.year().month().day().hour().minute())
+                                        .font(.caption)
+                                } else {
+                                    Text(entry.url.lastPathComponent)
+                                        .font(.caption)
+                                        .lineLimit(1)
+                                        .truncationMode(.middle)
+                                }
+                            }
                         }
                     }
                     .onMove { from, to in
@@ -180,10 +188,11 @@ struct MatchSetupView: View {
                     continue
                 }
 
+                let creationDate = await VideoImportService.creationDate(for: movie.url)
                 let sandboxURL = try await VideoImportService.copyToSandbox(from: movie.url)
                 let thumb = await ThumbnailGenerator.generate(for: sandboxURL)
                 await MainActor.run {
-                    videoEntries.append(VideoEntry(url: sandboxURL, thumbnail: thumb))
+                    videoEntries.append(VideoEntry(url: sandboxURL, thumbnail: thumb, creationDate: creationDate))
                 }
             } catch {
                 await MainActor.run {
@@ -203,10 +212,11 @@ struct MatchSetupView: View {
 
         for url in urls {
             do {
+                let creationDate = await VideoImportService.creationDate(for: url)
                 let sandboxURL = try await VideoImportService.copyToSandbox(from: url)
                 let thumb = await ThumbnailGenerator.generate(for: sandboxURL)
                 await MainActor.run {
-                    videoEntries.append(VideoEntry(url: sandboxURL, thumbnail: thumb))
+                    videoEntries.append(VideoEntry(url: sandboxURL, thumbnail: thumb, creationDate: creationDate))
                 }
             } catch {
                 await MainActor.run {
@@ -231,15 +241,12 @@ struct MatchSetupView: View {
         }
         match.videoURLs = videoEntries.map(\.url)
         modelContext.insert(match)
-        createdMatch = match
         thumbnail = videoEntries.first?.thumbnail
-        if let url = videoEntries.first?.url {
-            Task {
-                if let size = await ThumbnailGenerator.videoSize(for: url) {
-                    setupVideoAspectRatio = size.width / size.height
-                }
-            }
+        if let url = videoEntries.first?.url,
+           let size = videoEntries.first?.thumbnail?.size, size.width > 0 {
+            setupVideoAspectRatio = size.width / size.height
         }
+        createdMatch = match
     }
 }
 

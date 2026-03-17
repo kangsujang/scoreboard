@@ -32,6 +32,7 @@ struct ScoreEditorView: View {
             ToolbarItem(placement: .confirmationAction) {
                 Button("完了") {
                     playerVM?.pause()
+                    router.popToRoot()
                     router.navigate(to: .matchDetail(match))
                 }
             }

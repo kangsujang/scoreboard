@@ -2,6 +2,7 @@ import SwiftUI
 import AVKit
 
 struct ExportView: View {
+    @Environment(Router.self) private var router
     let match: Match
     @State private var viewModel: ExportViewModel?
     @State private var player: AVPlayer?
@@ -18,6 +19,19 @@ struct ExportView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("エクスポート")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button {
+                    router.popToRoot()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                        Text("一覧")
+                    }
+                }
+            }
+        }
+        .navigationBarBackButtonHidden(true)
         .onAppear {
             let vm = ExportViewModel(match: match)
             viewModel = vm

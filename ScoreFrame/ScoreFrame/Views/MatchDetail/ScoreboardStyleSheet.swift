@@ -4,8 +4,8 @@ struct ScoreboardStyleSheet: View {
     @Bindable var match: Match
     @Environment(\.dismiss) private var dismiss
     @State private var style: ScoreboardStyle
-    let thumbnail: UIImage?
-    let videoAspectRatio: CGFloat
+    @State private var thumbnail: UIImage?
+    @State private var videoAspectRatio: CGFloat
     var onSave: (() -> Void)?
 
     // 編集対象
@@ -32,8 +32,8 @@ struct ScoreboardStyleSheet: View {
 
     init(match: Match, thumbnail: UIImage? = nil, videoAspectRatio: CGFloat = 16.0 / 9.0, onSave: (() -> Void)? = nil) {
         self.match = match
-        self.thumbnail = thumbnail
-        self.videoAspectRatio = videoAspectRatio
+        self._thumbnail = State(initialValue: thumbnail)
+        self._videoAspectRatio = State(initialValue: videoAspectRatio)
         self.onSave = onSave
         let s = match.scoreboardStyle
         self._style = State(initialValue: s)
@@ -157,6 +157,13 @@ struct ScoreboardStyleSheet: View {
                         onSave?()
                     }
                 }
+            }
+        }
+        .task {
+            guard thumbnail == nil, let url = match.videoURLs.first else { return }
+            thumbnail = await ThumbnailGenerator.generate(for: url)
+            if let size = await ThumbnailGenerator.videoSize(for: url) {
+                videoAspectRatio = size.width / size.height
             }
         }
     }

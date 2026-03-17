@@ -27,7 +27,7 @@ struct ScoreboardPreviewView: View {
                         .frame(width: geo.size.width, height: geo.size.height)
                         .clipped()
                 } else {
-                    Color.clear
+                    Color(white: 0.15)
                 }
 
                 // Scoreboard overlay + PK

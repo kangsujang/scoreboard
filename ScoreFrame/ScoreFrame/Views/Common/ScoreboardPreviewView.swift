@@ -27,7 +27,7 @@ struct ScoreboardPreviewView: View {
                         .frame(width: geo.size.width, height: geo.size.height)
                         .clipped()
                 } else {
-                    Color(white: 0.15)
+                    Color.clear
                 }
 
                 // Scoreboard overlay + PK
@@ -55,6 +55,7 @@ struct ScoreboardPreviewView: View {
                 }
             }
         }
+        .contentShape(Rectangle())
         .aspectRatio(videoAspectRatio, contentMode: .fit)
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }

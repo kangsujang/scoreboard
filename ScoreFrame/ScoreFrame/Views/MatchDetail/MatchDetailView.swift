@@ -4,6 +4,7 @@ struct MatchDetailView: View {
     @Environment(Router.self) private var router
     @Bindable var match: Match
     @State private var showStyleSheet = false
+    @State private var showVideoSheet = false
     @State private var thumbnail: UIImage?
     @State private var videoAspectRatio: CGFloat = 16.0 / 9.0
 
@@ -163,6 +164,12 @@ struct MatchDetailView: View {
 
             Section("アクション") {
                 Button {
+                    showVideoSheet = true
+                } label: {
+                    Label("動画管理", systemImage: "film.stack")
+                }
+
+                Button {
                     router.navigate(to: .scoreEditor(match))
                 } label: {
                     Label("スコア編集", systemImage: "pencil")
@@ -200,6 +207,9 @@ struct MatchDetailView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .sheet(isPresented: $showVideoSheet) {
+            VideoManagementSheet(match: match)
+        }
         .sheet(isPresented: $showStyleSheet) {
             ScoreboardStyleSheet(match: match, thumbnail: thumbnail, videoAspectRatio: videoAspectRatio)
         }

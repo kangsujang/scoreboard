@@ -19,6 +19,7 @@
 		676C56643AB1256919AD17A0 /* EventListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB7633DF4C22F93081D5BE56 /* EventListView.swift */; };
 		6C80490D834EA1798E09936E /* ScoreEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FC135AB6C0FC1924DFBFE1D /* ScoreEditorView.swift */; };
 		77DDB07F02DB9DA2052647D4 /* ScoreboardStyleSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DED52F9C2DEBA5AD83E51EC /* ScoreboardStyleSheet.swift */; };
+		8B2C3D4E5F6A7B8C /* VideoManagementSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A1B2C3D4E5F6A7B /* VideoManagementSheet.swift */; };
 		840951405F9301CCC6729623 /* MatchRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23525156EB5717A622DE2295 /* MatchRowView.swift */; };
 		938EF1234BE3EF107AD5CF50 /* ScoreboardPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDEC51F202D9FF4D76AB9839 /* ScoreboardPreviewView.swift */; };
 		9A2798FD287D4F1FEA1A1F59 /* ExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E161050C6414E1ED2C7CDB1 /* ExportViewModel.swift */; };
@@ -59,6 +60,7 @@
 		6065F20D95E719F4C3956631 /* TimeFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeFormatting.swift; sourceTree = "<group>"; };
 		65C76BEA4CB36A2D5D5BF956 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6DED52F9C2DEBA5AD83E51EC /* ScoreboardStyleSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreboardStyleSheet.swift; sourceTree = "<group>"; };
+		7A1B2C3D4E5F6A7B /* VideoManagementSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoManagementSheet.swift; sourceTree = "<group>"; };
 		703439F16B47F732D5539F0D /* PlayerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewModel.swift; sourceTree = "<group>"; };
 		7E161050C6414E1ED2C7CDB1 /* ExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportViewModel.swift; sourceTree = "<group>"; };
 		7F111649E6248DC774C67ACE /* Match.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Match.swift; sourceTree = "<group>"; };
@@ -180,6 +182,7 @@
 			children = (
 				ADF50A443D415F69BCCD87F9 /* MatchDetailView.swift */,
 				6DED52F9C2DEBA5AD83E51EC /* ScoreboardStyleSheet.swift */,
+				7A1B2C3D4E5F6A7B /* VideoManagementSheet.swift */,
 			);
 			path = MatchDetail;
 			sourceTree = "<group>";
@@ -351,6 +354,7 @@
 				938EF1234BE3EF107AD5CF50 /* ScoreboardPreviewView.swift in Sources */,
 				EE4B328C03C8880F0F934C4E /* ScoreboardStyle.swift in Sources */,
 				77DDB07F02DB9DA2052647D4 /* ScoreboardStyleSheet.swift in Sources */,
+				8B2C3D4E5F6A7B8C /* VideoManagementSheet.swift in Sources */,
 				61002E8C203C2A266D886558 /* ShareSheet.swift in Sources */,
 				D65466C15A58D5611CE53550 /* Team.swift in Sources */,
 				CC11DD22EE33FF44AA55BB66 /* TimerSegment.swift in Sources */,
@@ -373,7 +377,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = 48745L927F;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -403,7 +407,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = 48745L927F;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;

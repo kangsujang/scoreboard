@@ -42,6 +42,7 @@ final class VideoExportService {
         progress = 0
         exportedURL = nil
         error = nil
+        UIApplication.shared.isIdleTimerDisabled = true
 
         do {
             let url = try await performExport(
@@ -51,10 +52,12 @@ final class VideoExportService {
             exportedURL = url
             isExporting = false
             progress = 1.0
+            UIApplication.shared.isIdleTimerDisabled = false
             return url
         } catch {
             self.error = error
             isExporting = false
+            UIApplication.shared.isIdleTimerDisabled = false
             throw error
         }
     }

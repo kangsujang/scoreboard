@@ -162,7 +162,7 @@ private struct SegmentControlRow: View {
                 }
             }
 
-            // ピリオドプリセット
+            // ピリオドラベル
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
                     ForEach(ScoreControlsView.periodPresets, id: \.self) { preset in
@@ -173,6 +173,19 @@ private struct SegmentControlRow: View {
                         .tint(segment.periodLabel == preset ? .accentColor : .secondary)
                         .controlSize(.small)
                     }
+
+                    TextField("ラベル", text: Binding(
+                        get: {
+                            let current = segment.periodLabel ?? ""
+                            return ScoreControlsView.periodPresets.contains(current) ? "" : current
+                        },
+                        set: { newValue in
+                            onPeriodLabel(newValue.isEmpty ? nil : newValue)
+                        }
+                    ))
+                    .textFieldStyle(.roundedBorder)
+                    .font(.caption)
+                    .frame(width: 80)
                 }
             }
 

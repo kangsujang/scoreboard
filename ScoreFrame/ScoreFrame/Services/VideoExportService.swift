@@ -11,6 +11,7 @@ final class VideoExportService {
 
     private var exportSession: AVAssetExportSession?
     private var progressTimer: Timer?
+    private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
 
     enum ExportError: LocalizedError {
         case noVideoTrack
@@ -43,6 +44,7 @@ final class VideoExportService {
         exportedURL = nil
         error = nil
         UIApplication.shared.isIdleTimerDisabled = true
+        beginBackgroundTask()
 
         do {
             let url = try await performExport(
@@ -53,11 +55,13 @@ final class VideoExportService {
             isExporting = false
             progress = 1.0
             UIApplication.shared.isIdleTimerDisabled = false
+            endBackgroundTask()
             return url
         } catch {
             self.error = error
             isExporting = false
             UIApplication.shared.isIdleTimerDisabled = false
+            endBackgroundTask()
             throw error
         }
     }
@@ -80,55 +84,77 @@ final class VideoExportService {
         let result = try await VideoCompositionBuilder.build(from: urls)
         let videoSize = result.videoSize
 
-        // Create video composition (with or without overlay)
-        let videoComposition: AVMutableVideoComposition
-
-        if match.skipOverlay {
-            // オーバーレイなし: 動画のみ結合
-            videoComposition = VideoCompositionBuilder.makeVideoCompositionWithoutOverlay(
-                result: result
-            )
-        } else {
-            // Build layer tree
-            let videoDuration = result.duration.seconds
-
-            let style = match.scoreboardStyle
-            let config = ScoreboardLayerBuilder.Config(
-                homeTeamName: match.homeTeamName,
-                awayTeamName: match.awayTeamName,
-                events: match.sortedEvents,
-                style: style,
-                videoSize: videoSize,
-                videoDuration: videoDuration,
-                timerSegments: match.timerSegments,
-                homeTeamColor: style.homeTeamColor.flatMap { UIColor($0).cgColor },
-                awayTeamColor: style.awayTeamColor.flatMap { UIColor($0).cgColor },
-                matchInfo: match.matchInfo,
-                pkKicks: match.pkKicks
-            )
-
-            let parentLayer = CALayer()
-            parentLayer.frame = CGRect(origin: .zero, size: videoSize)
-            parentLayer.isGeometryFlipped = true
-
-            let videoLayer = CALayer()
-            videoLayer.frame = CGRect(origin: .zero, size: videoSize)
-            parentLayer.addSublayer(videoLayer)
-
-            let overlayLayer = ScoreboardLayerBuilder.buildOverlayLayer(config: config)
-            parentLayer.addSublayer(overlayLayer)
-
-            videoComposition = VideoCompositionBuilder.makeVideoComposition(
-                result: result,
-                videoLayer: videoLayer,
-                parentLayer: parentLayer
-            )
-        }
-
         // Export
         let outputURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("ScoreFrame_\(UUID().uuidString)")
             .appendingPathExtension("mp4")
+
+        if match.skipOverlay {
+            // オーバーレイなし: Passthroughで高速エクスポート
+            guard let session = AVAssetExportSession(
+                asset: result.composition,
+                presetName: AVAssetExportPresetPassthrough
+            ) else {
+                throw ExportError.exportSessionCreationFailed
+            }
+
+            session.outputURL = outputURL
+            session.outputFileType = .mp4
+
+            self.exportSession = session
+            startProgressMonitoring(session: session)
+
+            await session.export()
+
+            progressTimer?.invalidate()
+            progressTimer = nil
+
+            switch session.status {
+            case .completed:
+                return outputURL
+            case .cancelled:
+                throw ExportError.cancelled
+            case .failed:
+                throw ExportError.exportFailed(session.error?.localizedDescription ?? "Unknown error")
+            default:
+                throw ExportError.exportFailed("Unexpected status: \(session.status.rawValue)")
+            }
+        }
+
+        // オーバーレイあり: 通常エクスポート
+        let videoDuration = result.duration.seconds
+
+        let style = match.scoreboardStyle
+        let config = ScoreboardLayerBuilder.Config(
+            homeTeamName: match.homeTeamName,
+            awayTeamName: match.awayTeamName,
+            events: match.sortedEvents,
+            style: style,
+            videoSize: videoSize,
+            videoDuration: videoDuration,
+            timerSegments: match.timerSegments,
+            homeTeamColor: style.homeTeamColor.flatMap { UIColor($0).cgColor },
+            awayTeamColor: style.awayTeamColor.flatMap { UIColor($0).cgColor },
+            matchInfo: match.matchInfo,
+            pkKicks: match.pkKicks
+        )
+
+        let parentLayer = CALayer()
+        parentLayer.frame = CGRect(origin: .zero, size: videoSize)
+        parentLayer.isGeometryFlipped = true
+
+        let videoLayer = CALayer()
+        videoLayer.frame = CGRect(origin: .zero, size: videoSize)
+        parentLayer.addSublayer(videoLayer)
+
+        let overlayLayer = ScoreboardLayerBuilder.buildOverlayLayer(config: config)
+        parentLayer.addSublayer(overlayLayer)
+
+        let videoComposition = VideoCompositionBuilder.makeVideoComposition(
+            result: result,
+            videoLayer: videoLayer,
+            parentLayer: parentLayer
+        )
 
         guard let session = AVAssetExportSession(
             asset: result.composition,
@@ -161,6 +187,22 @@ final class VideoExportService {
         default:
             throw ExportError.exportFailed("Unexpected status: \(session.status.rawValue)")
         }
+    }
+
+    // MARK: - Background Task
+
+    private func beginBackgroundTask() {
+        backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "ScoreFrameExport") { [weak self] in
+            // 期限切れ時はキャンセルせずバックグラウンドタスクのみ終了
+            // AVAssetExportSessionはシステムレベルで継続される
+            self?.endBackgroundTask()
+        }
+    }
+
+    private func endBackgroundTask() {
+        guard backgroundTaskID != .invalid else { return }
+        UIApplication.shared.endBackgroundTask(backgroundTaskID)
+        backgroundTaskID = .invalid
     }
 
     private func startProgressMonitoring(session: AVAssetExportSession) {

@@ -22,6 +22,7 @@ struct ExportView: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button {
+                    viewModel?.cleanupExportedFile()
                     router.popToRoot()
                 } label: {
                     HStack(spacing: 4) {
@@ -32,20 +33,19 @@ struct ExportView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .onAppear {
-            let vm = ExportViewModel(match: match)
-            viewModel = vm
-            vm.startExport()
-            Task {
-                if let url = match.videoURLs.first,
-                   let size = await ThumbnailGenerator.videoSize(for: url) {
-                    videoAspectRatio = size.width / size.height
-                }
+        .task {
+            if viewModel == nil {
+                let vm = ExportViewModel(match: match)
+                viewModel = vm
+                vm.startExport()
+            }
+            if let url = match.videoURLs.first,
+               let size = await ThumbnailGenerator.videoSize(for: url) {
+                videoAspectRatio = size.width / size.height
             }
         }
         .onDisappear {
             player?.pause()
-            viewModel?.cleanupExportedFile()
         }
     }
 

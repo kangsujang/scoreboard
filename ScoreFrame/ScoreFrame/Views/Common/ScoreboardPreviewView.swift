@@ -80,7 +80,7 @@ struct ScoreboardPreviewView: View {
             // PK中はタイマーを非表示
             if style.showMatchTimer, currentPeriodLabel?.lowercased() != "pk" {
                 Text("00:00")
-                    .font(.system(size: base * 0.6, weight: .semibold, design: .monospaced))
+                    .font(.custom("Arial-BoldMT", size: base * 0.6))
                     .foregroundStyle(Color.scoreboardTimerText(for: style.theme))
                     .padding(.horizontal, base * 0.5)
                     .frame(maxHeight: .infinity)

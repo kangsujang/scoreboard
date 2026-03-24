@@ -456,10 +456,6 @@ struct ScoreboardLayerBuilder {
 
     // MARK: - Text Layers
 
-    private static var isEnglish: Bool {
-        Bundle.main.preferredLocalizations.first == "en"
-    }
-
     private static func makeTextLayer(
         fontSize: CGFloat,
         alignment: CATextLayerAlignmentMode,
@@ -469,11 +465,9 @@ struct ScoreboardLayerBuilder {
     ) -> CATextLayer {
         let layer = CATextLayer()
         layer.fontSize = fontSize
-        if monospaced && isEnglish {
+        if monospaced {
             let arialFontName = (weight == .bold || weight == .semibold) ? "Arial-BoldMT" : "ArialMT"
             layer.font = UIFont(name: arialFontName, size: fontSize) ?? UIFont.monospacedSystemFont(ofSize: fontSize, weight: weight)
-        } else if monospaced {
-            layer.font = UIFont.monospacedSystemFont(ofSize: fontSize, weight: weight)
         } else {
             layer.font = UIFont.systemFont(ofSize: fontSize, weight: weight)
         }

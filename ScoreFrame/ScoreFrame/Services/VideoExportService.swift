@@ -208,8 +208,9 @@ final class VideoExportService {
     private func startProgressMonitoring(session: AVAssetExportSession) {
         progressTimer?.invalidate()
         progressTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+            let currentProgress = session.progress
             Task { @MainActor in
-                self?.progress = session.progress
+                self?.progress = currentProgress
             }
         }
     }

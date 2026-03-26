@@ -34,6 +34,7 @@
 		BDB3A4C5EB170F06123E616B /* PlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 703439F16B47F732D5539F0D /* PlayerViewModel.swift */; };
 		BEFA27B2153ABB21F22116F1 /* ScoreboardLayerBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA47322390FF05BF29F1F02B /* ScoreboardLayerBuilder.swift */; };
 		D65466C15A58D5611CE53550 /* Team.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B157216AA48E3734EFEB8BF /* Team.swift */; };
+		FF99AA11BB22CC33DD44EE55 /* PenaltyTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF67 /* PenaltyTimer.swift */; };
 		E780767857ECB454C617C97F /* CMTime+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E37F0E884BCAEF314199DC98 /* CMTime+Extensions.swift */; };
 		EE4B328C03C8880F0F934C4E /* ScoreboardStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00A454AE546A89D646D932F /* ScoreboardStyle.swift */; };
 		F0F94F21DA97C1841EF14681 /* ScoreEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 237E1BB08710B801398E5D03 /* ScoreEvent.swift */; };
@@ -54,6 +55,7 @@
 		2A876B9B954EED91F8914731 /* MatchListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchListView.swift; sourceTree = "<group>"; };
 		31672A60B662D1093E8F9437 /* VideoExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoExportService.swift; sourceTree = "<group>"; };
 		3B157216AA48E3734EFEB8BF /* Team.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Team.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF67 /* PenaltyTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenaltyTimer.swift; sourceTree = "<group>"; };
 		3C46D066E18FD879B6406271 /* ThumbnailGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailGenerator.swift; sourceTree = "<group>"; };
 		3FC135AB6C0FC1924DFBFE1D /* ScoreEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreEditorView.swift; sourceTree = "<group>"; };
 		54CC1CC7B7FC2A549B0199AB /* PlaybackControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackControlsView.swift; sourceTree = "<group>"; };
@@ -92,6 +94,7 @@
 				7F111649E6248DC774C67ACE /* Match.swift */,
 				A00A454AE546A89D646D932F /* ScoreboardStyle.swift */,
 				237E1BB08710B801398E5D03 /* ScoreEvent.swift */,
+				AA11BB22CC33DD44EE55FF67 /* PenaltyTimer.swift */,
 				3B157216AA48E3734EFEB8BF /* Team.swift */,
 				DD22EE33FF44AA55BB66CC11 /* TimerSegment.swift */,
 			);
@@ -379,6 +382,7 @@
 				8B2C3D4E5F6A7B8C /* VideoManagementSheet.swift in Sources */,
 				61002E8C203C2A266D886558 /* ShareSheet.swift in Sources */,
 				D65466C15A58D5611CE53550 /* Team.swift in Sources */,
+				FF99AA11BB22CC33DD44EE55 /* PenaltyTimer.swift in Sources */,
 				CC11DD22EE33FF44AA55BB66 /* TimerSegment.swift in Sources */,
 				F9CE53026CF354435E3A69A6 /* ThumbnailGenerator.swift in Sources */,
 				1791A6ADC240BE6A0E89B5E5 /* TimeFormatting.swift in Sources */,
@@ -399,7 +403,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEVELOPMENT_TEAM = 48745L927F;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -429,7 +433,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEVELOPMENT_TEAM = 48745L927F;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;

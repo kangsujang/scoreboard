@@ -226,6 +226,7 @@ struct ScoreEditorView: View {
                 timerDisplayColor: timerSeg?.timerColorHex.flatMap { Color(hex: $0) },
                 penaltyTimers: match.penaltyTimers,
                 timeouts: match.timeouts,
+                timerSegments: match.timerSegments,
                 currentVideoTime: currentTime
             )
             .allowsHitTesting(false)

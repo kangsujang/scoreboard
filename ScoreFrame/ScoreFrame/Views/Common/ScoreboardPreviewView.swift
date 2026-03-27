@@ -15,6 +15,7 @@ struct ScoreboardPreviewView: View {
     var timerDisplayColor: Color? = nil
     var penaltyTimers: [PenaltyTimer] = []
     var timeouts: [TimeoutEvent] = []
+    var timerSegments: [TimerSegment] = []
     var currentVideoTime: TimeInterval = 0
 
     /// プレビューとエクスポートで共通の比率定数
@@ -143,13 +144,55 @@ struct ScoreboardPreviewView: View {
     private func timerSection(base: CGFloat) -> some View {
         if style.showMatchTimer, currentPeriodLabel?.lowercased() != "pk" {
             let timerColor = timerDisplayColor ?? Color.scoreboardTimerText(for: style.theme)
-            Text(timerShowPlusPrefix ? "+00:00" : "00:00")
+            let sec = currentMatchSeconds()
+            let mm = sec / 60
+            let ss = sec % 60
+            let timeStr = timerShowPlusPrefix
+                ? String(format: "+%02d:%02d", mm, ss)
+                : String(format: "%02d:%02d", mm, ss)
+            Text(timeStr)
                 .font(.custom("Arial-BoldMT", size: base * 0.6))
                 .foregroundStyle(timerColor)
                 .padding(.horizontal, base * 0.5)
                 .frame(maxHeight: .infinity)
                 .background(Color.scoreboardText(for: style.theme))
+                .monospacedDigit()
         }
+    }
+
+    /// ScoreboardLayerBuilder.matchSecond(from:) と同じロジックでリアルタイムの試合経過秒数を計算
+    private func currentMatchSeconds() -> Int {
+        guard !timerSegments.isEmpty else { return 0 }
+        let videoTime = currentVideoTime
+        var lastMatchSecond = 0
+
+        for seg in timerSegments {
+            let effStart = seg.effectiveStartTime
+            guard let kickoff = seg.timerStartTime ?? effStart else { continue }
+            let segStart = effStart ?? kickoff
+            let stop = seg.timerStopTime ?? videoTime
+            let offset = Int(seg.timerStartOffset ?? 0)
+
+            if videoTime >= segStart && videoTime <= stop {
+                if videoTime < kickoff {
+                    return offset
+                }
+                let elapsed = max(0, Int(videoTime) - Int(kickoff))
+                let paused = timeouts.reduce(0) { sum, timeout in
+                    sum + Int(timeout.pausedSeconds(from: kickoff, to: videoTime))
+                }
+                return max(0, elapsed - paused) + offset
+            } else if videoTime > stop {
+                let elapsed = max(0, Int(stop) - Int(kickoff))
+                let paused = timeouts.reduce(0) { sum, timeout in
+                    sum + Int(timeout.pausedSeconds(from: kickoff, to: stop))
+                }
+                lastMatchSecond = max(0, elapsed - paused) + offset
+            } else {
+                break
+            }
+        }
+        return lastMatchSecond
     }
 
     private func matchInfoContent(info: String, containerWidth: CGFloat) -> some View {

@@ -217,10 +217,10 @@ struct ScoreboardPreviewView: View {
     private func penaltyTimerOverlay(containerWidth: CGFloat) -> some View {
         let base = containerWidth * Self.baseRatio
         let homeActive = penaltyTimers
-            .filter { $0.team == .home && $0.remainingSeconds(at: currentVideoTime) != nil }
+            .filter { $0.team == .home && $0.remainingSeconds(at: currentVideoTime, timeouts: timeouts) != nil }
             .sorted { $0.timestamp < $1.timestamp }
         let awayActive = penaltyTimers
-            .filter { $0.team == .away && $0.remainingSeconds(at: currentVideoTime) != nil }
+            .filter { $0.team == .away && $0.remainingSeconds(at: currentVideoTime, timeouts: timeouts) != nil }
             .sorted { $0.timestamp < $1.timestamp }
 
         if !homeActive.isEmpty || !awayActive.isEmpty {
@@ -233,7 +233,7 @@ struct ScoreboardPreviewView: View {
                             .foregroundStyle(Color.scoreboardText(for: style.theme))
                             .lineLimit(1)
                         ForEach(homeActive) { timer in
-                            if let remaining = timer.remainingSeconds(at: currentVideoTime) {
+                            if let remaining = timer.remainingSeconds(at: currentVideoTime, timeouts: timeouts) {
                                 Text(formatCountdown(remaining))
                                     .font(.custom("Arial-BoldMT", size: base * 0.45))
                                     .foregroundStyle(.yellow)
@@ -251,7 +251,7 @@ struct ScoreboardPreviewView: View {
                             .foregroundStyle(Color.scoreboardText(for: style.theme))
                             .lineLimit(1)
                         ForEach(awayActive) { timer in
-                            if let remaining = timer.remainingSeconds(at: currentVideoTime) {
+                            if let remaining = timer.remainingSeconds(at: currentVideoTime, timeouts: timeouts) {
                                 Text(formatCountdown(remaining))
                                     .font(.custom("Arial-BoldMT", size: base * 0.45))
                                     .foregroundStyle(.yellow)

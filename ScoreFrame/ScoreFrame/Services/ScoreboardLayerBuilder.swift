@@ -1371,7 +1371,7 @@ struct ScoreboardLayerBuilder {
         var prevVis: Float = -1
         for second in 0...totalSeconds {
             let vt = TimeInterval(second)
-            let anyActive = penaltyTimers.contains { $0.remainingSeconds(at: vt) != nil }
+            let anyActive = penaltyTimers.contains { $0.remainingSeconds(at: vt, timeouts: config.timeouts) != nil }
             let vis: Float = anyActive ? 1.0 : 0.0
             if vis != prevVis {
                 let kt = config.videoDuration > 0 ? Double(second) / config.videoDuration : 0
@@ -1416,7 +1416,8 @@ struct ScoreboardLayerBuilder {
                     fontSize: fontSize,
                     rowHeight: rowH,
                     spacing: 0,
-                    videoDuration: config.videoDuration
+                    videoDuration: config.videoDuration,
+                    timeouts: config.timeouts
                 )
                 xPos += countdownW + spacing
             }
@@ -1442,7 +1443,8 @@ struct ScoreboardLayerBuilder {
                     fontSize: fontSize,
                     rowHeight: rowH,
                     spacing: 0,
-                    videoDuration: config.videoDuration
+                    videoDuration: config.videoDuration,
+                    timeouts: config.timeouts
                 )
                 xPos += countdownW + spacing
             }
@@ -1463,7 +1465,8 @@ struct ScoreboardLayerBuilder {
         fontSize: CGFloat,
         rowHeight: CGFloat,
         spacing: CGFloat,
-        videoDuration: TimeInterval
+        videoDuration: TimeInterval,
+        timeouts: [TimeoutEvent] = []
     ) {
         let teamTimers = penaltyTimers
             .filter { $0.team == team }
@@ -1490,7 +1493,7 @@ struct ScoreboardLayerBuilder {
 
             // Wrapper の表示/非表示 opacity アニメーション
             let startSec = Int(timer.timestamp)
-            let endSec = Int(ceil(timer.expiresAt))
+            let endSec = Int(ceil(timer.effectiveExpiresAt(timeouts: timeouts)))
 
             var wrapKeyTimes: [NSNumber] = []
             var wrapValues: [Float] = []
@@ -1528,7 +1531,7 @@ struct ScoreboardLayerBuilder {
 
             func remainingSec(at videoSecond: Int) -> Int {
                 let vt = TimeInterval(videoSecond)
-                guard let r = timer.remainingSeconds(at: vt) else { return 0 }
+                guard let r = timer.remainingSeconds(at: vt, timeouts: timeouts) else { return 0 }
                 return Int(ceil(r))
             }
 

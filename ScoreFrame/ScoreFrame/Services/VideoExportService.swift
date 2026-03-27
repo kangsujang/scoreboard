@@ -136,7 +136,9 @@ final class VideoExportService {
             homeTeamColor: style.homeTeamColor.flatMap { UIColor($0).cgColor },
             awayTeamColor: style.awayTeamColor.flatMap { UIColor($0).cgColor },
             matchInfo: match.matchInfo,
-            pkKicks: match.pkKicks
+            pkKicks: match.pkKicks,
+            penaltyTimers: match.penaltyTimers,
+            timeouts: match.timeouts
         )
 
         let parentLayer = CALayer()

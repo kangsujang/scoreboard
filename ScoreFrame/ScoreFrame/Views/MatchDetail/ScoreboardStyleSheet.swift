@@ -140,6 +140,18 @@ struct ScoreboardStyleSheet: View {
                 Section("オプション") {
                     Toggle("スコア表示", isOn: $style.showScore)
                     Toggle("タイマー表示", isOn: $style.showMatchTimer)
+                    if style.showMatchTimer {
+                        Picker("タイマー位置", selection: $style.timerPosition) {
+                            ForEach(ScoreboardStyle.TimerPosition.allCases, id: \.self) { pos in
+                                Text(pos.displayName).tag(pos)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+
+                        Toggle("タイマー詳細設定", isOn: $style.showTimerOptions)
+                    }
+                    Toggle("ペナルティタイマー", isOn: $style.showPenaltyTimer)
+                    Toggle("タイムアウト", isOn: $style.showTimeouts)
                 }
             }
             .navigationTitle("スコアボード設定")

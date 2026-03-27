@@ -5,6 +5,10 @@ struct ScoreboardStyle: Codable, Equatable {
     var theme: Theme = .dark
     var showScore: Bool = true
     var showMatchTimer: Bool = true
+    var timerPosition: TimerPosition = .left
+    var showTimerOptions: Bool = false      // +表示・タイマーカラー選択の表示
+    var showPenaltyTimer: Bool = false      // ペナルティタイマーの表示
+    var showTimeouts: Bool = false          // タイムアウト機能の表示
     var periodLabel: String?
 
     // チームユニフォームカラー ("#RRGGBB" 形式、nil=テーマデフォルト)
@@ -37,6 +41,18 @@ struct ScoreboardStyle: Codable, Equatable {
             case .topLeft: return String(localized: "左上")
             case .topCenter: return String(localized: "中央上")
             case .topRight: return String(localized: "右上")
+            }
+        }
+    }
+
+    enum TimerPosition: String, Codable, CaseIterable {
+        case left
+        case right
+
+        var displayName: String {
+            switch self {
+            case .left: return String(localized: "左")
+            case .right: return String(localized: "右")
             }
         }
     }
@@ -94,7 +110,7 @@ struct ScoreboardStyle: Codable, Equatable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case theme, showScore, showMatchTimer, periodLabel, positionX, positionY, scale, position, fontSize
+        case theme, showScore, showMatchTimer, timerPosition, showTimerOptions, showPenaltyTimer, showTimeouts, periodLabel, positionX, positionY, scale, position, fontSize
         case homeTeamColorHex, awayTeamColorHex
         case matchInfoPositionX, matchInfoPositionY, matchInfoScale
     }
@@ -106,6 +122,10 @@ struct ScoreboardStyle: Codable, Equatable {
         theme = try container.decodeIfPresent(Theme.self, forKey: .theme) ?? .dark
         showScore = try container.decodeIfPresent(Bool.self, forKey: .showScore) ?? true
         showMatchTimer = try container.decodeIfPresent(Bool.self, forKey: .showMatchTimer) ?? true
+        timerPosition = try container.decodeIfPresent(TimerPosition.self, forKey: .timerPosition) ?? .left
+        showTimerOptions = try container.decodeIfPresent(Bool.self, forKey: .showTimerOptions) ?? false
+        showPenaltyTimer = try container.decodeIfPresent(Bool.self, forKey: .showPenaltyTimer) ?? false
+        showTimeouts = try container.decodeIfPresent(Bool.self, forKey: .showTimeouts) ?? false
         periodLabel = try container.decodeIfPresent(String.self, forKey: .periodLabel)
         positionX = try container.decodeIfPresent(CGFloat.self, forKey: .positionX) ?? 0.02
         positionY = try container.decodeIfPresent(CGFloat.self, forKey: .positionY) ?? 0.02

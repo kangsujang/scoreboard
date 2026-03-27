@@ -31,7 +31,6 @@ struct MatchSetupView: View {
     private var canProceed: Bool {
         !homeTeamName.trimmingCharacters(in: .whitespaces).isEmpty
         && !awayTeamName.trimmingCharacters(in: .whitespaces).isEmpty
-        && !videoEntries.isEmpty
     }
 
     var body: some View {

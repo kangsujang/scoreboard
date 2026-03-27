@@ -16,6 +16,8 @@ struct ScoreboardLayerBuilder {
         let awayTeamColor: CGColor?
         let matchInfo: String?
         let pkKicks: [PKKick]
+        let penaltyTimers: [PenaltyTimer]
+        let timeouts: [TimeoutEvent]
     }
 
     // MARK: - Public
@@ -28,9 +30,20 @@ struct ScoreboardLayerBuilder {
         overlayLayer.addSublayer(container)
 
         // PK overlay (positioned below main scoreboard)
+        var bottomY = container.frame.maxY + config.videoSize.width * ScoreboardPreviewView.baseRatio * config.style.scale * 0.25
+
         if !config.pkKicks.isEmpty {
             let pkLayer = buildPKLayer(config: config, mainContainerFrame: container.frame)
             overlayLayer.addSublayer(pkLayer)
+            bottomY = pkLayer.frame.maxY + config.videoSize.width * ScoreboardPreviewView.baseRatio * config.style.scale * 0.25
+        }
+
+        // Penalty timer overlay (positioned below scoreboard/PK, outside container)
+        if !config.penaltyTimers.isEmpty {
+            let penaltyLayer = buildPenaltyTimerLayer(config: config, originX: container.frame.origin.x, originY: bottomY)
+            if let penaltyLayer {
+                overlayLayer.addSublayer(penaltyLayer)
+            }
         }
 
         // Match info (independent position & scale)
@@ -64,7 +77,11 @@ struct ScoreboardLayerBuilder {
         let scoreFontSize  = base * 0.85
 
         // レイアウト寸法（プレビューと同じ倍率）
-        let circleSize   = base * 1.4
+        let circleSize   = base * 1.4  // 高さ（円の直径）
+        let maxHomeScore = config.events.filter { $0.team == .home }.count
+        let maxAwayScore = config.events.filter { $0.team == .away }.count
+        let maxScoreDigits = max(1, String(max(maxHomeScore, maxAwayScore)).count)
+        let circleWidth  = maxScoreDigits <= 2 ? circleSize : circleSize + CGFloat(maxScoreDigits - 2) * base * 0.7
         let accentHeight = base * 0.125
         let gap          = base * 0.375   // メインセクション要素間隔
         let mainPaddingH = base * 0.5
@@ -73,6 +90,7 @@ struct ScoreboardLayerBuilder {
 
         let theme = config.style.theme
         let showTimer = config.style.showMatchTimer
+        let timerOnRight = config.style.timerPosition == .right
         let segments = config.timerSegments
 
         // ピリオド表記: 全セグメントのラベルから最長を基準に幅を決定
@@ -90,7 +108,9 @@ struct ScoreboardLayerBuilder {
         }
 
         let timerPaddingH = base * 0.5
-        let timerTextWidth = estimateTextWidth("00:00", fontSize: timerFontSize, monospaced: true)
+        let anySegmentPlusPrefix = segments.contains { $0.showPlusPrefix }
+        let timerSampleText = anySegmentPlusPrefix ? "+00:00" : "00:00"
+        let timerTextWidth = estimateTextWidth(timerSampleText, fontSize: timerFontSize, monospaced: true)
         let allSegmentsPK = !segments.isEmpty && segments.allSatisfy { ($0.periodLabel ?? "").lowercased() == "pk" }
         let timerWidth: CGFloat = (showTimer && !allSegmentsPK) ? timerTextWidth + timerPaddingH * 2 : 0
 
@@ -104,7 +124,7 @@ struct ScoreboardLayerBuilder {
         let vsTextWidth = estimateTextWidth("vs", fontSize: vsFontSize)
         let mainContentWidth: CGFloat
         if showScore {
-            mainContentWidth = homeAreaWidth + gap + circleSize + gap + circleSize + gap + awayAreaWidth
+            mainContentWidth = homeAreaWidth + gap + circleWidth + gap + circleWidth + gap + awayAreaWidth
         } else {
             mainContentWidth = homeAreaWidth + gap + vsTextWidth + gap + awayAreaWidth
         }
@@ -123,15 +143,34 @@ struct ScoreboardLayerBuilder {
 
         applyThemeBackground(to: container, theme: theme, cornerRadius: cornerRadius)
 
-        // ── Period label section (leftmost, white bg / black text) ──
+        // ── Period label / Timer の配置位置を計算 ──
+        // 左配置: [Period][Timer][Main]
+        // 右配置: [Main][Timer][Period]
+        let periodX: CGFloat
+        let timerX: CGFloat
+        let mainStartX: CGFloat
+
+        if timerOnRight {
+            // [Main][Timer][Period]
+            mainStartX = 0
+            timerX = mainWidth
+            periodX = mainWidth + timerWidth
+        } else {
+            // [Period][Timer][Main]
+            periodX = 0
+            timerX = periodWidth
+            mainStartX = periodWidth + timerWidth
+        }
+
+        // ── Period label section (white bg / black text) ──
         if showPeriod {
             let periodBg = CALayer()
-            periodBg.frame = CGRect(x: 0, y: 0, width: periodWidth, height: containerHeight)
+            periodBg.frame = CGRect(x: periodX, y: 0, width: periodWidth, height: containerHeight)
             periodBg.backgroundColor = UIColor.white.cgColor
             container.addSublayer(periodBg)
 
             let periodLabelFrame = CGRect(
-                x: 0,
+                x: periodX,
                 y: (containerHeight - periodFontSize - 4) / 2,
                 width: periodWidth,
                 height: periodFontSize + 4
@@ -146,11 +185,12 @@ struct ScoreboardLayerBuilder {
             )
         }
 
-        // ── Timer section (inverted background, after period label) ──
+        // ── Timer section (inverted background) ──
         // 全セグメントPKの場合は timerWidth=0 で既にスキップ済み
+
         if showTimer && !allSegmentsPK {
             let timerWrapper = CALayer()
-            timerWrapper.frame = CGRect(x: periodWidth, y: 0, width: timerWidth, height: containerHeight)
+            timerWrapper.frame = CGRect(x: timerX, y: 0, width: timerWidth, height: containerHeight)
 
             let timerBg = CALayer()
             timerBg.frame = CGRect(x: 0, y: 0, width: timerWidth, height: containerHeight)
@@ -168,8 +208,9 @@ struct ScoreboardLayerBuilder {
                 frame: timerFrame,
                 duration: config.videoDuration,
                 fontSize: timerFontSize,
-                timerTextColor: invertedTextColor(for: theme),
-                segments: segments
+                defaultTimerTextColor: invertedTextColor(for: theme),
+                segments: segments,
+                timeouts: config.timeouts
             )
 
             // PKセグメントが混在する場合、PK区間でタイマーを非表示
@@ -192,7 +233,7 @@ struct ScoreboardLayerBuilder {
         let accentY = teamVStackY + teamTextFrameH + vStackSpacing
 
         // 左から順に X 座標を進める
-        var x = periodWidth + timerWidth + mainPaddingH
+        var x = mainStartX + mainPaddingH
 
         // Home team name（左右に teamNamePadding 分の余白）
         x += teamNamePadding
@@ -206,6 +247,20 @@ struct ScoreboardLayerBuilder {
         homeLabel.frame = CGRect(x: x, y: teamVStackY, width: homeTextWidth, height: teamTextFrameH)
         container.addSublayer(homeLabel)
 
+        // Home timeout dots
+        if config.style.showTimeouts {
+            addTimeoutDots(
+                to: container,
+                team: .home,
+                timeouts: config.timeouts,
+                x: x + homeTextWidth + base * 0.1,
+                centerY: teamVStackY + teamTextFrameH / 2,
+                dotSize: base * 0.25,
+                spacing: base * 0.08,
+                duration: config.videoDuration
+            )
+        }
+
         let homeAccent = CALayer()
         homeAccent.frame = CGRect(x: x, y: accentY, width: homeTextWidth, height: accentHeight)
         homeAccent.backgroundColor = config.homeTeamColor ?? scoreColor(for: theme)
@@ -216,10 +271,10 @@ struct ScoreboardLayerBuilder {
         if showScore {
             // Home score circle
             let homeCircleWrapper = CALayer()
-            homeCircleWrapper.frame = CGRect(x: x, y: circleY, width: circleSize, height: circleSize)
+            homeCircleWrapper.frame = CGRect(x: x, y: circleY, width: circleWidth, height: circleSize)
 
             let homeCircleBg = CALayer()
-            homeCircleBg.frame = CGRect(x: 0, y: 0, width: circleSize, height: circleSize)
+            homeCircleBg.frame = CGRect(x: 0, y: 0, width: circleWidth, height: circleSize)
             homeCircleBg.backgroundColor = textColor(for: theme)
             homeCircleBg.cornerRadius = circleSize / 2
             homeCircleWrapper.addSublayer(homeCircleBg)
@@ -227,7 +282,7 @@ struct ScoreboardLayerBuilder {
             let homeScoreFrame = CGRect(
                 x: 0,
                 y: (circleSize - scoreFontSize - 4) / 2,
-                width: circleSize,
+                width: circleWidth,
                 height: scoreFontSize + 4
             )
             addSingleTeamScoreLayers(
@@ -248,14 +303,14 @@ struct ScoreboardLayerBuilder {
             )
             container.addSublayer(homeCircleWrapper)
 
-            x += circleSize + gap
+            x += circleWidth + gap
 
             // Away score circle
             let awayCircleWrapper = CALayer()
-            awayCircleWrapper.frame = CGRect(x: x, y: circleY, width: circleSize, height: circleSize)
+            awayCircleWrapper.frame = CGRect(x: x, y: circleY, width: circleWidth, height: circleSize)
 
             let awayCircleBg = CALayer()
-            awayCircleBg.frame = CGRect(x: 0, y: 0, width: circleSize, height: circleSize)
+            awayCircleBg.frame = CGRect(x: 0, y: 0, width: circleWidth, height: circleSize)
             awayCircleBg.backgroundColor = textColor(for: theme)
             awayCircleBg.cornerRadius = circleSize / 2
             awayCircleWrapper.addSublayer(awayCircleBg)
@@ -263,7 +318,7 @@ struct ScoreboardLayerBuilder {
             let awayScoreFrame = CGRect(
                 x: 0,
                 y: (circleSize - scoreFontSize - 4) / 2,
-                width: circleSize,
+                width: circleWidth,
                 height: scoreFontSize + 4
             )
             addSingleTeamScoreLayers(
@@ -284,7 +339,7 @@ struct ScoreboardLayerBuilder {
             )
             container.addSublayer(awayCircleWrapper)
 
-            x += circleSize + gap
+            x += circleWidth + gap
         } else {
             // "vs" separator
             let vsLayer = makeTextLayer(
@@ -317,6 +372,20 @@ struct ScoreboardLayerBuilder {
         awayLabel.string = config.awayTeamName
         awayLabel.frame = CGRect(x: x, y: teamVStackY, width: awayTextWidth, height: teamTextFrameH)
         container.addSublayer(awayLabel)
+
+        // Away timeout dots
+        if config.style.showTimeouts {
+            addTimeoutDots(
+                to: container,
+                team: .away,
+                timeouts: config.timeouts,
+                x: x + awayTextWidth + base * 0.1,
+                centerY: teamVStackY + teamTextFrameH / 2,
+                dotSize: base * 0.25,
+                spacing: base * 0.08,
+                duration: config.videoDuration
+            )
+        }
 
         let awayAccent = CALayer()
         awayAccent.frame = CGRect(x: x, y: accentY, width: awayTextWidth, height: accentHeight)
@@ -679,47 +748,176 @@ struct ScoreboardLayerBuilder {
         frame: CGRect,
         duration: TimeInterval,
         fontSize: CGFloat,
-        timerTextColor: CGColor,
-        segments: [TimerSegment]
+        defaultTimerTextColor: CGColor,
+        segments: [TimerSegment],
+        timeouts: [TimeoutEvent] = []
     ) {
+        let anyPlusPrefix = segments.contains { $0.showPlusPrefix }
         let totalSeconds = Int(ceil(duration))
         guard totalSeconds > 0 else {
             let staticLabel = makeTextLayer(
                 fontSize: fontSize,
                 alignment: .center,
-                color: timerTextColor,
+                color: defaultTimerTextColor,
                 weight: .semibold,
                 monospaced: true
             )
-            staticLabel.string = "00:00"
+            staticLabel.string = anyPlusPrefix ? "+00:00" : "00:00"
             staticLabel.frame = frame
             container.addSublayer(staticLabel)
             return
         }
 
         // モノスペースフォントの実測値から文字幅を算出し、フレーム中央に配置
-        let textWidth = estimateTextWidth("00:00", fontSize: fontSize, monospaced: true)
-        let charWidth = textWidth / 5.0
+        // anyPlusPrefix のとき "+MM:SS"（6文字）分の幅でレイアウト
+        let layoutText = anyPlusPrefix ? "+00:00" : "00:00"
+        let textWidth = estimateTextWidth(layoutText, fontSize: fontSize, monospaced: true)
+        let charCount = anyPlusPrefix ? 6 : 5
+        let charWidth = textWidth / CGFloat(charCount)
         let textStartX = frame.origin.x + (frame.width - textWidth) / 2
 
-        let minuteTensX = textStartX
-        let minuteOnesX = textStartX + charWidth
-        let colonX = textStartX + charWidth * 2
-        let secondTensX = textStartX + charWidth * 3
-        let secondOnesX = textStartX + charWidth * 4
+        // charOffset: anyPlusPrefix のとき先頭に "+" 1文字分ずらす
+        let digitOffset: CGFloat = anyPlusPrefix ? charWidth : 0
+
+        let minuteTensX = textStartX + digitOffset
+        let minuteOnesX = textStartX + digitOffset + charWidth
+        let colonX      = textStartX + digitOffset + charWidth * 2
+        let secondTensX = textStartX + digitOffset + charWidth * 3
+        let secondOnesX = textStartX + digitOffset + charWidth * 4
+
+        // セグメントごとの表示色タイムライン
+        func colorForVideoTime(_ videoTime: TimeInterval) -> CGColor {
+            var lastColor = defaultTimerTextColor
+            for seg in segments {
+                guard let start = seg.effectiveStartTime else { continue }
+                if start <= videoTime {
+                    if let hex = seg.timerColorHex,
+                       let uiColor = UIColor(hex: hex) {
+                        lastColor = uiColor.cgColor
+                    } else {
+                        lastColor = defaultTimerTextColor
+                    }
+                }
+            }
+            return lastColor
+        }
+
+        // 色アニメーション生成 (foregroundColor keyframe)
+        func makeColorAnimation() -> CAKeyframeAnimation? {
+            // 全セグメントのcolor変化点を収集
+            var colorChangeTimes: [TimeInterval] = [0]
+            for seg in segments {
+                if let start = seg.effectiveStartTime, start > 0 {
+                    colorChangeTimes.append(start)
+                }
+            }
+            colorChangeTimes = colorChangeTimes.sorted()
+
+            var keyTimes: [NSNumber] = []
+            var values: [CGColor] = []
+            var prevColor: CGColor? = nil
+
+            for t in colorChangeTimes {
+                let c = colorForVideoTime(t)
+                if let prev = prevColor, prev == c { continue }
+                let kt = duration > 0 ? t / duration : 0
+                keyTimes.append(NSNumber(value: min(kt, 1.0)))
+                values.append(c)
+                prevColor = c
+            }
+            if values.count <= 1 { return nil } // 色変化なし
+            keyTimes.append(1.0)
+            values.append(values.last!)
+
+            let anim = CAKeyframeAnimation(keyPath: "foregroundColor")
+            anim.keyTimes = keyTimes
+            anim.values = values
+            anim.calculationMode = .discrete
+            anim.duration = duration
+            anim.beginTime = AVCoreAnimationBeginTimeAtZero
+            anim.isRemovedOnCompletion = false
+            anim.fillMode = .forwards
+            return anim
+        }
+
+        let colorAnimation = makeColorAnimation()
+        let initialColor = colorForVideoTime(0)
 
         // Static colon layer
         let colonLayer = makeTextLayer(
             fontSize: fontSize,
             alignment: .center,
-            color: timerTextColor,
+            color: initialColor,
             weight: .semibold,
             monospaced: true
         )
         colonLayer.string = ":"
         colonLayer.frame = CGRect(x: colonX, y: frame.origin.y, width: charWidth, height: frame.height)
         colonLayer.opacity = 1.0
+        if let anim = colorAnimation { colonLayer.add(anim, forKey: "foregroundColor") }
         container.addSublayer(colonLayer)
+
+        // "+" prefix layer (anyPlusPrefix のときのみ追加)
+        if anyPlusPrefix {
+            let plusLayer = makeTextLayer(
+                fontSize: fontSize,
+                alignment: .center,
+                color: initialColor,
+                weight: .semibold,
+                monospaced: true
+            )
+            plusLayer.string = "+"
+            plusLayer.frame = CGRect(x: textStartX, y: frame.origin.y, width: charWidth, height: frame.height)
+            plusLayer.opacity = 0.0
+
+            // セグメントの showPlusPrefix に基づく opacity アニメーション
+            var plusKeyTimes: [NSNumber] = []
+            var plusValues: [Float] = []
+            var prevOpacity: Float = -1
+
+            for second in 0...totalSeconds {
+                let videoTime = TimeInterval(second)
+                var showPlus = false
+                for seg in segments {
+                    guard let start = seg.effectiveStartTime else { continue }
+                    let end = seg.timerStopTime ?? duration
+                    if videoTime >= start && videoTime <= end {
+                        showPlus = seg.showPlusPrefix
+                        break
+                    } else if videoTime > end {
+                        showPlus = seg.showPlusPrefix
+                    }
+                }
+                let opacity: Float = showPlus ? 1.0 : 0.0
+                if opacity != prevOpacity {
+                    let kt = duration > 0 ? Double(second) / duration : 0
+                    plusKeyTimes.append(NSNumber(value: min(kt, 1.0)))
+                    plusValues.append(opacity)
+                    prevOpacity = opacity
+                }
+            }
+            if let lastKT = plusKeyTimes.last?.doubleValue, lastKT < 1.0 {
+                plusKeyTimes.append(1.0)
+                plusValues.append(plusValues.last ?? 0.0)
+            }
+
+            if plusKeyTimes.count >= 2 {
+                let plusAnim = CAKeyframeAnimation(keyPath: "opacity")
+                plusAnim.keyTimes = plusKeyTimes
+                plusAnim.values = plusValues
+                plusAnim.calculationMode = .discrete
+                plusAnim.duration = duration
+                plusAnim.beginTime = AVCoreAnimationBeginTimeAtZero
+                plusAnim.isRemovedOnCompletion = false
+                plusAnim.fillMode = .forwards
+                plusLayer.add(plusAnim, forKey: "plusOpacity")
+            } else {
+                plusLayer.opacity = plusValues.first ?? 0.0
+            }
+
+            if let anim = colorAnimation { plusLayer.add(anim, forKey: "foregroundColor") }
+            container.addSublayer(plusLayer)
+        }
 
         func addDigitLayers(
             xPos: CGFloat,
@@ -731,7 +929,7 @@ struct ScoreboardLayerBuilder {
                 let layer = makeTextLayer(
                     fontSize: fontSize,
                     alignment: .center,
-                    color: timerTextColor,
+                    color: initialColor,
                     weight: .semibold,
                     monospaced: true
                 )
@@ -763,6 +961,7 @@ struct ScoreboardLayerBuilder {
 
                 guard keyTimes.count >= 2 else {
                     layer.opacity = values.first ?? 0.0
+                    if let anim = colorAnimation { layer.add(anim, forKey: "foregroundColor") }
                     container.addSublayer(layer)
                     continue
                 }
@@ -777,6 +976,7 @@ struct ScoreboardLayerBuilder {
                 animation.fillMode = .forwards
 
                 layer.add(animation, forKey: "digitOpacity")
+                if let anim = colorAnimation { layer.add(anim, forKey: "foregroundColor") }
                 container.addSublayer(layer)
             }
         }
@@ -785,6 +985,15 @@ struct ScoreboardLayerBuilder {
         /// effectiveStartTime〜timerStartTime の間はオフセット値（初期値）を表示
         /// timerStartTime 以降はタイマー計測を開始
         /// セグメント外の区間はフリーズ（直前セグメントの最終値を維持）
+        /// タイムアウトによる累計停止秒数（from〜to の間）
+        func totalPausedSeconds(from start: TimeInterval, to end: TimeInterval) -> Int {
+            var paused: TimeInterval = 0
+            for timeout in timeouts {
+                paused += timeout.pausedSeconds(from: start, to: end)
+            }
+            return Int(paused)
+        }
+
         func matchSecond(from videoSecond: Int) -> Int {
             let videoTime = TimeInterval(videoSecond)
             var lastMatchSecond = 0
@@ -801,13 +1010,15 @@ struct ScoreboardLayerBuilder {
                         // 区切り開始〜キックオフ前: オフセット値（初期値）を表示
                         return offset
                     }
-                    // キックオフ以降: タイマー計測
+                    // キックオフ以降: タイマー計測（タイムアウト分を差し引く）
                     let elapsed = max(0, videoSecond - Int(kickoff))
-                    return elapsed + offset
+                    let paused = totalPausedSeconds(from: kickoff, to: videoTime)
+                    return max(0, elapsed - paused) + offset
                 } else if videoTime > stop {
                     // このセグメントを通過済み → 最終値を記録
                     let elapsed = max(0, Int(stop) - Int(kickoff))
-                    lastMatchSecond = elapsed + offset
+                    let paused = totalPausedSeconds(from: kickoff, to: stop)
+                    lastMatchSecond = max(0, elapsed - paused) + offset
                 } else {
                     break
                 }
@@ -1053,6 +1264,363 @@ struct ScoreboardLayerBuilder {
         layer.add(animation, forKey: "pkShow")
     }
 
+    // MARK: - Timeout Dots
+
+    /// チーム名の横にタイムアウト回数ドットを配置（opacityアニメーション付き）
+    private static func addTimeoutDots(
+        to container: CALayer,
+        team: Team,
+        timeouts: [TimeoutEvent],
+        x: CGFloat,
+        centerY: CGFloat,
+        dotSize: CGFloat,
+        spacing: CGFloat,
+        duration: TimeInterval
+    ) {
+        let teamTimeouts = timeouts
+            .filter { $0.team == team }
+            .sorted { $0.timestamp < $1.timestamp }
+        guard !teamTimeouts.isEmpty else { return }
+
+        let totalSeconds = Int(ceil(duration))
+        guard totalSeconds > 0 else { return }
+
+        for (i, timeout) in teamTimeouts.enumerated() {
+            let dotX = x + CGFloat(i) * (dotSize + spacing)
+            let dotY = centerY - dotSize / 2
+
+            let dot = CALayer()
+            dot.frame = CGRect(x: dotX, y: dotY, width: dotSize, height: dotSize)
+            dot.cornerRadius = dotSize / 2
+            dot.backgroundColor = UIColor.yellow.cgColor
+            dot.opacity = 0.0
+
+            // タイムアウト開始時に出現
+            let startT = duration > 0 ? timeout.timestamp / duration : 0
+            var keyTimes: [NSNumber] = []
+            var values: [Float] = []
+
+            if startT > 0 {
+                keyTimes.append(0.0)
+                values.append(0.0)
+            }
+            keyTimes.append(NSNumber(value: min(startT, 1.0)))
+            values.append(1.0)
+            keyTimes.append(1.0)
+            values.append(1.0)
+
+            if keyTimes.count >= 2 {
+                let anim = CAKeyframeAnimation(keyPath: "opacity")
+                anim.keyTimes = keyTimes
+                anim.values = values
+                anim.calculationMode = .discrete
+                anim.duration = duration
+                anim.beginTime = AVCoreAnimationBeginTimeAtZero
+                anim.isRemovedOnCompletion = false
+                anim.fillMode = .forwards
+                dot.add(anim, forKey: "dotOpacity")
+            }
+
+            container.addSublayer(dot)
+        }
+    }
+
+    // MARK: - Penalty Timer Layer (outside scoreboard)
+
+    /// スコアボードの下にペナルティタイマーを横並びで配置するレイヤーを構築
+    private static func buildPenaltyTimerLayer(config: Config, originX: CGFloat, originY: CGFloat) -> CALayer? {
+        let penaltyTimers = config.penaltyTimers
+        guard !penaltyTimers.isEmpty else { return nil }
+
+        let base = config.videoSize.width * ScoreboardPreviewView.baseRatio * config.style.scale
+        let fontSize = base * 0.45
+        let rowH = fontSize + 4
+        let spacing = base * 0.2
+        let cornerRadius = base * 0.375
+        let theme = config.style.theme
+        let totalSeconds = Int(ceil(config.videoDuration))
+        guard totalSeconds > 0 else { return nil }
+
+        let homeTimers = penaltyTimers.filter { $0.team == .home }.sorted { $0.timestamp < $1.timestamp }
+        let awayTimers = penaltyTimers.filter { $0.team == .away }.sorted { $0.timestamp < $1.timestamp }
+
+        // チーム名テキスト幅
+        let teamFontSize = fontSize
+        let homeNameW = estimateTextWidth(config.homeTeamName, fontSize: teamFontSize) + 4
+        let awayNameW = estimateTextWidth(config.awayTeamName, fontSize: teamFontSize) + 4
+        let countdownW = estimateTextWidth("0:00", fontSize: fontSize, monospaced: true)
+        let paddingH = base * 0.4
+        let paddingV = base * 0.2
+
+        // レイアウト幅計算
+        let homeBlockW = homeTimers.isEmpty ? 0 : homeNameW + spacing + CGFloat(homeTimers.count) * (countdownW + spacing)
+        let awayBlockW = awayTimers.isEmpty ? 0 : awayNameW + spacing + CGFloat(awayTimers.count) * (countdownW + spacing)
+        let totalGap = (homeBlockW > 0 && awayBlockW > 0) ? base * 0.5 : 0
+        let contentW = homeBlockW + totalGap + awayBlockW
+        let layerW = contentW + paddingH * 2
+        let layerH = rowH + paddingV * 2
+
+        let container = CALayer()
+        container.frame = CGRect(x: originX, y: originY, width: layerW, height: layerH)
+        applyThemeBackground(to: container, theme: theme, cornerRadius: cornerRadius)
+        container.opacity = 0.0 // 少なくとも1つアクティブなときのみ表示
+
+        // 全体の表示/非表示アニメーション
+        var visKeyTimes: [NSNumber] = []
+        var visValues: [Float] = []
+        var prevVis: Float = -1
+        for second in 0...totalSeconds {
+            let vt = TimeInterval(second)
+            let anyActive = penaltyTimers.contains { $0.remainingSeconds(at: vt) != nil }
+            let vis: Float = anyActive ? 1.0 : 0.0
+            if vis != prevVis {
+                let kt = config.videoDuration > 0 ? Double(second) / config.videoDuration : 0
+                visKeyTimes.append(NSNumber(value: min(kt, 1.0)))
+                visValues.append(vis)
+                prevVis = vis
+            }
+        }
+        if let last = visKeyTimes.last?.doubleValue, last < 1.0 {
+            visKeyTimes.append(1.0)
+            visValues.append(0.0)
+        }
+        if visKeyTimes.count >= 2 {
+            let visAnim = CAKeyframeAnimation(keyPath: "opacity")
+            visAnim.keyTimes = visKeyTimes
+            visAnim.values = visValues
+            visAnim.calculationMode = .discrete
+            visAnim.duration = config.videoDuration
+            visAnim.beginTime = AVCoreAnimationBeginTimeAtZero
+            visAnim.isRemovedOnCompletion = false
+            visAnim.fillMode = .forwards
+            container.add(visAnim, forKey: "penaltyContainerVis")
+        }
+
+        var xPos = paddingH
+
+        // Home チーム名 + カウントダウン
+        if !homeTimers.isEmpty {
+            let nameLayer = makeTextLayer(fontSize: teamFontSize, alignment: .center, color: textColor(for: theme), weight: .semibold)
+            nameLayer.string = config.homeTeamName
+            nameLayer.frame = CGRect(x: xPos, y: paddingV, width: homeNameW, height: rowH)
+            container.addSublayer(nameLayer)
+            xPos += homeNameW + spacing
+
+            for timer in homeTimers {
+                addPenaltyTimerLayers(
+                    to: container,
+                    penaltyTimers: [timer],
+                    team: .home,
+                    xCenter: xPos + countdownW / 2,
+                    yStart: paddingV,
+                    fontSize: fontSize,
+                    rowHeight: rowH,
+                    spacing: 0,
+                    videoDuration: config.videoDuration
+                )
+                xPos += countdownW + spacing
+            }
+        }
+
+        xPos += (homeBlockW > 0 && awayBlockW > 0) ? base * 0.5 : 0
+
+        // Away チーム名 + カウントダウン
+        if !awayTimers.isEmpty {
+            let nameLayer = makeTextLayer(fontSize: teamFontSize, alignment: .center, color: textColor(for: theme), weight: .semibold)
+            nameLayer.string = config.awayTeamName
+            nameLayer.frame = CGRect(x: xPos, y: paddingV, width: awayNameW, height: rowH)
+            container.addSublayer(nameLayer)
+            xPos += awayNameW + spacing
+
+            for timer in awayTimers {
+                addPenaltyTimerLayers(
+                    to: container,
+                    penaltyTimers: [timer],
+                    team: .away,
+                    xCenter: xPos + countdownW / 2,
+                    yStart: paddingV,
+                    fontSize: fontSize,
+                    rowHeight: rowH,
+                    spacing: 0,
+                    videoDuration: config.videoDuration
+                )
+                xPos += countdownW + spacing
+            }
+        }
+
+        return container
+    }
+
+    // MARK: - Penalty Timer Digit Layers
+
+    /// 個別ペナルティタイマーのカウントダウン桁レイヤー
+    private static func addPenaltyTimerLayers(
+        to container: CALayer,
+        penaltyTimers: [PenaltyTimer],
+        team: Team,
+        xCenter: CGFloat,
+        yStart: CGFloat,
+        fontSize: CGFloat,
+        rowHeight: CGFloat,
+        spacing: CGFloat,
+        videoDuration: TimeInterval
+    ) {
+        let teamTimers = penaltyTimers
+            .filter { $0.team == team }
+            .sorted { $0.timestamp < $1.timestamp }
+        guard !teamTimers.isEmpty else { return }
+
+        let totalSeconds = Int(ceil(videoDuration))
+        guard totalSeconds > 0 else { return }
+
+        // "M:SS" 表示幅を算出
+        let sampleText = "0:00"
+        let textWidth = estimateTextWidth(sampleText, fontSize: fontSize, monospaced: true)
+
+        for (slotIndex, timer) in teamTimers.enumerated() {
+            let y = yStart + CGFloat(slotIndex) * (rowHeight + spacing)
+            let timerWrapper = CALayer()
+            timerWrapper.frame = CGRect(
+                x: xCenter - textWidth / 2,
+                y: y,
+                width: textWidth,
+                height: rowHeight
+            )
+            timerWrapper.opacity = 0.0
+
+            // Wrapper の表示/非表示 opacity アニメーション
+            let startSec = Int(timer.timestamp)
+            let endSec = Int(ceil(timer.expiresAt))
+
+            var wrapKeyTimes: [NSNumber] = []
+            var wrapValues: [Float] = []
+
+            if startSec > 0 {
+                wrapKeyTimes.append(0.0)
+                wrapValues.append(0.0)
+            }
+            let startT = videoDuration > 0 ? Double(startSec) / videoDuration : 0
+            wrapKeyTimes.append(NSNumber(value: min(startT, 1.0)))
+            wrapValues.append(1.0)
+
+            let endT = videoDuration > 0 ? Double(endSec) / videoDuration : 1
+            if endT < 1.0 {
+                wrapKeyTimes.append(NSNumber(value: endT))
+                wrapValues.append(0.0)
+            }
+            wrapKeyTimes.append(1.0)
+            wrapValues.append(0.0)
+
+            if wrapKeyTimes.count >= 2 {
+                let wrapAnim = CAKeyframeAnimation(keyPath: "opacity")
+                wrapAnim.keyTimes = wrapKeyTimes
+                wrapAnim.values = wrapValues
+                wrapAnim.calculationMode = .discrete
+                wrapAnim.duration = videoDuration
+                wrapAnim.beginTime = AVCoreAnimationBeginTimeAtZero
+                wrapAnim.isRemovedOnCompletion = false
+                wrapAnim.fillMode = .forwards
+                timerWrapper.add(wrapAnim, forKey: "penaltyVisibility")
+            }
+
+            // カウントダウン桁レイヤー (M:SS)
+            let charWidth = textWidth / CGFloat(sampleText.count)
+
+            func remainingSec(at videoSecond: Int) -> Int {
+                let vt = TimeInterval(videoSecond)
+                guard let r = timer.remainingSeconds(at: vt) else { return 0 }
+                return Int(ceil(r))
+            }
+
+            let minuteX: CGFloat = 0
+            let colonX = charWidth
+            let secTensX = charWidth * 2
+            let secOnesX = charWidth * 3
+
+            let yellowColor = UIColor.yellow.cgColor
+
+            // コロン
+            let colonLayer = makeTextLayer(fontSize: fontSize, alignment: .center, color: yellowColor, weight: .semibold, monospaced: true)
+            colonLayer.string = ":"
+            colonLayer.frame = CGRect(x: colonX, y: 0, width: charWidth, height: rowHeight)
+            timerWrapper.addSublayer(colonLayer)
+
+            // 分（0-9）
+            addCountdownDigitLayers(to: timerWrapper, xPos: minuteX, width: charWidth, height: rowHeight, maxDigit: 9, fontSize: fontSize, color: yellowColor, totalSeconds: totalSeconds, videoDuration: videoDuration) { sec in
+                remainingSec(at: sec) / 60
+            }
+
+            // 秒十の位（0-5）
+            addCountdownDigitLayers(to: timerWrapper, xPos: secTensX, width: charWidth, height: rowHeight, maxDigit: 5, fontSize: fontSize, color: yellowColor, totalSeconds: totalSeconds, videoDuration: videoDuration) { sec in
+                (remainingSec(at: sec) % 60) / 10
+            }
+
+            // 秒一の位（0-9）
+            addCountdownDigitLayers(to: timerWrapper, xPos: secOnesX, width: charWidth, height: rowHeight, maxDigit: 9, fontSize: fontSize, color: yellowColor, totalSeconds: totalSeconds, videoDuration: videoDuration) { sec in
+                (remainingSec(at: sec) % 60) % 10
+            }
+
+            container.addSublayer(timerWrapper)
+        }
+    }
+
+    private static func addCountdownDigitLayers(
+        to container: CALayer,
+        xPos: CGFloat,
+        width: CGFloat,
+        height: CGFloat,
+        maxDigit: Int,
+        fontSize: CGFloat,
+        color: CGColor,
+        totalSeconds: Int,
+        videoDuration: TimeInterval,
+        digitExtractor: (Int) -> Int
+    ) {
+        for digit in 0...maxDigit {
+            let layer = makeTextLayer(fontSize: fontSize, alignment: .center, color: color, weight: .semibold, monospaced: true)
+            layer.string = "\(digit)"
+            layer.frame = CGRect(x: xPos, y: 0, width: width, height: height)
+            layer.opacity = 0.0
+
+            var keyTimes: [NSNumber] = []
+            var values: [Float] = []
+            var prevOpacity: Float = -1
+
+            for second in 0...totalSeconds {
+                let d = digitExtractor(second)
+                let opacity: Float = (d == digit) ? 1.0 : 0.0
+                if opacity != prevOpacity {
+                    let t = videoDuration > 0 ? Double(second) / videoDuration : 0
+                    keyTimes.append(NSNumber(value: min(t, 1.0)))
+                    values.append(opacity)
+                    prevOpacity = opacity
+                }
+            }
+
+            if let lastKT = keyTimes.last?.doubleValue, lastKT < 1.0 {
+                keyTimes.append(1.0)
+                values.append(values.last ?? 0.0)
+            }
+
+            guard keyTimes.count >= 2 else {
+                layer.opacity = values.first ?? 0.0
+                container.addSublayer(layer)
+                continue
+            }
+
+            let anim = CAKeyframeAnimation(keyPath: "opacity")
+            anim.keyTimes = keyTimes
+            anim.values = values
+            anim.calculationMode = .discrete
+            anim.duration = videoDuration
+            anim.beginTime = AVCoreAnimationBeginTimeAtZero
+            anim.isRemovedOnCompletion = false
+            anim.fillMode = .forwards
+            layer.add(anim, forKey: "digitOpacity")
+            container.addSublayer(layer)
+        }
+    }
+
     // MARK: - PK Hide Animation
 
     /// PKセグメント中はタイマーセクション全体を非表示にするopacityアニメーションを追加
@@ -1113,5 +1681,21 @@ struct ScoreboardLayerBuilder {
         animation.fillMode = .forwards
 
         layer.add(animation, forKey: "pkHideTimer")
+    }
+}
+
+// MARK: - UIColor hex helper (ScoreboardLayerBuilder 用)
+
+private extension UIColor {
+    convenience init?(hex: String) {
+        var s = hex.trimmingCharacters(in: .whitespaces)
+        if s.hasPrefix("#") { s = String(s.dropFirst()) }
+        guard s.count == 6, let value = UInt64(s, radix: 16) else { return nil }
+        self.init(
+            red:   CGFloat((value >> 16) & 0xFF) / 255,
+            green: CGFloat((value >> 8)  & 0xFF) / 255,
+            blue:  CGFloat(value         & 0xFF) / 255,
+            alpha: 1
+        )
     }
 }

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ScoreFrame - サッカースコアボード</title>
-  <meta name="description" content="サッカーの試合動画にスコアボードを重ねてエクスポートできるiOSアプリ">
+  <title>ScoreFrame - Sport Scoreboard</title>
+  <meta name="description" content="Overlay scoreboards on sports match videos and export as MP4. Soccer, handball, rugby, hockey and more.">
   <style>
     :root {
       --green: #34c759;
@@ -49,16 +49,6 @@
       height: 800px;
       background: radial-gradient(circle, rgba(52, 199, 89, 0.12) 0%, transparent 70%);
       pointer-events: none;
-    }
-    .hero-badge {
-      display: inline-block;
-      padding: 6px 16px;
-      border: 1px solid rgba(52, 199, 89, 0.3);
-      border-radius: 20px;
-      font-size: 0.8em;
-      color: var(--accent);
-      margin-bottom: 24px;
-      letter-spacing: 0.05em;
     }
     .campaign-strip {
       position: fixed;
@@ -121,6 +111,39 @@
       box-shadow: 0 8px 30px rgba(255,255,255,0.15);
     }
     .hero-cta svg { width: 20px; height: 20px; }
+
+    /* Language Switcher */
+    .lang-switcher {
+      position: fixed;
+      top: 52px;
+      right: 16px;
+      z-index: 101;
+      display: flex;
+      gap: 4px;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      padding: 4px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .lang-switcher button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.75em;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lang-switcher button.active {
+      background: var(--accent);
+      color: #000;
+    }
+    .lang-switcher button:hover:not(.active) {
+      color: var(--text);
+    }
 
     /* Phone Showcase */
     .phone-showcase {
@@ -337,15 +360,28 @@
 </head>
 <body>
 
+  <!-- Language Switcher -->
+  <div class="lang-switcher">
+    <button onclick="setLang('ja')" id="lang-ja">JP</button>
+    <button onclick="setLang('en')" id="lang-en">EN</button>
+    <button onclick="setLang('ko')" id="lang-ko">KR</button>
+  </div>
+
   <!-- Campaign Banner -->
   <div class="campaign-strip">
-    &#127881; 4月末まで無料キャンペーン中 &#127881;<a href="https://apps.apple.com/app/id6760339051" style="color:#fff;text-decoration:none;"><span>今すぐダウンロード</span></a>
+    <span class="i18n" data-ja="&#127881; 4月末まで無料キャンペーン中 &#127881;" data-en="&#127881; FREE until end of April &#127881;" data-ko="&#127881; 4월 말까지 무료 캠페인 &#127881;"></span>
+    <a href="https://apps.apple.com/app/id6760339051" style="color:#fff;text-decoration:none;">
+      <span class="i18n" data-ja="今すぐダウンロード" data-en="Download Now" data-ko="지금 다운로드"></span>
+    </a>
   </div>
 
   <!-- Hero -->
   <section class="hero">
     <h1>Score<span>Frame</span></h1>
-    <p class="hero-sub">サッカーの試合動画を、テレビ中継のような仕上がりに。</p>
+    <p class="hero-sub i18n"
+       data-ja="スポーツの試合動画を、テレビ中継のような仕上がりに。"
+       data-en="Turn your match videos into professional broadcasts."
+       data-ko="경기 영상을 프로 중계처럼 만들어 보세요."></p>
     <a href="https://apps.apple.com/app/id6760339051" class="hero-cta">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.32 2.32-1.55 4.3-3.74 4.25z"/></svg>
       App Store
@@ -353,13 +389,13 @@
 
     <div class="phone-showcase">
       <div class="phone-frame">
-        <img src="images/style-settings.png" alt="スコアボード設定" loading="lazy">
+        <img src="images/style-settings.png" alt="Scoreboard Settings" loading="lazy">
       </div>
       <div class="phone-frame">
-        <img src="images/score-recording.png" alt="スコア記録" loading="lazy">
+        <img src="images/score-recording.png" alt="Score Recording" loading="lazy">
       </div>
       <div class="phone-frame">
-        <img src="images/export.png" alt="エクスポート" loading="lazy">
+        <img src="images/export.png" alt="Export" loading="lazy">
       </div>
     </div>
   </section>
@@ -367,55 +403,88 @@
   <!-- How it works -->
   <section class="section" id="features">
     <div class="section-label">How it works</div>
-    <h2>4ステップで完成</h2>
-    <p class="section-desc">撮影した動画を選んで、スコアを記録するだけ。簡単な操作でプロのような試合動画が完成します。</p>
+    <h2 class="i18n" data-ja="4ステップで完成" data-en="Ready in 4 Steps" data-ko="4단계로 완성"></h2>
+    <p class="section-desc i18n"
+       data-ja="撮影した動画を選んで、スコアを記録するだけ。簡単な操作でプロのような試合動画が完成します。"
+       data-en="Just select your video and record the scores. Create professional-looking match videos with simple operations."
+       data-ko="촬영한 영상을 선택하고 스코어를 기록하기만 하면 됩니다. 간단한 조작으로 프로 같은 경기 영상이 완성됩니다."></p>
     <div class="steps">
       <div class="step">
-        <h3>動画を選択</h3>
-        <p>写真ライブラリまたはファイルから試合動画を選択</p>
+        <h3 class="i18n" data-ja="動画を選択" data-en="Select Video" data-ko="영상 선택"></h3>
+        <p class="i18n"
+           data-ja="写真ライブラリまたはファイルから試合動画を選択"
+           data-en="Choose a match video from your photo library or files"
+           data-ko="사진 라이브러리 또는 파일에서 경기 영상을 선택"></p>
       </div>
       <div class="step">
-        <h3>スタイル設定</h3>
-        <p>テーマ・チームカラー・位置を自由にカスタマイズ</p>
+        <h3 class="i18n" data-ja="スタイル設定" data-en="Set Style" data-ko="스타일 설정"></h3>
+        <p class="i18n"
+           data-ja="テーマ・チームカラー・位置を自由にカスタマイズ"
+           data-en="Customize theme, team colors, and position freely"
+           data-ko="테마, 팀 컬러, 위치를 자유롭게 커스터마이즈"></p>
       </div>
       <div class="step">
-        <h3>スコア記録</h3>
-        <p>動画を再生しながらゴールのタイミングを入力</p>
+        <h3 class="i18n" data-ja="スコア記録" data-en="Record Scores" data-ko="스코어 기록"></h3>
+        <p class="i18n"
+           data-ja="動画を再生しながらゴールのタイミングを入力"
+           data-en="Play the video and tap when goals are scored"
+           data-ko="영상을 재생하며 골 타이밍을 입력"></p>
       </div>
       <div class="step">
-        <h3>エクスポート</h3>
-        <p>MP4で書き出して共有・保存</p>
+        <h3 class="i18n" data-ja="エクスポート" data-en="Export" data-ko="내보내기"></h3>
+        <p class="i18n"
+           data-ja="MP4で書き出して共有・保存"
+           data-en="Export as MP4, share and save"
+           data-ko="MP4로 내보내기하여 공유 및 저장"></p>
       </div>
     </div>
   </section>
 
-  <!-- Showcase 1 -->
+  <!-- Showcase -->
   <section class="section">
     <div class="showcase-row">
       <div class="showcase-img">
-        <img src="images/score-recording.png" alt="スコア記録画面" loading="lazy">
+        <img src="images/score-recording.png" alt="Score Recording" loading="lazy">
       </div>
       <div class="showcase-text">
-        <h3>リアルタイムで<br>スコアを記録</h3>
-        <p>動画を再生しながら、ゴールのタイミングでボタンをタップ。前半・後半・延長戦・PK戦にも対応。スコアボードが動画の時間軸に合わせて自動的に更新されます。</p>
+        <h3 class="i18n"
+            data-ja="リアルタイムで<br>スコアを記録"
+            data-en="Record Scores<br>in Real Time"
+            data-ko="실시간으로<br>스코어를 기록"></h3>
+        <p class="i18n"
+           data-ja="動画を再生しながら、ゴールのタイミングでボタンをタップ。前半・後半・延長戦・PK戦にも対応。タイムアウトやペナルティタイマーも利用できます。"
+           data-en="Tap the button at the moment of each goal while playing the video. Supports halves, extra time, PK shootouts, timeouts, and penalty timers."
+           data-ko="영상을 재생하며 골 타이밍에 버튼을 탭합니다. 전반/후반, 연장전, PK전, 타임아웃, 페널티 타이머를 지원합니다."></p>
       </div>
     </div>
     <div class="showcase-row reverse">
       <div class="showcase-img">
-        <img src="images/style-settings.png" alt="スタイル設定画面" loading="lazy">
+        <img src="images/style-settings.png" alt="Style Settings" loading="lazy">
       </div>
       <div class="showcase-text">
-        <h3>自分だけの<br>スコアボード</h3>
-        <p>4つのテーマから選び、チームカラーを設定。ピンチで大きさを変え、ドラッグで位置を調整。大会名や日程も表示できます。</p>
+        <h3 class="i18n"
+            data-ja="自分だけの<br>スコアボード"
+            data-en="Your Own<br>Scoreboard"
+            data-ko="나만의<br>스코어보드"></h3>
+        <p class="i18n"
+           data-ja="4つのテーマから選び、チームカラーを設定。ピンチで大きさを変え、ドラッグで位置を調整。タイマーの左右配置も選べます。"
+           data-en="Choose from 4 themes and set team colors. Pinch to resize, drag to reposition. Timer can be placed on the left or right."
+           data-ko="4가지 테마에서 선택하고 팀 컬러를 설정합니다. 핀치로 크기를 변경하고 드래그로 위치를 조정합니다. 타이머는 좌우 배치를 선택할 수 있습니다."></p>
       </div>
     </div>
     <div class="showcase-row">
       <div class="showcase-img">
-        <img src="images/match-detail.png" alt="試合詳細画面" loading="lazy">
+        <img src="images/match-detail.png" alt="Match Detail" loading="lazy">
       </div>
       <div class="showcase-text">
-        <h3>試合の全記録を<br>一目で確認</h3>
-        <p>ゴール、キックオフ、ピリオド終了など、すべてのイベントをタイムライン形式で表示。試合の流れが一目でわかります。</p>
+        <h3 class="i18n"
+            data-ja="試合の全記録を<br>一目で確認"
+            data-en="Full Match Record<br>at a Glance"
+            data-ko="경기 전체 기록을<br>한눈에 확인"></h3>
+        <p class="i18n"
+           data-ja="ゴール、キックオフ、ピリオド終了など、すべてのイベントをタイムライン形式で表示。試合の流れが一目でわかります。"
+           data-en="Goals, kickoffs, period endings — all events displayed in a timeline. See the flow of the match at a glance."
+           data-ko="골, 킥오프, 피리어드 종료 등 모든 이벤트를 타임라인 형식으로 표시합니다. 경기 흐름을 한눈에 파악할 수 있습니다."></p>
       </div>
     </div>
   </section>
@@ -424,10 +493,16 @@
   <section style="padding: 60px 0;">
     <div class="ipad-section">
       <div class="section-label">iPad Ready</div>
-      <h2 style="font-size: clamp(1.5em, 4vw, 2.2em); margin-bottom: 8px;">iPadの大画面でも</h2>
-      <p style="color: var(--text-secondary);">横画面レイアウトで、動画とスコアコントロールを同時に表示</p>
+      <h2 class="i18n" style="font-size: clamp(1.5em, 4vw, 2.2em); margin-bottom: 8px;"
+          data-ja="iPadの大画面でも"
+          data-en="Also on iPad's Big Screen"
+          data-ko="iPad 큰 화면에서도"></h2>
+      <p class="i18n" style="color: var(--text-secondary);"
+         data-ja="横画面レイアウトで、動画とスコアコントロールを同時に表示"
+         data-en="Landscape layout shows video and score controls side by side"
+         data-ko="가로 화면 레이아웃으로 영상과 스코어 컨트롤을 동시에 표시"></p>
       <div class="ipad-frame">
-        <img src="images/ipad-score.png" alt="iPad対応" loading="lazy">
+        <img src="images/ipad-score.png" alt="iPad" loading="lazy">
       </div>
     </div>
   </section>
@@ -435,38 +510,83 @@
   <!-- Features Grid -->
   <section class="section">
     <div class="section-label">Features</div>
-    <h2>充実の機能</h2>
-    <p class="section-desc">少年サッカーから草サッカーまで、あらゆる試合動画をサポート。</p>
+    <h2 class="i18n" data-ja="充実の機能" data-en="Full-Featured" data-ko="풍부한 기능"></h2>
+    <p class="section-desc i18n"
+       data-ja="サッカーからハンドボール、ラグビーまで。あらゆるスポーツの試合動画をサポート。"
+       data-en="From soccer to handball, rugby, and beyond. Supporting match videos for all sports."
+       data-ko="축구에서 핸드볼, 럭비까지. 모든 스포츠의 경기 영상을 지원합니다."></p>
     <div class="feature-grid">
       <div class="feature-card">
         <div class="feature-icon">&#9917;</div>
-        <h3>スコアボード合成</h3>
-        <p>撮影済み動画にスコアボードを重ねてMP4エクスポート</p>
+        <h3 class="i18n" data-ja="スコアボード合成" data-en="Scoreboard Overlay" data-ko="스코어보드 합성"></h3>
+        <p class="i18n"
+           data-ja="撮影済み動画にスコアボードを重ねてMP4エクスポート"
+           data-en="Overlay scoreboards on recorded videos and export as MP4"
+           data-ko="촬영된 영상에 스코어보드를 합성하여 MP4로 내보내기"></p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">&#9201;</div>
-        <h3>タイマー対応</h3>
-        <p>前半・後半・延長戦に対応した試合タイマー</p>
+        <h3 class="i18n" data-ja="タイマー対応" data-en="Match Timer" data-ko="타이머 지원"></h3>
+        <p class="i18n"
+           data-ja="前半・後半・延長戦に対応。タイムアウトで自動停止"
+           data-en="Supports halves and extra time. Auto-pauses on timeout"
+           data-ko="전반/후반/연장전 지원. 타임아웃 시 자동 정지"></p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">&#127942;</div>
-        <h3>PK戦</h3>
-        <p>PK戦の記録と結果表示に対応</p>
+        <h3 class="i18n" data-ja="PK戦" data-en="Penalty Shootout" data-ko="PK전"></h3>
+        <p class="i18n"
+           data-ja="PK戦の記録と結果表示に対応"
+           data-en="Record and display penalty shootout results"
+           data-ko="PK전 기록 및 결과 표시 지원"></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#9202;</div>
+        <h3 class="i18n" data-ja="ペナルティタイマー" data-en="Penalty Timer" data-ko="페널티 타이머"></h3>
+        <p class="i18n"
+           data-ja="退場時間のカウントダウンを表示"
+           data-en="Countdown display for sin-bin / suspension time"
+           data-ko="퇴장 시간 카운트다운 표시"></p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">&#127912;</div>
-        <h3>カスタマイズ</h3>
-        <p>テーマ・カラー・サイズ・位置を自在に調整</p>
+        <h3 class="i18n" data-ja="カスタマイズ" data-en="Customization" data-ko="커스터마이즈"></h3>
+        <p class="i18n"
+           data-ja="テーマ・カラー・サイズ・位置を自在に調整"
+           data-en="Freely adjust theme, color, size, and position"
+           data-ko="테마, 색상, 크기, 위치를 자유롭게 조정"></p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">&#127916;</div>
-        <h3>複数動画結合</h3>
-        <p>前半・後半を1本の動画にまとめて出力</p>
+        <h3 class="i18n" data-ja="複数動画結合" data-en="Merge Videos" data-ko="다중 영상 결합"></h3>
+        <p class="i18n"
+           data-ja="前半・後半を1本の動画にまとめて出力"
+           data-en="Combine first and second halves into one video"
+           data-ko="전반과 후반을 하나의 영상으로 결합하여 출력"></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#9208;</div>
+        <h3 class="i18n" data-ja="タイムアウト" data-en="Timeout" data-ko="타임아웃"></h3>
+        <p class="i18n"
+           data-ja="タイマー自動停止・使用回数をスコアボードに表示"
+           data-en="Auto-pause timer, show timeout count on scoreboard"
+           data-ko="타이머 자동 정지, 사용 횟수를 스코어보드에 표시"></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128250;</div>
+        <h3 class="i18n" data-ja="動画なし記録" data-en="Live Recording" data-ko="영상 없이 기록"></h3>
+        <p class="i18n"
+           data-ja="動画なしでもストップウォッチで試合中にリアルタイム記録"
+           data-en="Record live with a stopwatch, even without a video"
+           data-ko="영상 없이 스톱워치로 실시간 기록"></p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">&#127760;</div>
-        <h3>4言語対応</h3>
-        <p>日本語・英語・韓国語・中国語</p>
+        <h3 class="i18n" data-ja="4言語対応" data-en="4 Languages" data-ko="4개 언어 지원"></h3>
+        <p class="i18n"
+           data-ja="日本語・英語・韓国語・中国語"
+           data-en="Japanese, English, Korean, Chinese"
+           data-ko="일본어, 영어, 한국어, 중국어"></p>
       </div>
     </div>
   </section>
@@ -474,12 +594,41 @@
   <!-- Footer -->
   <footer>
     <nav>
-      <a href="privacy.html">プライバシーポリシー</a>
-      <a href="https://github.com/kangsujang/scoreboard/issues">サポート</a>
-      <a href="mailto:sujang.kang@gmail.com">お問い合わせ</a>
+      <a href="privacy.html" class="i18n" data-ja="プライバシーポリシー" data-en="Privacy Policy" data-ko="개인정보 처리방침"></a>
+      <a href="https://github.com/kangsujang/scoreboard/issues" class="i18n" data-ja="サポート" data-en="Support" data-ko="지원"></a>
+      <a href="mailto:sujang.kang@gmail.com" class="i18n" data-ja="お問い合わせ" data-en="Contact" data-ko="문의"></a>
     </nav>
     <p class="copyright">&copy; 2026 sujang. All rights reserved.</p>
   </footer>
+
+  <script>
+    const LANGS = ['ja', 'en', 'ko'];
+    function setLang(lang) {
+      if (!LANGS.includes(lang)) lang = 'ja';
+      document.documentElement.lang = lang;
+      document.querySelectorAll('.i18n').forEach(el => {
+        const text = el.dataset[lang];
+        if (text) el.innerHTML = text;
+      });
+      LANGS.forEach(l => {
+        const btn = document.getElementById('lang-' + l);
+        if (btn) btn.classList.toggle('active', l === lang);
+      });
+      try { localStorage.setItem('sf-lang', lang); } catch(e) {}
+    }
+    // Auto-detect language
+    (function() {
+      let lang = 'en';
+      try { lang = localStorage.getItem('sf-lang'); } catch(e) {}
+      if (!lang) {
+        const nav = (navigator.language || '').toLowerCase();
+        if (nav.startsWith('ja')) lang = 'ja';
+        else if (nav.startsWith('ko')) lang = 'ko';
+        else lang = 'en';
+      }
+      setLang(lang);
+    })();
+  </script>
 
 </body>
 </html>

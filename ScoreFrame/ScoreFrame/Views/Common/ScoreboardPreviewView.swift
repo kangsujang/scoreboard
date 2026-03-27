@@ -11,6 +11,11 @@ struct ScoreboardPreviewView: View {
     var pkKicks: [PKKick] = []
     var thumbnail: UIImage? = nil
     var videoAspectRatio: CGFloat = 16.0 / 9.0
+    var timerShowPlusPrefix: Bool = false
+    var timerDisplayColor: Color? = nil
+    var penaltyTimers: [PenaltyTimer] = []
+    var timeouts: [TimeoutEvent] = []
+    var currentVideoTime: TimeInterval = 0
 
     /// プレビューとエクスポートで共通の比率定数
     /// baseFontSize = containerWidth * baseRatio
@@ -30,13 +35,15 @@ struct ScoreboardPreviewView: View {
                     Color.clear
                 }
 
-                // Scoreboard overlay + PK
+                // Scoreboard overlay + PK + Penalty timers
                 VStack(alignment: .leading, spacing: geo.size.width * Self.baseRatio * 0.25) {
                     scoreboardContent(containerWidth: geo.size.width)
 
                     if currentPeriodLabel?.lowercased() == "pk", !pkKicks.isEmpty {
                         pkContent(containerWidth: geo.size.width)
                     }
+
+                    penaltyTimerOverlay(containerWidth: geo.size.width)
                 }
                 .scaleEffect(style.scale, anchor: .topLeading)
                 .offset(
@@ -66,25 +73,14 @@ struct ScoreboardPreviewView: View {
         let containerH = base * 1.4 + base * 0.3125 * 2
 
         return HStack(spacing: 0) {
-            // Period label (e.g. 前半, 後半) — leftmost, white bg / black text
-            if let label = currentPeriodLabel, !label.isEmpty {
-                Text(label)
-                    .font(.system(size: base * 0.55, weight: .bold))
-                    .foregroundStyle(.black)
-                    .padding(.horizontal, base * 0.375)
-                    .frame(maxHeight: .infinity)
-                    .background(.white)
+            // Period label (LEFT: before timer)
+            if style.timerPosition == .left {
+                periodLabelSection(base: base)
             }
 
-            // Timer section (inverted: light bg, dark text)
-            // PK中はタイマーを非表示
-            if style.showMatchTimer, currentPeriodLabel?.lowercased() != "pk" {
-                Text("00:00")
-                    .font(.custom("Arial-BoldMT", size: base * 0.6))
-                    .foregroundStyle(Color.scoreboardTimerText(for: style.theme))
-                    .padding(.horizontal, base * 0.5)
-                    .frame(maxHeight: .infinity)
-                    .background(Color.scoreboardText(for: style.theme))
+            // Timer section (LEFT position)
+            if style.timerPosition == .left {
+                timerSection(base: base)
             }
 
             // Main section: team names + score circles
@@ -93,7 +89,8 @@ struct ScoreboardPreviewView: View {
                 teamLabel(
                     name: homeTeamName,
                     color: style.homeTeamColor ?? Color.scoreboardScore(for: style.theme),
-                    base: base
+                    base: base,
+                    team: .home
                 )
 
                 if style.showScore {
@@ -111,16 +108,48 @@ struct ScoreboardPreviewView: View {
                 teamLabel(
                     name: awayTeamName,
                     color: style.awayTeamColor ?? Color.scoreboardScore(for: style.theme),
-                    base: base
+                    base: base,
+                    team: .away
                 )
             }
             .padding(.horizontal, base * 0.5)
             .padding(.vertical, base * 0.3125)
+
+            // Timer section (RIGHT position)
+            if style.timerPosition == .right {
+                timerSection(base: base)
+                periodLabelSection(base: base)
+            }
         }
         .frame(height: containerH)
         .fixedSize(horizontal: true, vertical: false)
         .background(Color.scoreboardBackground(for: style.theme))
         .clipShape(RoundedRectangle(cornerRadius: base * 0.375))
+    }
+
+    @ViewBuilder
+    private func periodLabelSection(base: CGFloat) -> some View {
+        if let label = currentPeriodLabel, !label.isEmpty {
+            Text(label)
+                .font(.system(size: base * 0.55, weight: .bold))
+                .foregroundStyle(.black)
+                .padding(.horizontal, base * 0.375)
+                .frame(maxHeight: .infinity)
+                .background(.white)
+        }
+    }
+
+    @ViewBuilder
+    private func timerSection(base: CGFloat) -> some View {
+        if style.showMatchTimer, currentPeriodLabel?.lowercased() != "pk" {
+            let timerColor = timerDisplayColor ?? Color.scoreboardTimerText(for: style.theme)
+            Text(timerShowPlusPrefix ? "+00:00" : "00:00")
+                .font(.custom("Arial-BoldMT", size: base * 0.6))
+                .foregroundStyle(timerColor)
+                .padding(.horizontal, base * 0.5)
+                .frame(maxHeight: .infinity)
+                .background(Color.scoreboardText(for: style.theme))
+        }
     }
 
     private func matchInfoContent(info: String, containerWidth: CGFloat) -> some View {
@@ -134,12 +163,28 @@ struct ScoreboardPreviewView: View {
             .clipShape(RoundedRectangle(cornerRadius: base * 0.375))
     }
 
-    private func teamLabel(name: String, color: Color, base: CGFloat) -> some View {
-        VStack(spacing: base * 0.125) {
-            Text(name)
-                .font(.system(size: base * 0.65, weight: .semibold))
-                .foregroundStyle(Color.scoreboardText(for: style.theme))
-                .lineLimit(1)
+    private func teamLabel(name: String, color: Color, base: CGFloat, team: Team) -> some View {
+        let toCount = style.showTimeouts
+            ? timeouts.filter { $0.team == team && $0.timestamp <= currentVideoTime }.count
+            : 0
+
+        return VStack(spacing: base * 0.125) {
+            HStack(spacing: base * 0.1) {
+                Text(name)
+                    .font(.system(size: base * 0.65, weight: .semibold))
+                    .foregroundStyle(Color.scoreboardText(for: style.theme))
+                    .lineLimit(1)
+
+                if toCount > 0 {
+                    HStack(spacing: base * 0.08) {
+                        ForEach(0..<toCount, id: \.self) { _ in
+                            Circle()
+                                .fill(.yellow)
+                                .frame(width: base * 0.25, height: base * 0.25)
+                        }
+                    }
+                }
+            }
 
             Rectangle()
                 .fill(color)
@@ -148,15 +193,79 @@ struct ScoreboardPreviewView: View {
         .padding(.horizontal, base * 0.65 * 2) // 2文字分の余白
     }
 
+    private func formatCountdown(_ seconds: TimeInterval) -> String {
+        let s = Int(ceil(seconds))
+        return String(format: "%d:%02d", s / 60, s % 60)
+    }
+
     private func scoreCircle(_ score: Int, base: CGFloat) -> some View {
-        Text("\(score)")
+        let height = base * 1.4
+        let digitCount = max(1, String(score).count)
+        let width = digitCount <= 2 ? height : height + CGFloat(digitCount - 2) * base * 0.7
+        return Text("\(score)")
             .font(.system(size: base * 0.85, weight: .bold))
             .foregroundStyle(Color.scoreboardTimerText(for: style.theme))
             .contentTransition(.numericText())
-            .frame(width: base * 1.4, height: base * 1.4)
-            .background(Circle().fill(Color.scoreboardText(for: style.theme)))
-            .scaleEffect(1.0)
+            .frame(width: width, height: height)
+            .background(Capsule().fill(Color.scoreboardText(for: style.theme)))
             .animation(.bouncy(duration: 0.4, extraBounce: 0.2), value: score)
+    }
+
+    // MARK: - Penalty Timer Overlay (outside scoreboard)
+
+    @ViewBuilder
+    private func penaltyTimerOverlay(containerWidth: CGFloat) -> some View {
+        let base = containerWidth * Self.baseRatio
+        let homeActive = penaltyTimers
+            .filter { $0.team == .home && $0.remainingSeconds(at: currentVideoTime) != nil }
+            .sorted { $0.timestamp < $1.timestamp }
+        let awayActive = penaltyTimers
+            .filter { $0.team == .away && $0.remainingSeconds(at: currentVideoTime) != nil }
+            .sorted { $0.timestamp < $1.timestamp }
+
+        if !homeActive.isEmpty || !awayActive.isEmpty {
+            HStack(spacing: base * 0.5) {
+                // Home penalty timers
+                if !homeActive.isEmpty {
+                    HStack(spacing: base * 0.2) {
+                        Text(homeTeamName)
+                            .font(.system(size: base * 0.45, weight: .semibold))
+                            .foregroundStyle(Color.scoreboardText(for: style.theme))
+                            .lineLimit(1)
+                        ForEach(homeActive) { timer in
+                            if let remaining = timer.remainingSeconds(at: currentVideoTime) {
+                                Text(formatCountdown(remaining))
+                                    .font(.custom("Arial-BoldMT", size: base * 0.45))
+                                    .foregroundStyle(.yellow)
+                                    .monospacedDigit()
+                            }
+                        }
+                    }
+                }
+
+                // Away penalty timers
+                if !awayActive.isEmpty {
+                    HStack(spacing: base * 0.2) {
+                        Text(awayTeamName)
+                            .font(.system(size: base * 0.45, weight: .semibold))
+                            .foregroundStyle(Color.scoreboardText(for: style.theme))
+                            .lineLimit(1)
+                        ForEach(awayActive) { timer in
+                            if let remaining = timer.remainingSeconds(at: currentVideoTime) {
+                                Text(formatCountdown(remaining))
+                                    .font(.custom("Arial-BoldMT", size: base * 0.45))
+                                    .foregroundStyle(.yellow)
+                                    .monospacedDigit()
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, base * 0.4)
+            .padding(.vertical, base * 0.2)
+            .background(Color.scoreboardBackground(for: style.theme))
+            .clipShape(RoundedRectangle(cornerRadius: base * 0.375))
+        }
     }
 
     // MARK: - PK Display

@@ -16,6 +16,8 @@ final class Match {
     var timerSegmentsData: Data?        // [TimerSegment] を JSON エンコード保存
     var matchInfo: String?              // 大会名・日程などの試合情報
     var pkKicksData: Data?              // [PKKick] を JSON エンコード保存
+    var penaltyTimersData: Data?       // [PenaltyTimer] を JSON エンコード保存
+    var timeoutsData: Data?            // [TimeoutEvent] を JSON エンコード保存
     var skipOverlay: Bool = false       // スコアボードオーバーレイを付けず動画のみ結合
 
     @Relationship(deleteRule: .cascade, inverse: \ScoreEvent.match)
@@ -176,6 +178,63 @@ final class Match {
 
     func pkKicksAt(time: TimeInterval) -> [PKKick] {
         pkKicks.filter { $0.timestamp <= time }
+    }
+
+    func activeTimerSegment(at videoTime: TimeInterval) -> TimerSegment? {
+        if let idx = segmentIndex(at: videoTime) {
+            return timerSegments[idx]
+        }
+        // セグメント外 → 直前のアクティブセグメントを返す
+        var lastSeg: TimerSegment?
+        for seg in timerSegments {
+            guard let start = seg.effectiveStartTime else { continue }
+            if start <= videoTime { lastSeg = seg }
+        }
+        return lastSeg
+    }
+
+    // MARK: - Penalty Timers
+
+    var penaltyTimers: [PenaltyTimer] {
+        get {
+            guard let data = penaltyTimersData,
+                  let timers = try? JSONDecoder().decode([PenaltyTimer].self, from: data) else {
+                return []
+            }
+            return timers
+        }
+        set {
+            penaltyTimersData = try? JSONEncoder().encode(newValue)
+        }
+    }
+
+    func activePenaltyTimers(at videoTime: TimeInterval, for team: Team) -> [PenaltyTimer] {
+        penaltyTimers
+            .filter { $0.team == team && $0.remainingSeconds(at: videoTime) != nil }
+            .sorted { $0.timestamp < $1.timestamp }
+    }
+
+    // MARK: - Timeouts
+
+    var timeouts: [TimeoutEvent] {
+        get {
+            guard let data = timeoutsData,
+                  let events = try? JSONDecoder().decode([TimeoutEvent].self, from: data) else {
+                return []
+            }
+            return events
+        }
+        set {
+            timeoutsData = try? JSONEncoder().encode(newValue)
+        }
+    }
+
+    func timeoutCount(for team: Team, at videoTime: TimeInterval) -> Int {
+        timeouts.filter { $0.team == team && $0.timestamp <= videoTime }.count
+    }
+
+    func isTimeoutActive(at videoTime: TimeInterval) -> Bool {
+        timeouts.contains { $0.isActive(at: videoTime) }
     }
 
     func scoreAt(time: TimeInterval) -> (home: Int, away: Int) {

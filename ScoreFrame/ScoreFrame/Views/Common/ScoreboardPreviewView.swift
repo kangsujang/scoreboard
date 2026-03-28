@@ -177,17 +177,17 @@ struct ScoreboardPreviewView: View {
                 if videoTime < kickoff {
                     return offset
                 }
-                let elapsed = max(0, Int(videoTime) - Int(kickoff))
-                let paused = timeouts.reduce(0) { sum, timeout in
-                    sum + Int(timeout.pausedSeconds(from: kickoff, to: videoTime))
+                let elapsed = videoTime - kickoff
+                let paused = timeouts.reduce(TimeInterval(0)) { sum, timeout in
+                    sum + timeout.pausedSeconds(from: kickoff, to: videoTime)
                 }
-                return max(0, elapsed - paused) + offset
+                return max(0, Int(elapsed - paused)) + offset
             } else if videoTime > stop {
-                let elapsed = max(0, Int(stop) - Int(kickoff))
-                let paused = timeouts.reduce(0) { sum, timeout in
-                    sum + Int(timeout.pausedSeconds(from: kickoff, to: stop))
+                let elapsed = stop - kickoff
+                let paused = timeouts.reduce(TimeInterval(0)) { sum, timeout in
+                    sum + timeout.pausedSeconds(from: kickoff, to: stop)
                 }
-                lastMatchSecond = max(0, elapsed - paused) + offset
+                lastMatchSecond = max(0, Int(elapsed - paused)) + offset
             } else {
                 break
             }

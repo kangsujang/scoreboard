@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ScoreFrame</string>
+
+    <!-- Match List -->
+    <string name="match_list_title">Matches</string>
+    <string name="match_list_empty">No matches yet.\nTap + to create one.</string>
+    <string name="new_match">New Match</string>
+    <string name="delete_match">Delete</string>
+
+    <!-- Match Setup -->
+    <string name="match_setup_title">New Match</string>
+    <string name="home_team">Home Team</string>
+    <string name="away_team">Away Team</string>
+    <string name="match_info_label">Match Info</string>
+    <string name="match_info_placeholder">Tournament / Schedule</string>
+    <string name="select_videos">Select Videos</string>
+    <string name="add_video">Add Video</string>
+    <string name="max_videos">Up to 10 videos</string>
+    <string name="next">Next</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Score Editor -->
+    <string name="score_editor_title">Score Editor</string>
+    <string name="goal">Goal</string>
+    <string name="undo">Undo</string>
+    <string name="events">Events</string>
+    <string name="no_events">No events yet</string>
+    <string name="finish">Finish</string>
+    <string name="timer">Timer</string>
+    <string name="start_timer">Start</string>
+    <string name="stop_timer">Stop</string>
+    <string name="reset_timer">Reset</string>
+    <string name="period_label">Period Label</string>
+    <string name="add_period">Add Period</string>
+    <string name="penalty_timer">Penalty Timer</string>
+    <string name="timeout">Timeout</string>
+    <string name="pk_mode">PK</string>
+
+    <!-- Period Presets -->
+    <string name="period_first_half">1st Half</string>
+    <string name="period_second_half">2nd Half</string>
+    <string name="period_extra_first">ET 1st</string>
+    <string name="period_extra_second">ET 2nd</string>
+
+    <!-- Match Detail -->
+    <string name="match_detail_title">Match Detail</string>
+    <string name="edit_style">Edit Style</string>
+    <string name="manage_videos">Manage Videos</string>
+    <string name="export_video">Export Video</string>
+
+    <!-- Scoreboard Style -->
+    <string name="style_title">Scoreboard Style</string>
+    <string name="theme">Theme</string>
+    <string name="show_score">Show Score</string>
+    <string name="show_timer">Show Timer</string>
+    <string name="timer_position">Timer Position</string>
+    <string name="timer_left">Left</string>
+    <string name="timer_right">Right</string>
+    <string name="show_timer_options">Timer Options</string>
+    <string name="show_penalty_timer">Penalty Timer</string>
+    <string name="show_timeouts">Timeouts</string>
+    <string name="home_team_color">Home Team Color</string>
+    <string name="away_team_color">Away Team Color</string>
+    <string name="done">Done</string>
+
+    <!-- Export -->
+    <string name="export_title">Export</string>
+    <string name="exporting">Exporting…</string>
+    <string name="export_complete">Export Complete</string>
+    <string name="export_failed">Export Failed</string>
+    <string name="share">Share</string>
+    <string name="save_to_gallery">Save to Gallery</string>
+    <string name="back_to_list">Back to List</string>
+    <string name="skip_overlay">Video Only (No Overlay)</string>
+
+    <!-- Playback -->
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="speed">Speed</string>
+</resources>

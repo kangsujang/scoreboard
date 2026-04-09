@@ -35,3 +35,12 @@ Pods/
 
 # Claude
 .claude/
+
+# Android
+ScoreFrame-Android/.gradle/
+ScoreFrame-Android/.idea/
+ScoreFrame-Android/build/
+ScoreFrame-Android/app/build/
+ScoreFrame-Android/local.properties
+ScoreFrame-Android/captures/
+*.iml

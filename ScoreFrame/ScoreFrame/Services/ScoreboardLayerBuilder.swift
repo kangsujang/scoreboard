@@ -122,12 +122,32 @@ struct ScoreboardLayerBuilder {
         let showScore = config.style.showScore
         let vsFontSize = base * 0.6
         let vsTextWidth = estimateTextWidth("vs", fontSize: vsFontSize)
-        let mainContentWidth: CGFloat
+        // タイムアウト表示用の縦並びドット列（最大3つ/列）
+        let timeoutDotSize: CGFloat = base * 0.3
+        let timeoutDotSpacing: CGFloat = base * 0.1
+        let timeoutMaxRows = 3
+        let homeTOCount = config.style.showTimeouts
+            ? config.timeouts.filter { $0.team == .home }.count
+            : 0
+        let awayTOCount = config.style.showTimeouts
+            ? config.timeouts.filter { $0.team == .away }.count
+            : 0
+        func timeoutColumnWidth(_ count: Int) -> CGFloat {
+            guard count > 0 else { return 0 }
+            let cols = (count + timeoutMaxRows - 1) / timeoutMaxRows
+            return CGFloat(cols) * timeoutDotSize + CGFloat(cols - 1) * timeoutDotSpacing
+        }
+        let homeDotColW = timeoutColumnWidth(homeTOCount)
+        let awayDotColW = timeoutColumnWidth(awayTOCount)
+
+        var mainContentWidth: CGFloat
         if showScore {
             mainContentWidth = homeAreaWidth + gap + circleWidth + gap + circleWidth + gap + awayAreaWidth
         } else {
             mainContentWidth = homeAreaWidth + gap + vsTextWidth + gap + awayAreaWidth
         }
+        if homeDotColW > 0 { mainContentWidth += homeDotColW + gap }
+        if awayDotColW > 0 { mainContentWidth += awayDotColW + gap }
         let mainWidth = mainContentWidth + mainPaddingH * 2
 
         // ── コンテナサイズ ──
@@ -247,26 +267,30 @@ struct ScoreboardLayerBuilder {
         homeLabel.frame = CGRect(x: x, y: teamVStackY, width: homeTextWidth, height: teamTextFrameH)
         container.addSublayer(homeLabel)
 
-        // Home timeout dots
-        if config.style.showTimeouts {
-            addTimeoutDots(
-                to: container,
-                team: .home,
-                timeouts: config.timeouts,
-                x: x + homeTextWidth + base * 0.1,
-                centerY: teamVStackY + teamTextFrameH / 2,
-                dotSize: base * 0.25,
-                spacing: base * 0.08,
-                duration: config.videoDuration
-            )
-        }
-
         let homeAccent = CALayer()
         homeAccent.frame = CGRect(x: x, y: accentY, width: homeTextWidth, height: accentHeight)
         homeAccent.backgroundColor = config.homeTeamColor ?? scoreColor(for: theme)
         container.addSublayer(homeAccent)
 
         x += homeTextWidth + teamNamePadding + gap
+
+        // Home timeout dots (縦並び、最大3つ/列、チーム名とスコアの間)
+        // ホーム側: 列は内側(スコア寄り)から外側(チーム名寄り)へ拡張 → 右詰め
+        if homeDotColW > 0 {
+            addTimeoutDotsVertical(
+                to: container,
+                team: .home,
+                timeouts: config.timeouts,
+                x: x,
+                centerY: centerY,
+                dotSize: timeoutDotSize,
+                spacing: timeoutDotSpacing,
+                maxRows: timeoutMaxRows,
+                reverseColumns: true,
+                duration: config.videoDuration
+            )
+            x += homeDotColW + gap
+        }
 
         if showScore {
             // Home score circle
@@ -278,6 +302,15 @@ struct ScoreboardLayerBuilder {
             homeCircleBg.backgroundColor = textColor(for: theme)
             homeCircleBg.cornerRadius = circleSize / 2
             homeCircleWrapper.addSublayer(homeCircleBg)
+
+            addScoreBackgroundFlashAnimation(
+                to: homeCircleBg,
+                baseColor: textColor(for: theme),
+                flashColor: scoreFlashColor(for: theme),
+                events: config.events,
+                team: .home,
+                duration: config.videoDuration
+            )
 
             let homeScoreFrame = CGRect(
                 x: 0,
@@ -314,6 +347,15 @@ struct ScoreboardLayerBuilder {
             awayCircleBg.backgroundColor = textColor(for: theme)
             awayCircleBg.cornerRadius = circleSize / 2
             awayCircleWrapper.addSublayer(awayCircleBg)
+
+            addScoreBackgroundFlashAnimation(
+                to: awayCircleBg,
+                baseColor: textColor(for: theme),
+                flashColor: scoreFlashColor(for: theme),
+                events: config.events,
+                team: .away,
+                duration: config.videoDuration
+            )
 
             let awayScoreFrame = CGRect(
                 x: 0,
@@ -361,6 +403,24 @@ struct ScoreboardLayerBuilder {
             x += vsTextWidth + gap
         }
 
+        // Away timeout dots (縦並び、スコアとチーム名の間)
+        // アウェイ側: 列は内側(スコア寄り)から外側(チーム名寄り)へ拡張 → 左詰め
+        if awayDotColW > 0 {
+            addTimeoutDotsVertical(
+                to: container,
+                team: .away,
+                timeouts: config.timeouts,
+                x: x,
+                centerY: centerY,
+                dotSize: timeoutDotSize,
+                spacing: timeoutDotSpacing,
+                maxRows: timeoutMaxRows,
+                reverseColumns: false,
+                duration: config.videoDuration
+            )
+            x += awayDotColW + gap
+        }
+
         // Away team name（左右に teamNamePadding 分の余白）
         x += teamNamePadding
         let awayLabel = makeTextLayer(
@@ -372,20 +432,6 @@ struct ScoreboardLayerBuilder {
         awayLabel.string = config.awayTeamName
         awayLabel.frame = CGRect(x: x, y: teamVStackY, width: awayTextWidth, height: teamTextFrameH)
         container.addSublayer(awayLabel)
-
-        // Away timeout dots
-        if config.style.showTimeouts {
-            addTimeoutDots(
-                to: container,
-                team: .away,
-                timeouts: config.timeouts,
-                x: x + awayTextWidth + base * 0.1,
-                centerY: teamVStackY + teamTextFrameH / 2,
-                dotSize: base * 0.25,
-                spacing: base * 0.08,
-                duration: config.videoDuration
-            )
-        }
 
         let awayAccent = CALayer()
         awayAccent.frame = CGRect(x: x, y: accentY, width: awayTextWidth, height: accentHeight)
@@ -647,6 +693,71 @@ struct ScoreboardLayerBuilder {
         animation.fillMode = .forwards
 
         layer.add(animation, forKey: "scorePulse")
+    }
+
+    // MARK: - Score Background Flash Animation
+
+    /// 得点時にスコア円の背景色を一時的に強調色へ変化させるアニメーション
+    private static func addScoreBackgroundFlashAnimation(
+        to layer: CALayer,
+        baseColor: CGColor,
+        flashColor: CGColor,
+        events: [ScoreEvent],
+        team: Team,
+        duration: TimeInterval
+    ) {
+        let teamEvents = events.filter { $0.team == team }.sorted { $0.timestamp < $1.timestamp }
+        guard !teamEvents.isEmpty, duration > 0 else { return }
+
+        let flashDuration: TimeInterval = 1.0
+        var keyTimes: [NSNumber] = [0.0]
+        var values: [CGColor] = [baseColor]
+
+        for event in teamEvents {
+            let startFrac = event.timestamp / duration
+            let peakFrac = (event.timestamp + flashDuration * 0.1) / duration
+            let holdFrac = (event.timestamp + flashDuration * 0.7) / duration
+            let endFrac = (event.timestamp + flashDuration) / duration
+
+            guard startFrac < 1.0 else { continue }
+
+            keyTimes.append(NSNumber(value: min(startFrac, 1.0)))
+            values.append(baseColor)
+            keyTimes.append(NSNumber(value: min(peakFrac, 1.0)))
+            values.append(flashColor)
+            keyTimes.append(NSNumber(value: min(holdFrac, 1.0)))
+            values.append(flashColor)
+            keyTimes.append(NSNumber(value: min(endFrac, 1.0)))
+            values.append(baseColor)
+        }
+
+        if let lastTime = keyTimes.last?.doubleValue, lastTime < 1.0 {
+            keyTimes.append(1.0)
+            values.append(baseColor)
+        }
+
+        guard keyTimes.count >= 3 else { return }
+
+        let animation = CAKeyframeAnimation(keyPath: "backgroundColor")
+        animation.keyTimes = keyTimes
+        animation.values = values
+        animation.calculationMode = .linear
+        animation.duration = duration
+        animation.beginTime = AVCoreAnimationBeginTimeAtZero
+        animation.isRemovedOnCompletion = false
+        animation.fillMode = .forwards
+
+        layer.add(animation, forKey: "scoreBgFlash")
+    }
+
+    /// 得点時の背景強調色（テーマごと）
+    private static func scoreFlashColor(for theme: ScoreboardStyle.Theme) -> CGColor {
+        switch theme {
+        case .dark, .broadcast, .minimal:
+            return UIColor(red: 1.0, green: 0.843, blue: 0.0, alpha: 1.0).cgColor
+        case .light:
+            return UIColor.systemOrange.cgColor
+        }
     }
 
     // MARK: - Opacity Animation Helper
@@ -1319,6 +1430,108 @@ struct ScoreboardLayerBuilder {
                 anim.isRemovedOnCompletion = false
                 anim.fillMode = .forwards
                 dot.add(anim, forKey: "dotOpacity")
+            }
+
+            container.addSublayer(dot)
+        }
+    }
+
+    /// タイムアウト回数を縦並び（最大 maxRows 個/列、列を追加して展開）で表示
+    /// - reverseColumns: true の場合、列は右→左へ拡張（ホーム側用）
+    private static func addTimeoutDotsVertical(
+        to container: CALayer,
+        team: Team,
+        timeouts: [TimeoutEvent],
+        x: CGFloat,
+        centerY: CGFloat,
+        dotSize: CGFloat,
+        spacing: CGFloat,
+        maxRows: Int,
+        reverseColumns: Bool = false,
+        duration: TimeInterval
+    ) {
+        let teamTimeouts = timeouts
+            .filter { $0.team == team }
+            .sorted { $0.timestamp < $1.timestamp }
+        guard !teamTimeouts.isEmpty, duration > 0 else { return }
+
+        // 1つでも上から並ぶように、高さは常に maxRows 分確保
+        let columnHeight = CGFloat(maxRows) * dotSize + CGFloat(maxRows - 1) * spacing
+        let topY = centerY - columnHeight / 2
+        let totalCols = (teamTimeouts.count + maxRows - 1) / maxRows
+
+        let inactiveColor = UIColor.yellow.cgColor
+        let activeColor = UIColor.systemRed.cgColor
+
+        for (i, timeout) in teamTimeouts.enumerated() {
+            let logicalCol = i / maxRows
+            let row = i % maxRows
+            let visualCol = reverseColumns ? (totalCols - 1 - logicalCol) : logicalCol
+            let dotX = x + CGFloat(visualCol) * (dotSize + spacing)
+            let dotY = topY + CGFloat(row) * (dotSize + spacing)
+
+            let dot = CALayer()
+            dot.frame = CGRect(x: dotX, y: dotY, width: dotSize, height: dotSize)
+            dot.cornerRadius = dotSize / 2
+            dot.backgroundColor = inactiveColor
+            dot.opacity = 0.0
+
+            // opacity: タイムアウト開始時に出現
+            let startT = timeout.timestamp / duration
+            var opKeyTimes: [NSNumber] = []
+            var opValues: [Float] = []
+            if startT > 0 {
+                opKeyTimes.append(0.0)
+                opValues.append(0.0)
+            }
+            opKeyTimes.append(NSNumber(value: min(startT, 1.0)))
+            opValues.append(1.0)
+            opKeyTimes.append(1.0)
+            opValues.append(1.0)
+
+            if opKeyTimes.count >= 2 {
+                let anim = CAKeyframeAnimation(keyPath: "opacity")
+                anim.keyTimes = opKeyTimes
+                anim.values = opValues
+                anim.calculationMode = .discrete
+                anim.duration = duration
+                anim.beginTime = AVCoreAnimationBeginTimeAtZero
+                anim.isRemovedOnCompletion = false
+                anim.fillMode = .forwards
+                dot.add(anim, forKey: "dotOpacity")
+            }
+
+            // backgroundColor: アクティブ区間だけ強調色
+            let activeStart = timeout.timestamp / duration
+            let activeEnd: Double = {
+                if let end = timeout.endTimestamp {
+                    return min(end / duration, 1.0)
+                }
+                return 1.0
+            }()
+            if activeStart < 1.0, activeEnd > activeStart {
+                var bgKeyTimes: [NSNumber] = [0.0]
+                var bgValues: [CGColor] = [inactiveColor]
+                bgKeyTimes.append(NSNumber(value: min(activeStart, 1.0)))
+                bgValues.append(activeColor)
+                if activeEnd < 1.0 {
+                    bgKeyTimes.append(NSNumber(value: activeEnd))
+                    bgValues.append(inactiveColor)
+                    bgKeyTimes.append(1.0)
+                    bgValues.append(inactiveColor)
+                } else {
+                    bgKeyTimes.append(1.0)
+                    bgValues.append(activeColor)
+                }
+                let bgAnim = CAKeyframeAnimation(keyPath: "backgroundColor")
+                bgAnim.keyTimes = bgKeyTimes
+                bgAnim.values = bgValues
+                bgAnim.calculationMode = .discrete
+                bgAnim.duration = duration
+                bgAnim.beginTime = AVCoreAnimationBeginTimeAtZero
+                bgAnim.isRemovedOnCompletion = false
+                bgAnim.fillMode = .forwards
+                dot.add(bgAnim, forKey: "dotBgColor")
             }
 
             container.addSublayer(dot)

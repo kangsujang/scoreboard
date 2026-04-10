@@ -209,8 +209,9 @@ final class Match {
     }
 
     func activePenaltyTimers(at videoTime: TimeInterval, for team: Team) -> [PenaltyTimer] {
-        penaltyTimers
-            .filter { $0.team == team && $0.remainingSeconds(at: videoTime) != nil }
+        let tos = timeouts
+        return penaltyTimers
+            .filter { $0.team == team && $0.remainingSeconds(at: videoTime, timeouts: tos) != nil }
             .sorted { $0.timestamp < $1.timestamp }
     }
 

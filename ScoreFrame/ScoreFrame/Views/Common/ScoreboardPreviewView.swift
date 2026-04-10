@@ -18,6 +18,19 @@ struct ScoreboardPreviewView: View {
     var timerSegments: [TimerSegment] = []
     var currentVideoTime: TimeInterval = 0
 
+    @State private var homeFlash: Bool = false
+    @State private var awayFlash: Bool = false
+
+    /// 得点時の背景強調色（テーマごと）
+    private var flashColor: Color {
+        switch style.theme {
+        case .light:
+            return .orange
+        case .dark, .broadcast, .minimal:
+            return Color(red: 1.0, green: 0.843, blue: 0.0)
+        }
+    }
+
     /// プレビューとエクスポートで共通の比率定数
     /// baseFontSize = containerWidth * baseRatio
     static let baseRatio: CGFloat = 0.044
@@ -66,6 +79,18 @@ struct ScoreboardPreviewView: View {
         .contentShape(Rectangle())
         .aspectRatio(videoAspectRatio, contentMode: .fit)
         .clipShape(RoundedRectangle(cornerRadius: 8))
+        .onChange(of: homeScore) { _, _ in
+            homeFlash = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+                homeFlash = false
+            }
+        }
+        .onChange(of: awayScore) { _, _ in
+            awayFlash = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+                awayFlash = false
+            }
+        }
     }
 
     private func scoreboardContent(containerWidth: CGFloat) -> some View {
@@ -94,16 +119,22 @@ struct ScoreboardPreviewView: View {
                     team: .home
                 )
 
+                // Home timeout dots (team name と score の間)
+                timeoutColumn(team: .home, base: base)
+
                 if style.showScore {
                     // Home score circle
-                    scoreCircle(homeScore, base: base)
+                    scoreCircle(homeScore, base: base, flashing: homeFlash)
                     // Away score circle
-                    scoreCircle(awayScore, base: base)
+                    scoreCircle(awayScore, base: base, flashing: awayFlash)
                 } else {
                     Text("vs")
                         .font(.system(size: base * 0.6, weight: .semibold))
                         .foregroundStyle(Color.scoreboardText(for: style.theme).opacity(0.6))
                 }
+
+                // Away timeout dots (score と team name の間)
+                timeoutColumn(team: .away, base: base)
 
                 // Away team name with underline
                 teamLabel(
@@ -207,27 +238,11 @@ struct ScoreboardPreviewView: View {
     }
 
     private func teamLabel(name: String, color: Color, base: CGFloat, team: Team) -> some View {
-        let toCount = style.showTimeouts
-            ? timeouts.filter { $0.team == team && $0.timestamp <= currentVideoTime }.count
-            : 0
-
-        return VStack(spacing: base * 0.125) {
-            HStack(spacing: base * 0.1) {
-                Text(name)
-                    .font(.system(size: base * 0.65, weight: .semibold))
-                    .foregroundStyle(Color.scoreboardText(for: style.theme))
-                    .lineLimit(1)
-
-                if toCount > 0 {
-                    HStack(spacing: base * 0.08) {
-                        ForEach(0..<toCount, id: \.self) { _ in
-                            Circle()
-                                .fill(.yellow)
-                                .frame(width: base * 0.25, height: base * 0.25)
-                        }
-                    }
-                }
-            }
+        VStack(spacing: base * 0.125) {
+            Text(name)
+                .font(.system(size: base * 0.65, weight: .semibold))
+                .foregroundStyle(Color.scoreboardText(for: style.theme))
+                .lineLimit(1)
 
             Rectangle()
                 .fill(color)
@@ -236,21 +251,73 @@ struct ScoreboardPreviewView: View {
         .padding(.horizontal, base * 0.65 * 2) // 2文字分の余白
     }
 
+    /// タイムアウト回数の縦並び表示（最大3つ/列、常に上から配置）
+    /// - ホーム側は内側(スコア寄り)から外側(チーム名寄り)に列を追加 → 列順を反転
+    /// - アウェイ側は内側から外側 → 列順そのまま
+    @ViewBuilder
+    private func timeoutColumn(team: Team, base: CGFloat) -> some View {
+        let visibleTimeouts: [TimeoutEvent] = style.showTimeouts
+            ? timeouts
+                .filter { $0.team == team && $0.timestamp <= currentVideoTime }
+                .sorted { $0.timestamp < $1.timestamp }
+            : []
+        let count = visibleTimeouts.count
+        if count > 0 {
+            let maxRows = 3
+            let cols = (count + maxRows - 1) / maxRows
+            let dotSize = base * 0.3
+            let spacing = base * 0.1
+            let columnHeight = CGFloat(maxRows) * dotSize + CGFloat(maxRows - 1) * spacing
+            // 論理列順: 0 が最初 (内側)。ホームは反転して右端を最初に描画
+            let order: [Int] = team == .home
+                ? Array((0..<cols).reversed())
+                : Array(0..<cols)
+            HStack(alignment: .top, spacing: spacing) {
+                ForEach(order, id: \.self) { logicalCol in
+                    let rowsInCol = min(maxRows, count - logicalCol * maxRows)
+                    VStack(alignment: .center, spacing: spacing) {
+                        ForEach(0..<maxRows, id: \.self) { row in
+                            if row < rowsInCol {
+                                let idx = logicalCol * maxRows + row
+                                let isActive = visibleTimeouts[idx].isActive(at: currentVideoTime)
+                                Circle()
+                                    .fill(isActive ? Color.red : Color.yellow)
+                                    .frame(width: dotSize, height: dotSize)
+                            } else {
+                                Color.clear
+                                    .frame(width: dotSize, height: dotSize)
+                            }
+                        }
+                    }
+                    .frame(height: columnHeight, alignment: .top)
+                }
+            }
+            .frame(height: columnHeight, alignment: .top)
+        }
+    }
+
     private func formatCountdown(_ seconds: TimeInterval) -> String {
         let s = Int(ceil(seconds))
         return String(format: "%d:%02d", s / 60, s % 60)
     }
 
-    private func scoreCircle(_ score: Int, base: CGFloat) -> some View {
+    private func scoreCircle(_ score: Int, base: CGFloat, flashing: Bool = false) -> some View {
         let height = base * 1.4
         let digitCount = max(1, String(score).count)
         let width = digitCount <= 2 ? height : height + CGFloat(digitCount - 2) * base * 0.7
+        let bgColor = flashing ? flashColor : Color.scoreboardText(for: style.theme)
         return Text("\(score)")
             .font(.system(size: base * 0.85, weight: .bold))
             .foregroundStyle(Color.scoreboardTimerText(for: style.theme))
             .contentTransition(.numericText())
             .frame(width: width, height: height)
-            .background(Capsule().fill(Color.scoreboardText(for: style.theme)))
+            .background(
+                Capsule()
+                    .fill(bgColor)
+                    .animation(.easeInOut(duration: 0.2), value: flashing)
+            )
+            .scaleEffect(flashing ? 1.2 : 1.0)
+            .animation(.bouncy(duration: 0.4, extraBounce: 0.3), value: flashing)
             .animation(.bouncy(duration: 0.4, extraBounce: 0.2), value: score)
     }
 

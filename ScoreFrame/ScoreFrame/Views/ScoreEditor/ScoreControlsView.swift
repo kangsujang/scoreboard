@@ -730,7 +730,7 @@ private struct PenaltyTimerSection: View {
                 .font(.caption2)
                 .lineLimit(1)
             Spacer()
-            if let remaining = timer.remainingSeconds(at: currentTime) {
+            if let remaining = timer.remainingSeconds(at: currentTime, timeouts: match.timeouts) {
                 Text(TimeFormatting.format(seconds: remaining))
                     .font(.caption.weight(.semibold))
                     .monospacedDigit()

@@ -12,18 +12,20 @@ struct MatchDetailView: View {
         List {
             Section {
                 VStack(spacing: 12) {
-                    ScoreboardPreviewView(
-                        homeTeamName: match.homeTeamName,
-                        awayTeamName: match.awayTeamName,
-                        homeScore: match.homeScore,
-                        awayScore: match.awayScore,
-                        style: match.scoreboardStyle,
-                        currentPeriodLabel: match.timerSegments.first?.periodLabel,
-                        matchInfo: match.matchInfo,
-                        pkKicks: match.pkKicks,
-                        thumbnail: thumbnail,
-                        videoAspectRatio: videoAspectRatio
-                    )
+                    if !match.skipOverlay {
+                        ScoreboardPreviewView(
+                            homeTeamName: match.homeTeamName,
+                            awayTeamName: match.awayTeamName,
+                            homeScore: match.homeScore,
+                            awayScore: match.awayScore,
+                            style: match.scoreboardStyle,
+                            currentPeriodLabel: match.timerSegments.first?.periodLabel,
+                            matchInfo: match.matchInfo,
+                            pkKicks: match.pkKicks,
+                            thumbnail: thumbnail,
+                            videoAspectRatio: videoAspectRatio
+                        )
+                    }
 
                     HStack {
                         VStack {

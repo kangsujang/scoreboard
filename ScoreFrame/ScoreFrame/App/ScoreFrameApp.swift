@@ -4,6 +4,7 @@ import SwiftData
 @main
 struct ScoreFrameApp: App {
     let container: ModelContainer
+    @State private var storeManager = StoreManager()
 
     init() {
         do {
@@ -12,12 +13,15 @@ struct ScoreFrameApp: App {
             fatalError("Failed to create ModelContainer: \(error)")
         }
 
+        AdManager.shared.configure()
+        AdManager.shared.loadInterstitialAd()
         cleanupOnLaunch()
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(storeManager)
         }
         .modelContainer(container)
     }

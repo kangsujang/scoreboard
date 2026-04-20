@@ -3,10 +3,12 @@ import AVKit
 
 struct ExportView: View {
     @Environment(Router.self) private var router
+    @Environment(StoreManager.self) private var storeManager
     let match: Match
     @State private var viewModel: ExportViewModel?
     @State private var player: AVPlayer?
     @State private var videoAspectRatio: CGFloat = 16.0 / 9.0
+    @State private var adCompleted = false
 
     var body: some View {
         Group {
@@ -54,7 +56,10 @@ struct ExportView: View {
         VStack(spacing: 16) {
             if vm.isExporting {
                 exportingView(vm: vm)
-            } else if let url = vm.exportedURL {
+            } else if vm.exportedURL != nil && !adCompleted {
+                ProgressView("準備中...")
+                    .task { await showAdIfNeeded() }
+            } else if let url = vm.exportedURL, adCompleted {
                 completedView(vm: vm, url: url)
             } else if let error = vm.exportError {
                 errorView(error: error)
@@ -164,11 +169,19 @@ struct ExportView: View {
                 .multilineTextAlignment(.center)
 
             Button("再試行") {
+                adCompleted = false
                 viewModel?.startExport()
             }
             .buttonStyle(.borderedProminent)
 
             Spacer()
         }
+    }
+
+    private func showAdIfNeeded() async {
+        if !storeManager.isAdRemoved {
+            await AdManager.shared.showInterstitialAd()
+        }
+        adCompleted = true
     }
 }

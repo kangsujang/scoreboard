@@ -27,6 +27,7 @@ struct MatchSetupView: View {
     @State private var createdMatch: Match?
     @State private var thumbnail: UIImage?
     @State private var setupVideoAspectRatio: CGFloat = 16.0 / 9.0
+    @State private var videoOnlyMerge = false
 
     private var canProceed: Bool {
         !homeTeamName.trimmingCharacters(in: .whitespaces).isEmpty
@@ -121,6 +122,17 @@ struct MatchSetupView: View {
                 }
             }
 
+            Section {
+                Toggle(isOn: $videoOnlyMerge) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("動画のみ結合")
+                        Text("スコアボードを付けずに動画を結合します")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
             if let errorMessage {
                 Section {
                     Text(errorMessage)
@@ -135,7 +147,7 @@ struct MatchSetupView: View {
                 } label: {
                     HStack {
                         Spacer()
-                        Text("次へ: スコアボード設定")
+                        Text(videoOnlyMerge ? "次へ: 確認画面" : "次へ: スコアボード設定")
                             .font(.headline)
                         Spacer()
                     }
@@ -243,12 +255,17 @@ struct MatchSetupView: View {
         }
         match.videoURLs = videoEntries.map(\.url)
         modelContext.insert(match)
-        thumbnail = videoEntries.first?.thumbnail
-        if let url = videoEntries.first?.url,
-           let size = videoEntries.first?.thumbnail?.size, size.width > 0 {
-            setupVideoAspectRatio = size.width / size.height
+
+        if videoOnlyMerge {
+            match.skipOverlay = true
+            router.navigate(to: .matchDetail(match))
+        } else {
+            thumbnail = videoEntries.first?.thumbnail
+            if let size = videoEntries.first?.thumbnail?.size, size.width > 0 {
+                setupVideoAspectRatio = size.width / size.height
+            }
+            createdMatch = match
         }
-        createdMatch = match
     }
 }
 

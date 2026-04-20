@@ -85,15 +85,15 @@ struct ScoreboardStyleSheet: View {
                                 if editTarget == .scoreboard {
                                     style.positionX = 0.02
                                     style.positionY = 0.02
-                                    style.scale = 1.0
-                                    baseScale = 1.0
+                                    style.scale = 0.5
+                                    baseScale = 0.5
                                     basePosition = CGPoint(x: 0.02, y: 0.02)
                                 } else {
-                                    style.matchInfoPositionX = 0.02
-                                    style.matchInfoPositionY = 0.12
+                                    style.matchInfoPositionX = 0.70
+                                    style.matchInfoPositionY = 0.02
                                     style.matchInfoScale = 1.0
                                     baseMatchInfoScale = 1.0
-                                    baseMatchInfoPosition = CGPoint(x: 0.02, y: 0.12)
+                                    baseMatchInfoPosition = CGPoint(x: 0.70, y: 0.02)
                                 }
                             }
                             .font(.caption)

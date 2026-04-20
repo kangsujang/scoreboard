@@ -20,11 +20,11 @@ struct ScoreboardStyle: Codable, Equatable {
     var positionY: CGFloat = 0.02
 
     // 連続スケール (0.5〜2.5)
-    var scale: CGFloat = 1.0
+    var scale: CGFloat = 0.5
 
     // 試合情報の位置・スケール (独立制御)
-    var matchInfoPositionX: CGFloat = 0.02
-    var matchInfoPositionY: CGFloat = 0.12
+    var matchInfoPositionX: CGFloat = 0.70
+    var matchInfoPositionY: CGFloat = 0.02
     var matchInfoScale: CGFloat = 1.0
 
     // 旧プロパティ — Codable 互換のため残す（UIからは使わない）
@@ -129,13 +129,13 @@ struct ScoreboardStyle: Codable, Equatable {
         periodLabel = try container.decodeIfPresent(String.self, forKey: .periodLabel)
         positionX = try container.decodeIfPresent(CGFloat.self, forKey: .positionX) ?? 0.02
         positionY = try container.decodeIfPresent(CGFloat.self, forKey: .positionY) ?? 0.02
-        scale = try container.decodeIfPresent(CGFloat.self, forKey: .scale) ?? 1.0
+        scale = try container.decodeIfPresent(CGFloat.self, forKey: .scale) ?? 0.5
         position = try container.decodeIfPresent(Position.self, forKey: .position) ?? .topLeft
         fontSize = try container.decodeIfPresent(FontSize.self, forKey: .fontSize) ?? .medium
         homeTeamColorHex = try container.decodeIfPresent(String.self, forKey: .homeTeamColorHex)
         awayTeamColorHex = try container.decodeIfPresent(String.self, forKey: .awayTeamColorHex)
-        matchInfoPositionX = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoPositionX) ?? 0.02
-        matchInfoPositionY = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoPositionY) ?? 0.12
+        matchInfoPositionX = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoPositionX) ?? 0.70
+        matchInfoPositionY = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoPositionY) ?? 0.02
         matchInfoScale = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoScale) ?? 1.0
     }
 }

@@ -12,7 +12,14 @@ struct MatchDetailView: View {
         List {
             Section {
                 VStack(spacing: 12) {
-                    if !match.skipOverlay {
+                    if match.skipOverlay {
+                        if let thumbnail {
+                            Image(uiImage: thumbnail)
+                                .resizable()
+                                .aspectRatio(videoAspectRatio, contentMode: .fit)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
+                    } else {
                         ScoreboardPreviewView(
                             homeTeamName: match.homeTeamName,
                             awayTeamName: match.awayTeamName,

@@ -12,7 +12,10 @@ struct ExportView: View {
 
     var body: some View {
         Group {
-            if let vm = viewModel {
+            if !adCompleted {
+                ProgressView("準備中...")
+                    .task { await showAdIfNeeded() }
+            } else if let vm = viewModel {
                 exportContent(vm: vm)
             } else {
                 ProgressView("準備中...")
@@ -36,11 +39,6 @@ struct ExportView: View {
         }
         .navigationBarBackButtonHidden(true)
         .task {
-            if viewModel == nil {
-                let vm = ExportViewModel(match: match)
-                viewModel = vm
-                vm.startExport()
-            }
             if let url = match.videoURLs.first,
                let size = await ThumbnailGenerator.videoSize(for: url) {
                 videoAspectRatio = size.width / size.height
@@ -56,10 +54,7 @@ struct ExportView: View {
         VStack(spacing: 16) {
             if vm.isExporting {
                 exportingView(vm: vm)
-            } else if vm.exportedURL != nil && !adCompleted {
-                ProgressView("準備中...")
-                    .task { await showAdIfNeeded() }
-            } else if let url = vm.exportedURL, adCompleted {
+            } else if let url = vm.exportedURL {
                 completedView(vm: vm, url: url)
             } else if let error = vm.exportError {
                 errorView(error: error)
@@ -169,7 +164,6 @@ struct ExportView: View {
                 .multilineTextAlignment(.center)
 
             Button("再試行") {
-                adCompleted = false
                 viewModel?.startExport()
             }
             .buttonStyle(.borderedProminent)
@@ -183,5 +177,10 @@ struct ExportView: View {
             await AdManager.shared.showInterstitialAd()
         }
         adCompleted = true
+        if viewModel == nil {
+            let vm = ExportViewModel(match: match)
+            viewModel = vm
+            vm.startExport()
+        }
     }
 }

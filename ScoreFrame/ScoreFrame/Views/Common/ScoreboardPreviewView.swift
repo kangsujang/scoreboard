@@ -17,6 +17,8 @@ struct ScoreboardPreviewView: View {
     var timeouts: [TimeoutEvent] = []
     var timerSegments: [TimerSegment] = []
     var currentVideoTime: TimeInterval = 0
+    var homeSetCount: Int = 0
+    var awaySetCount: Int = 0
 
     @State private var homeFlash: Bool = false
     @State private var awayFlash: Bool = false
@@ -156,8 +158,14 @@ struct ScoreboardPreviewView: View {
                 if style.showScore {
                     // Home score circle
                     scoreCircle(homeScore, base: base, flashing: homeFlash)
+                        .overlay(alignment: .top) {
+                            setCountBadge(homeSetCount, base: base)
+                        }
                     // Away score circle
                     scoreCircle(awayScore, base: base, flashing: awayFlash)
+                        .overlay(alignment: .top) {
+                            setCountBadge(awaySetCount, base: base)
+                        }
                 } else {
                     Text("vs")
                         .font(.system(size: base * 0.6, weight: .semibold))
@@ -330,6 +338,24 @@ struct ScoreboardPreviewView: View {
     private func formatCountdown(_ seconds: TimeInterval) -> String {
         let s = Int(ceil(seconds))
         return String(format: "%d:%02d", s / 60, s % 60)
+    }
+
+    @ViewBuilder
+    private func setCountBadge(_ count: Int, base: CGFloat) -> some View {
+        if style.showSetCount {
+            Text("[\(count)]")
+                .font(.system(size: base * 0.4, weight: .bold))
+                .foregroundStyle(.yellow)
+                .padding(.horizontal, base * 0.2)
+                .padding(.vertical, base * 0.05)
+                .background(
+                    Capsule()
+                        .fill(.black.opacity(0.75))
+                )
+                .offset(y: -base * 0.55)
+                .contentTransition(.numericText())
+                .animation(.bouncy(duration: 0.4, extraBounce: 0.2), value: count)
+        }
     }
 
     private func scoreCircle(_ score: Int, base: CGFloat, flashing: Bool = false) -> some View {

@@ -30,7 +30,9 @@ struct MatchDetailView: View {
                             matchInfo: match.matchInfo,
                             pkKicks: match.pkKicks,
                             thumbnail: thumbnail,
-                            videoAspectRatio: videoAspectRatio
+                            videoAspectRatio: videoAspectRatio,
+                            homeSetCount: match.homeSetCount,
+                            awaySetCount: match.awaySetCount
                         )
                     }
 

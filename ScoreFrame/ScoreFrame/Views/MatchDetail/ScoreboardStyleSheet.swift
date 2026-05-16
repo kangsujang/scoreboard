@@ -62,7 +62,9 @@ struct ScoreboardStyleSheet: View {
                             matchInfo: match.matchInfo,
                             pkKicks: match.pkKicks,
                             thumbnail: thumbnail,
-                            videoAspectRatio: videoAspectRatio
+                            videoAspectRatio: videoAspectRatio,
+                            homeSetCount: match.homeSetCount,
+                            awaySetCount: match.awaySetCount
                         )
                         .simultaneousGesture(dragGesture(in: geo.size))
                         .simultaneousGesture(magnificationGesture)
@@ -172,6 +174,7 @@ struct ScoreboardStyleSheet: View {
                     }
                     Toggle("ペナルティタイマー", isOn: $style.showPenaltyTimer)
                     Toggle("タイムアウト", isOn: $style.showTimeouts)
+                    Toggle("セットカウント表示", isOn: $style.showSetCount)
                 }
             }
             .navigationTitle("スコアボード設定")

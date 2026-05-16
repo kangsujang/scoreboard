@@ -307,10 +307,15 @@ struct ScoreboardLayerBuilder {
             x += homeDotColW + gap
         }
 
+        // セット数オーバーレイ用に、スコア丸のフレームを記録
+        var homeCircleFrame: CGRect = .zero
+        var awayCircleFrame: CGRect = .zero
+
         if showScore {
             // Home score circle
             let homeCircleWrapper = CALayer()
             homeCircleWrapper.frame = CGRect(x: x, y: circleY, width: circleWidth, height: circleSize)
+            homeCircleFrame = homeCircleWrapper.frame
 
             let homeCircleBg = CALayer()
             homeCircleBg.frame = CGRect(x: 0, y: 0, width: circleWidth, height: circleSize)
@@ -356,6 +361,7 @@ struct ScoreboardLayerBuilder {
             // Away score circle
             let awayCircleWrapper = CALayer()
             awayCircleWrapper.frame = CGRect(x: x, y: circleY, width: circleWidth, height: circleSize)
+            awayCircleFrame = awayCircleWrapper.frame
 
             let awayCircleBg = CALayer()
             awayCircleBg.frame = CGRect(x: 0, y: 0, width: circleWidth, height: circleSize)
@@ -468,7 +474,82 @@ struct ScoreboardLayerBuilder {
         }
         container.addSublayer(awayAccent)
 
+        // ── セットカウントオーバーレイ ──
+        if config.style.showSetCount && showScore {
+            addSetCountOverlay(
+                to: container,
+                circleFrame: homeCircleFrame,
+                events: config.events,
+                team: .home,
+                duration: config.videoDuration,
+                base: base
+            )
+            addSetCountOverlay(
+                to: container,
+                circleFrame: awayCircleFrame,
+                events: config.events,
+                team: .away,
+                duration: config.videoDuration,
+                base: base
+            )
+        }
+
         return container
+    }
+
+    // MARK: - Set Count Overlay
+
+    /// スコア丸の上に小さくセット獲得数 `[N]` を表示するレイヤーを追加する。
+    /// セット獲得イベントごとに opacity アニメーションで切り替わる。
+    private static func addSetCountOverlay(
+        to container: CALayer,
+        circleFrame: CGRect,
+        events: [ScoreEvent],
+        team: Team,
+        duration: TimeInterval,
+        base: CGFloat
+    ) {
+        let fontSize = base * 0.4
+        let labelH = fontSize + base * 0.1 * 2 + 4
+        let labelW = circleFrame.width + base * 0.6
+        let frame = CGRect(
+            x: circleFrame.midX - labelW / 2,
+            y: circleFrame.minY - labelH * 0.55,
+            width: labelW,
+            height: labelH
+        )
+
+        // 背景capsule（常時表示）
+        let bg = CALayer()
+        bg.frame = frame
+        bg.backgroundColor = UIColor.black.withAlphaComponent(0.75).cgColor
+        bg.cornerRadius = labelH / 2
+        container.addSublayer(bg)
+
+        // セット獲得タイムスタンプから状態列を構築
+        let sorted = events
+            .filter { $0.team == team && $0.kind == .setWon }
+            .sorted { $0.timestamp < $1.timestamp }
+        var states: [(string: String, start: Double, end: Double)] = []
+        if sorted.isEmpty {
+            states.append(("[0]", 0, duration))
+        } else {
+            states.append(("[0]", 0, sorted[0].timestamp))
+            for (i, ev) in sorted.enumerated() {
+                let end = (i + 1 < sorted.count) ? sorted[i + 1].timestamp : duration
+                states.append(("[\(i + 1)]", ev.timestamp, end))
+            }
+        }
+
+        addOpacityAnimatedTextLayers(
+            to: container,
+            frame: frame,
+            states: states,
+            duration: duration,
+            fontSize: fontSize,
+            textColor: UIColor.yellow.cgColor,
+            fontWeight: .bold
+        )
     }
 
     // MARK: - Section-based team accent color animation

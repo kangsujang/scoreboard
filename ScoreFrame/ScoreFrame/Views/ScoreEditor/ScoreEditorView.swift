@@ -227,7 +227,9 @@ struct ScoreEditorView: View {
                 penaltyTimers: match.penaltyTimers,
                 timeouts: match.timeouts,
                 timerSegments: match.timerSegments,
-                currentVideoTime: currentTime
+                currentVideoTime: currentTime,
+                homeSetCount: match.effectiveSetCount(at: currentTime, for: .home),
+                awaySetCount: match.effectiveSetCount(at: currentTime, for: .away)
             )
             .allowsHitTesting(false)
         }
@@ -239,6 +241,8 @@ struct ScoreEditorView: View {
             currentTime: currentTime,
             onGoal: { team in addGoal(team: team, at: currentTime) },
             onUndo: { undoLastGoal() },
+            onSetWon: { team in addSetWon(team: team, at: currentTime) },
+            onSetUndo: { undoLastSetWon() },
             onPKKick: { team, isGoal in addPKKick(team: team, isGoal: isGoal, at: currentTime) },
             onPKUndo: { undoLastPKKick() },
             onSegmentStart: { idx in setSegmentStart(at: idx, time: currentTime) },
@@ -285,14 +289,35 @@ struct ScoreEditorView: View {
     }
 
     private func addGoal(team: Team, at timestamp: TimeInterval) {
-        let event = ScoreEvent(team: team, timestamp: timestamp)
+        let event = ScoreEvent(team: team, timestamp: timestamp, kind: .point)
         event.match = match
         match.scoreEvents.append(event)
         modelContext.insert(event)
     }
 
     private func undoLastGoal() {
-        guard let lastEvent = match.scoreEvents.sorted(by: { $0.createdAt < $1.createdAt }).last else {
+        guard let lastEvent = match.scoreEvents
+            .filter({ $0.kind == .point })
+            .sorted(by: { $0.createdAt < $1.createdAt })
+            .last else {
+            return
+        }
+        match.scoreEvents.removeAll { $0.id == lastEvent.id }
+        modelContext.delete(lastEvent)
+    }
+
+    private func addSetWon(team: Team, at timestamp: TimeInterval) {
+        let event = ScoreEvent(team: team, timestamp: timestamp, kind: .setWon)
+        event.match = match
+        match.scoreEvents.append(event)
+        modelContext.insert(event)
+    }
+
+    private func undoLastSetWon() {
+        guard let lastEvent = match.scoreEvents
+            .filter({ $0.kind == .setWon })
+            .sorted(by: { $0.createdAt < $1.createdAt })
+            .last else {
             return
         }
         match.scoreEvents.removeAll { $0.id == lastEvent.id }

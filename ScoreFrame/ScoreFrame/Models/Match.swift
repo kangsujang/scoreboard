@@ -128,11 +128,26 @@ final class Match {
     }
 
     var homeScore: Int {
-        scoreEvents.filter { $0.team == .home }.count
+        scoreEvents.filter { $0.team == .home && $0.kind == .point }.count
     }
 
     var awayScore: Int {
-        scoreEvents.filter { $0.team == .away }.count
+        scoreEvents.filter { $0.team == .away && $0.kind == .point }.count
+    }
+
+    var homeSetCount: Int {
+        scoreEvents.filter { $0.team == .home && $0.kind == .setWon }.count
+    }
+
+    var awaySetCount: Int {
+        scoreEvents.filter { $0.team == .away && $0.kind == .setWon }.count
+    }
+
+    /// 指定動画時刻時点での累積セット獲得数（バレーボールなど）。
+    func effectiveSetCount(at videoTime: TimeInterval, for team: Team) -> Int {
+        scoreEvents.filter {
+            $0.team == team && $0.kind == .setWon && $0.timestamp <= videoTime
+        }.count
     }
 
     var sortedEvents: [ScoreEvent] {
@@ -254,7 +269,7 @@ final class Match {
     func scoreAt(time: TimeInterval) -> (home: Int, away: Int) {
         var home = 0
         var away = 0
-        for event in sortedEvents where event.timestamp <= time {
+        for event in sortedEvents where event.timestamp <= time && event.kind == .point {
             switch event.team {
             case .home: home += 1
             case .away: away += 1

@@ -5,6 +5,8 @@ struct ScoreControlsView: View {
     let currentTime: TimeInterval
     let onGoal: (Team) -> Void
     let onUndo: () -> Void
+    let onSetWon: (Team) -> Void
+    let onSetUndo: () -> Void
     let onPKKick: (Team, Bool) -> Void
     let onPKUndo: () -> Void
     let onSegmentStart: (Int) -> Void
@@ -45,9 +47,17 @@ struct ScoreControlsView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                 Spacer()
-                Text("\(match.homeScore) - \(match.awayScore)")
-                    .font(.system(.title2, design: .rounded, weight: .bold))
-                    .monospacedDigit()
+                VStack(spacing: 2) {
+                    if match.scoreboardStyle.showSetCount {
+                        Text("[\(match.homeSetCount)] - [\(match.awaySetCount)]")
+                            .font(.caption2.bold())
+                            .foregroundStyle(.yellow)
+                            .monospacedDigit()
+                    }
+                    Text("\(match.homeScore) - \(match.awayScore)")
+                        .font(.system(.title2, design: .rounded, weight: .bold))
+                        .monospacedDigit()
+                }
                 Spacer()
                 Text(match.awayTeamName)
                     .font(.headline)
@@ -97,13 +107,50 @@ struct ScoreControlsView: View {
                             .font(.caption)
                     }
                     .buttonStyle(.bordered)
-                    .disabled(match.scoreEvents.isEmpty)
+                    .disabled(!match.scoreEvents.contains { $0.kind == .point })
 
                     GoalButton(teamName: match.awayTeamName, color: .red) {
                         onGoal(.away)
                     }
                 }
                 .padding(.horizontal)
+
+                // セット獲得ボタン (showSetCount時のみ表示)
+                if match.scoreboardStyle.showSetCount {
+                    HStack(spacing: 12) {
+                        Button {
+                            onSetWon(.home)
+                        } label: {
+                            Label("セット獲得", systemImage: "flag.checkered")
+                                .font(.caption.bold())
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.indigo)
+
+                        Button {
+                            onSetUndo()
+                        } label: {
+                            Label("取消", systemImage: "arrow.uturn.backward")
+                                .font(.caption)
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(!match.scoreEvents.contains { $0.kind == .setWon })
+
+                        Button {
+                            onSetWon(.away)
+                        } label: {
+                            Label("セット獲得", systemImage: "flag.checkered")
+                                .font(.caption.bold())
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.indigo)
+                    }
+                    .padding(.horizontal)
+                }
             }
 
             // Penalty timers

@@ -9,6 +9,7 @@ struct ScoreboardStyle: Codable, Equatable {
     var showTimerOptions: Bool = false      // +表示・タイマーカラー選択の表示
     var showPenaltyTimer: Bool = false      // ペナルティタイマーの表示
     var showTimeouts: Bool = false          // タイムアウト機能の表示
+    var showSetCount: Bool = false          // セットカウント表示（バレーボール等）
     var periodLabel: String?
 
     // チームユニフォームカラー ("#RRGGBB" 形式、nil=テーマデフォルト)
@@ -113,7 +114,7 @@ struct ScoreboardStyle: Codable, Equatable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case theme, showScore, showMatchTimer, timerPosition, showTimerOptions, showPenaltyTimer, showTimeouts, periodLabel, positionX, positionY, scale, position, fontSize
+        case theme, showScore, showMatchTimer, timerPosition, showTimerOptions, showPenaltyTimer, showTimeouts, showSetCount, periodLabel, positionX, positionY, scale, position, fontSize
         case homeTeamColorHex, awayTeamColorHex
         case useSegmentTeamColors
         case matchInfoPositionX, matchInfoPositionY, matchInfoScale
@@ -130,6 +131,7 @@ struct ScoreboardStyle: Codable, Equatable {
         showTimerOptions = try container.decodeIfPresent(Bool.self, forKey: .showTimerOptions) ?? false
         showPenaltyTimer = try container.decodeIfPresent(Bool.self, forKey: .showPenaltyTimer) ?? false
         showTimeouts = try container.decodeIfPresent(Bool.self, forKey: .showTimeouts) ?? false
+        showSetCount = try container.decodeIfPresent(Bool.self, forKey: .showSetCount) ?? false
         periodLabel = try container.decodeIfPresent(String.self, forKey: .periodLabel)
         positionX = try container.decodeIfPresent(CGFloat.self, forKey: .positionX) ?? 0.02
         positionY = try container.decodeIfPresent(CGFloat.self, forKey: .positionY) ?? 0.02

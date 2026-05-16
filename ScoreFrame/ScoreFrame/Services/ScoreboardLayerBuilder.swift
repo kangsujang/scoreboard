@@ -269,7 +269,22 @@ struct ScoreboardLayerBuilder {
 
         let homeAccent = CALayer()
         homeAccent.frame = CGRect(x: x, y: accentY, width: homeTextWidth, height: accentHeight)
-        homeAccent.backgroundColor = config.homeTeamColor ?? scoreColor(for: theme)
+        let homeBaseAccent = config.homeTeamColor ?? scoreColor(for: theme)
+        homeAccent.backgroundColor = accentColorAtZero(
+            team: .home,
+            style: config.style,
+            segments: segments,
+            baseColor: homeBaseAccent
+        )
+        if let anim = makeAccentColorAnimation(
+            team: .home,
+            style: config.style,
+            segments: segments,
+            baseColor: homeBaseAccent,
+            duration: config.videoDuration
+        ) {
+            homeAccent.add(anim, forKey: "homeAccentColor")
+        }
         container.addSublayer(homeAccent)
 
         x += homeTextWidth + teamNamePadding + gap
@@ -435,10 +450,109 @@ struct ScoreboardLayerBuilder {
 
         let awayAccent = CALayer()
         awayAccent.frame = CGRect(x: x, y: accentY, width: awayTextWidth, height: accentHeight)
-        awayAccent.backgroundColor = config.awayTeamColor ?? scoreColor(for: theme)
+        let awayBaseAccent = config.awayTeamColor ?? scoreColor(for: theme)
+        awayAccent.backgroundColor = accentColorAtZero(
+            team: .away,
+            style: config.style,
+            segments: segments,
+            baseColor: awayBaseAccent
+        )
+        if let anim = makeAccentColorAnimation(
+            team: .away,
+            style: config.style,
+            segments: segments,
+            baseColor: awayBaseAccent,
+            duration: config.videoDuration
+        ) {
+            awayAccent.add(anim, forKey: "awayAccentColor")
+        }
         container.addSublayer(awayAccent)
 
         return container
+    }
+
+    // MARK: - Section-based team accent color animation
+
+    private static func segmentColorHex(_ seg: TimerSegment, team: Team) -> String? {
+        team == .home ? seg.homeTeamColorHex : seg.awayTeamColorHex
+    }
+
+    /// セクション色オプションが有効な場合、指定時刻のチーム色（CGColor）を返す。
+    /// 該当時刻に有効なセクションが無い／色設定が無ければ baseColor を使う。
+    private static func accentColor(
+        atVideoTime videoTime: TimeInterval,
+        team: Team,
+        segments: [TimerSegment],
+        baseColor: CGColor
+    ) -> CGColor {
+        var lastHex: String? = nil
+        for seg in segments {
+            guard let start = seg.effectiveStartTime else { continue }
+            if start <= videoTime, let hex = segmentColorHex(seg, team: team) {
+                lastHex = hex
+            } else if start <= videoTime {
+                lastHex = nil // 該当セクションに色設定なし → 既定値に戻す
+            }
+        }
+        if let hex = lastHex, let ui = UIColor(hex: hex) {
+            return ui.cgColor
+        }
+        return baseColor
+    }
+
+    private static func accentColorAtZero(
+        team: Team,
+        style: ScoreboardStyle,
+        segments: [TimerSegment],
+        baseColor: CGColor
+    ) -> CGColor {
+        guard style.useSegmentTeamColors else { return baseColor }
+        return accentColor(atVideoTime: 0, team: team, segments: segments, baseColor: baseColor)
+    }
+
+    private static func makeAccentColorAnimation(
+        team: Team,
+        style: ScoreboardStyle,
+        segments: [TimerSegment],
+        baseColor: CGColor,
+        duration: TimeInterval
+    ) -> CAKeyframeAnimation? {
+        guard style.useSegmentTeamColors, duration > 0 else { return nil }
+
+        // 色変化点 = 各セクションの effectiveStartTime（0 始点も含める）
+        var changeTimes: [TimeInterval] = [0]
+        for seg in segments {
+            if let start = seg.effectiveStartTime, start > 0 {
+                changeTimes.append(start)
+            }
+        }
+        changeTimes = changeTimes.sorted()
+
+        var keyTimes: [NSNumber] = []
+        var values: [CGColor] = []
+        var prev: CGColor? = nil
+
+        for t in changeTimes {
+            let c = accentColor(atVideoTime: t, team: team, segments: segments, baseColor: baseColor)
+            if let p = prev, p == c { continue }
+            let kt = min(t / duration, 1.0)
+            keyTimes.append(NSNumber(value: kt))
+            values.append(c)
+            prev = c
+        }
+        guard values.count >= 2 else { return nil }
+        keyTimes.append(1.0)
+        values.append(values.last!)
+
+        let anim = CAKeyframeAnimation(keyPath: "backgroundColor")
+        anim.keyTimes = keyTimes
+        anim.values = values
+        anim.calculationMode = .discrete
+        anim.duration = duration
+        anim.beginTime = AVCoreAnimationBeginTimeAtZero
+        anim.isRemovedOnCompletion = false
+        anim.fillMode = .forwards
+        return anim
     }
 
     // MARK: - Position

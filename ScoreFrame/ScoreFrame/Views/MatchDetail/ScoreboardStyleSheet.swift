@@ -6,6 +6,8 @@ struct ScoreboardStyleSheet: View {
     @State private var style: ScoreboardStyle
     @State private var thumbnail: UIImage?
     @State private var videoAspectRatio: CGFloat
+    @State private var homeTeamNameEdit: String
+    @State private var awayTeamNameEdit: String
     var onSave: (() -> Void)?
 
     // 編集対象
@@ -41,6 +43,8 @@ struct ScoreboardStyleSheet: View {
         self._basePosition = State(initialValue: CGPoint(x: s.positionX, y: s.positionY))
         self._baseMatchInfoScale = State(initialValue: s.matchInfoScale)
         self._baseMatchInfoPosition = State(initialValue: CGPoint(x: s.matchInfoPositionX, y: s.matchInfoPositionY))
+        self._homeTeamNameEdit = State(initialValue: match.homeTeamName)
+        self._awayTeamNameEdit = State(initialValue: match.awayTeamName)
     }
 
     var body: some View {
@@ -49,8 +53,8 @@ struct ScoreboardStyleSheet: View {
                 Section {
                     GeometryReader { geo in
                         ScoreboardPreviewView(
-                            homeTeamName: match.homeTeamName,
-                            awayTeamName: match.awayTeamName,
+                            homeTeamName: homeTeamNameEdit.isEmpty ? match.homeTeamName : homeTeamNameEdit,
+                            awayTeamName: awayTeamNameEdit.isEmpty ? match.awayTeamName : awayTeamNameEdit,
                             homeScore: match.homeScore,
                             awayScore: match.awayScore,
                             style: style,
@@ -110,14 +114,23 @@ struct ScoreboardStyleSheet: View {
                     .pickerStyle(.segmented)
                 }
 
-                Section("チームカラー") {
+                Section("チーム名") {
+                    TextField("ホームチーム名", text: $homeTeamNameEdit)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    TextField("アウェイチーム名", text: $awayTeamNameEdit)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                }
+
+                Section {
                     ColorPicker(
-                        "ホーム: \(match.homeTeamName)",
+                        "ホーム: \(homeTeamNameEdit.isEmpty ? match.homeTeamName : homeTeamNameEdit)",
                         selection: homeColorBinding,
                         supportsOpacity: false
                     )
                     ColorPicker(
-                        "アウェイ: \(match.awayTeamName)",
+                        "アウェイ: \(awayTeamNameEdit.isEmpty ? match.awayTeamName : awayTeamNameEdit)",
                         selection: awayColorBinding,
                         supportsOpacity: false
                     )
@@ -126,6 +139,13 @@ struct ScoreboardStyleSheet: View {
                             style.homeTeamColorHex = nil
                             style.awayTeamColorHex = nil
                         }
+                    }
+                    Toggle("セクションごとに変更する", isOn: $style.useSegmentTeamColors)
+                } header: {
+                    Text("チームカラー")
+                } footer: {
+                    if style.useSegmentTeamColors {
+                        Text("セクションごとの色はスコア記録画面の各セグメント設定で変更できます。未設定のセクションはここの基本色を使用します。")
                     }
                 }
 
@@ -165,6 +185,10 @@ struct ScoreboardStyleSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") {
                         match.scoreboardStyle = style
+                        let trimmedHome = homeTeamNameEdit.trimmingCharacters(in: .whitespacesAndNewlines)
+                        let trimmedAway = awayTeamNameEdit.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !trimmedHome.isEmpty { match.homeTeamName = trimmedHome }
+                        if !trimmedAway.isEmpty { match.awayTeamName = trimmedAway }
                         dismiss()
                         onSave?()
                     }

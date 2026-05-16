@@ -15,6 +15,9 @@ struct ScoreboardStyle: Codable, Equatable {
     var homeTeamColorHex: String?
     var awayTeamColorHex: String?
 
+    // セクションごとのチームカラー上書きを有効化するか
+    var useSegmentTeamColors: Bool = false
+
     // 連続位置 (0〜1 正規化, 左上原点)
     var positionX: CGFloat = 0.02
     var positionY: CGFloat = 0.02
@@ -112,6 +115,7 @@ struct ScoreboardStyle: Codable, Equatable {
     enum CodingKeys: String, CodingKey {
         case theme, showScore, showMatchTimer, timerPosition, showTimerOptions, showPenaltyTimer, showTimeouts, periodLabel, positionX, positionY, scale, position, fontSize
         case homeTeamColorHex, awayTeamColorHex
+        case useSegmentTeamColors
         case matchInfoPositionX, matchInfoPositionY, matchInfoScale
     }
 
@@ -134,6 +138,7 @@ struct ScoreboardStyle: Codable, Equatable {
         fontSize = try container.decodeIfPresent(FontSize.self, forKey: .fontSize) ?? .medium
         homeTeamColorHex = try container.decodeIfPresent(String.self, forKey: .homeTeamColorHex)
         awayTeamColorHex = try container.decodeIfPresent(String.self, forKey: .awayTeamColorHex)
+        useSegmentTeamColors = try container.decodeIfPresent(Bool.self, forKey: .useSegmentTeamColors) ?? false
         matchInfoPositionX = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoPositionX) ?? 0.70
         matchInfoPositionY = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoPositionY) ?? 0.02
         matchInfoScale = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoScale) ?? 1.0

@@ -193,6 +193,19 @@ final class Match {
         return lastSeg
     }
 
+    /// セクション別チームカラーが有効な場合、その時点で有効な色のHex値を返す。
+    /// 該当セクションに色設定が無ければスタイル既定値（match.scoreboardStyle のチームカラー）にフォールバック。
+    func effectiveTeamColorHex(at videoTime: TimeInterval, for team: Team) -> String? {
+        let style = scoreboardStyle
+        let baseHex = team == .home ? style.homeTeamColorHex : style.awayTeamColorHex
+        guard style.useSegmentTeamColors else { return baseHex }
+
+        // 該当時刻のセクション、または直前にアクティブだったセクションを参照
+        let seg = activeTimerSegment(at: videoTime)
+        let segHex = team == .home ? seg?.homeTeamColorHex : seg?.awayTeamColorHex
+        return segHex ?? baseHex
+    }
+
     // MARK: - Penalty Timers
 
     var penaltyTimers: [PenaltyTimer] {

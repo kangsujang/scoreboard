@@ -15,6 +15,7 @@ struct ScoreControlsView: View {
     let onSegmentPeriodLabel: (Int, String?) -> Void
     let onSegmentShowPlusPrefix: (Int, Bool) -> Void
     let onSegmentTimerColor: (Int, String?) -> Void
+    let onSegmentTeamColor: (Int, Team, String?) -> Void
     let onAddSegment: () -> Void
     let onAddSegmentWithRestart: () -> Void
     let onRemoveSegment: (Int) -> Void
@@ -155,6 +156,8 @@ struct ScoreControlsView: View {
                 SegmentControlRow(
                     index: index,
                     segment: segment,
+                    homeTeamName: match.homeTeamName,
+                    awayTeamName: match.awayTeamName,
                     onSegmentStart: { onSegmentStart(index) },
                     onTimerStart: { onSegmentTimerStart(index) },
                     onTimerStop: { onSegmentTimerStop(index) },
@@ -163,8 +166,10 @@ struct ScoreControlsView: View {
                     onPeriodLabel: { onSegmentPeriodLabel(index, $0) },
                     onShowPlusPrefix: { onSegmentShowPlusPrefix(index, $0) },
                     onTimerColor: { onSegmentTimerColor(index, $0) },
+                    onTeamColor: { team, hex in onSegmentTeamColor(index, team, hex) },
                     onRemove: match.timerSegments.count > 1 ? { onRemoveSegment(index) } : nil,
-                    showTimerOptions: match.scoreboardStyle.showTimerOptions
+                    showTimerOptions: match.scoreboardStyle.showTimerOptions,
+                    showTeamColors: match.scoreboardStyle.useSegmentTeamColors
                 )
             }
         }
@@ -176,6 +181,8 @@ struct ScoreControlsView: View {
 private struct SegmentControlRow: View {
     let index: Int
     let segment: TimerSegment
+    var homeTeamName: String = ""
+    var awayTeamName: String = ""
     let onSegmentStart: () -> Void
     let onTimerStart: () -> Void
     let onTimerStop: () -> Void
@@ -184,8 +191,10 @@ private struct SegmentControlRow: View {
     let onPeriodLabel: (String?) -> Void
     let onShowPlusPrefix: (Bool) -> Void
     let onTimerColor: (String?) -> Void
+    var onTeamColor: ((Team, String?) -> Void)? = nil
     let onRemove: (() -> Void)?
     var showTimerOptions: Bool = false
+    var showTeamColors: Bool = false
 
     static func hexString(from uiColor: UIColor) -> String {
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0
@@ -424,6 +433,11 @@ private struct SegmentControlRow: View {
                 }
                 } // showTimerOptions
             }
+
+            // セクション別チームカラー設定
+            if showTeamColors, let onTeamColor {
+                segmentTeamColorRow(onTeamColor: onTeamColor)
+            }
         }
         .padding(.horizontal)
         .padding(.vertical, 6)
@@ -432,6 +446,96 @@ private struct SegmentControlRow: View {
                 .fill(.quaternary)
         )
         .padding(.horizontal)
+    }
+
+    private func teamColor(forHex hex: String?, fallback: Color) -> Color {
+        guard let hex, let ui = UIColor(hex: hex) else { return fallback }
+        return Color(uiColor: ui)
+    }
+
+    @ViewBuilder
+    private func segmentTeamColorRow(onTeamColor: @escaping (Team, String?) -> Void) -> some View {
+        VStack(spacing: 6) {
+            HStack {
+                Text("チームカラー")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if segment.homeTeamColorHex != nil || segment.awayTeamColorHex != nil {
+                    Button {
+                        onTeamColor(.home, nil)
+                        onTeamColor(.away, nil)
+                    } label: {
+                        Text("リセット")
+                            .font(.caption2)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.mini)
+                }
+            }
+
+            HStack(spacing: 12) {
+                segmentTeamColorPicker(
+                    team: .home,
+                    teamName: homeTeamName,
+                    hex: segment.homeTeamColorHex,
+                    onChange: { onTeamColor(.home, $0) }
+                )
+                segmentTeamColorPicker(
+                    team: .away,
+                    teamName: awayTeamName,
+                    hex: segment.awayTeamColorHex,
+                    onChange: { onTeamColor(.away, $0) }
+                )
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func segmentTeamColorPicker(
+        team: Team,
+        teamName: String,
+        hex: String?,
+        onChange: @escaping (String?) -> Void
+    ) -> some View {
+        HStack(spacing: 4) {
+            Text(teamName.isEmpty ? (team == .home ? "ホーム" : "アウェイ") : teamName)
+                .font(.caption2)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            ColorPicker(
+                "",
+                selection: Binding(
+                    get: { teamColor(forHex: hex, fallback: .gray) },
+                    set: { newColor in
+                        let uiColor = UIColor(newColor)
+                        onChange(SegmentControlRow.hexString(from: uiColor))
+                    }
+                ),
+                supportsOpacity: false
+            )
+            .labelsHidden()
+            .frame(width: 28, height: 28)
+
+            if hex != nil {
+                Button {
+                    onChange(nil)
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 4)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(.tertiary, lineWidth: 1)
+        )
     }
 }
 

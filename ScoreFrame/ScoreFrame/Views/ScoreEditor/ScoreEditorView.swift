@@ -249,6 +249,7 @@ struct ScoreEditorView: View {
             onSegmentPeriodLabel: { idx, label in setSegmentPeriodLabel(at: idx, label: label) },
             onSegmentShowPlusPrefix: { idx, value in setSegmentShowPlusPrefix(at: idx, value: value) },
             onSegmentTimerColor: { idx, hex in setSegmentTimerColor(at: idx, hex: hex) },
+            onSegmentTeamColor: { idx, team, hex in setSegmentTeamColor(at: idx, team: team, hex: hex) },
             onAddSegment: { addTimerSegment() },
             onAddSegmentWithRestart: { addTimerSegmentWithRestart(at: currentTime) },
             onRemoveSegment: { idx in removeTimerSegment(at: idx) },
@@ -448,6 +449,16 @@ struct ScoreEditorView: View {
         var segments = match.timerSegments
         guard index < segments.count else { return }
         segments[index].timerColorHex = hex
+        match.timerSegments = segments
+    }
+
+    private func setSegmentTeamColor(at index: Int, team: Team, hex: String?) {
+        var segments = match.timerSegments
+        guard index < segments.count else { return }
+        switch team {
+        case .home: segments[index].homeTeamColorHex = hex
+        case .away: segments[index].awayTeamColorHex = hex
+        }
         match.timerSegments = segments
     }
 

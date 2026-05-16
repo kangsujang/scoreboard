@@ -21,6 +21,37 @@ struct ScoreboardPreviewView: View {
     @State private var homeFlash: Bool = false
     @State private var awayFlash: Bool = false
 
+    /// その時点で有効なホームチームアクセント色（セクション色オプション対応）
+    private var effectiveHomeColor: Color {
+        if style.useSegmentTeamColors,
+           let hex = activeSegmentColorHex(team: .home),
+           let c = Color(hex: hex) {
+            return c
+        }
+        return style.homeTeamColor ?? Color.scoreboardScore(for: style.theme)
+    }
+
+    /// その時点で有効なアウェイチームアクセント色（セクション色オプション対応）
+    private var effectiveAwayColor: Color {
+        if style.useSegmentTeamColors,
+           let hex = activeSegmentColorHex(team: .away),
+           let c = Color(hex: hex) {
+            return c
+        }
+        return style.awayTeamColor ?? Color.scoreboardScore(for: style.theme)
+    }
+
+    /// currentVideoTime 時点のアクティブセクションを参照し、そのセクションのチーム色 hex を返す。
+    private func activeSegmentColorHex(team: Team) -> String? {
+        guard !timerSegments.isEmpty else { return nil }
+        var matched: TimerSegment? = nil
+        for seg in timerSegments {
+            guard let start = seg.effectiveStartTime else { continue }
+            if start <= currentVideoTime { matched = seg }
+        }
+        return team == .home ? matched?.homeTeamColorHex : matched?.awayTeamColorHex
+    }
+
     /// 得点時の背景強調色（テーマごと）
     private var flashColor: Color {
         switch style.theme {
@@ -114,7 +145,7 @@ struct ScoreboardPreviewView: View {
                 // Home team name with underline
                 teamLabel(
                     name: homeTeamName,
-                    color: style.homeTeamColor ?? Color.scoreboardScore(for: style.theme),
+                    color: effectiveHomeColor,
                     base: base,
                     team: .home
                 )
@@ -139,7 +170,7 @@ struct ScoreboardPreviewView: View {
                 // Away team name with underline
                 teamLabel(
                     name: awayTeamName,
-                    color: style.awayTeamColor ?? Color.scoreboardScore(for: style.theme),
+                    color: effectiveAwayColor,
                     base: base,
                     team: .away
                 )

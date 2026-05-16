@@ -128,8 +128,10 @@ struct ScoreboardPreviewView: View {
 
     private func scoreboardContent(containerWidth: CGFloat) -> some View {
         let base = containerWidth * Self.baseRatio
-        // メインセクション（スコア丸 + 上下パディング）で決まる高さ
-        let containerH = base * 1.4 + base * 0.3125 * 2
+        // セットカウントバッジ用の上部余白（バッジが clipShape で見切れないように）
+        let setCountTopExtra: CGFloat = style.showSetCount ? base * 0.55 : 0
+        // メインセクション（スコア丸 + 上下パディング）で決まる高さ + バッジ用余白
+        let containerH = base * 1.4 + base * 0.3125 * 2 + setCountTopExtra
 
         return HStack(spacing: 0) {
             // Period label (LEFT: before timer)
@@ -192,6 +194,7 @@ struct ScoreboardPreviewView: View {
                 periodLabelSection(base: base)
             }
         }
+        .padding(.top, setCountTopExtra)
         .frame(height: containerH)
         .fixedSize(horizontal: true, vertical: false)
         .background(Color.scoreboardBackground(for: style.theme))

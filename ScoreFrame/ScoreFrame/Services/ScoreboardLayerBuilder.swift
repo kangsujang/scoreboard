@@ -78,8 +78,8 @@ struct ScoreboardLayerBuilder {
 
         // レイアウト寸法（プレビューと同じ倍率）
         let circleSize   = base * 1.4  // 高さ（円の直径）
-        let maxHomeScore = config.events.filter { $0.team == .home }.count
-        let maxAwayScore = config.events.filter { $0.team == .away }.count
+        let maxHomeScore = config.events.filter { $0.team == .home && $0.kind == .point }.count
+        let maxAwayScore = config.events.filter { $0.team == .away && $0.kind == .point }.count
         let maxScoreDigits = max(1, String(max(maxHomeScore, maxAwayScore)).count)
         let circleWidth  = maxScoreDigits <= 2 ? circleSize : circleSize + CGFloat(maxScoreDigits - 2) * base * 0.7
         let accentHeight = base * 0.125
@@ -151,8 +151,10 @@ struct ScoreboardLayerBuilder {
         let mainWidth = mainContentWidth + mainPaddingH * 2
 
         // ── コンテナサイズ ──
+        // セットカウントバッジ用に上部に余白を確保
+        let setCountTopExtra: CGFloat = config.style.showSetCount ? base * 0.55 : 0
         let containerWidth = periodWidth + timerWidth + mainWidth
-        let containerHeight = circleSize + mainPaddingV * 2
+        let containerHeight = circleSize + mainPaddingV * 2 + setCountTopExtra
 
         let container = CALayer()
         container.frame = containerFrame(
@@ -185,13 +187,13 @@ struct ScoreboardLayerBuilder {
         // ── Period label section (white bg / black text) ──
         if showPeriod {
             let periodBg = CALayer()
-            periodBg.frame = CGRect(x: periodX, y: 0, width: periodWidth, height: containerHeight)
+            periodBg.frame = CGRect(x: periodX, y: setCountTopExtra, width: periodWidth, height: containerHeight - setCountTopExtra)
             periodBg.backgroundColor = UIColor.white.cgColor
             container.addSublayer(periodBg)
 
             let periodLabelFrame = CGRect(
                 x: periodX,
-                y: (containerHeight - periodFontSize - 4) / 2,
+                y: setCountTopExtra + (containerHeight - setCountTopExtra - periodFontSize - 4) / 2,
                 width: periodWidth,
                 height: periodFontSize + 4
             )
@@ -210,16 +212,16 @@ struct ScoreboardLayerBuilder {
 
         if showTimer && !allSegmentsPK {
             let timerWrapper = CALayer()
-            timerWrapper.frame = CGRect(x: timerX, y: 0, width: timerWidth, height: containerHeight)
+            timerWrapper.frame = CGRect(x: timerX, y: setCountTopExtra, width: timerWidth, height: containerHeight - setCountTopExtra)
 
             let timerBg = CALayer()
-            timerBg.frame = CGRect(x: 0, y: 0, width: timerWidth, height: containerHeight)
+            timerBg.frame = CGRect(x: 0, y: 0, width: timerWidth, height: containerHeight - setCountTopExtra)
             timerBg.backgroundColor = textColor(for: theme)
             timerWrapper.addSublayer(timerBg)
 
             let timerFrame = CGRect(
                 x: 0,
-                y: (containerHeight - timerFontSize - 4) / 2,
+                y: (containerHeight - setCountTopExtra - timerFontSize - 4) / 2,
                 width: timerWidth,
                 height: timerFontSize + 4
             )
@@ -242,8 +244,8 @@ struct ScoreboardLayerBuilder {
         }
 
         // ── Main content area (team names + score circles) ──
-        // 垂直位置の計算
-        let centerY = containerHeight / 2
+        // 垂直位置の計算（バッジ余白分だけ下にシフトした中心）
+        let centerY = setCountTopExtra + (containerHeight - setCountTopExtra) / 2
         let circleY = centerY - circleSize / 2
 
         let teamTextFrameH = teamFontSize + 4
@@ -345,7 +347,8 @@ struct ScoreboardLayerBuilder {
                 team: .home,
                 duration: config.videoDuration,
                 fontSize: scoreFontSize,
-                textColor: invertedTextColor(for: theme)
+                textColor: invertedTextColor(for: theme),
+                resetOnSetWon: config.style.showSetCount
             )
 
             addScorePulseAnimation(
@@ -391,7 +394,8 @@ struct ScoreboardLayerBuilder {
                 team: .away,
                 duration: config.videoDuration,
                 fontSize: scoreFontSize,
-                textColor: invertedTextColor(for: theme)
+                textColor: invertedTextColor(for: theme),
+                resetOnSetWon: config.style.showSetCount
             )
 
             addScorePulseAnimation(
@@ -791,6 +795,7 @@ struct ScoreboardLayerBuilder {
     // MARK: - Single-Team Score Animation
 
     /// Creates opacity-animated text layers for one team's score.
+    /// `resetOnSetWon` がtrueの場合、`.setWon` イベント時刻でスコアを0にリセットする。
     private static func addSingleTeamScoreLayers(
         to container: CALayer,
         frame: CGRect,
@@ -798,26 +803,35 @@ struct ScoreboardLayerBuilder {
         team: Team,
         duration: TimeInterval,
         fontSize: CGFloat,
-        textColor: CGColor
+        textColor: CGColor,
+        resetOnSetWon: Bool = false
     ) {
         let sorted = events.sorted { $0.timestamp < $1.timestamp }
         var states: [(string: String, start: Double, end: Double)] = []
-        var score = 0
 
-        // Collect timestamps where this team scored
-        var teamTimestamps: [(timestamp: Double, newScore: Int)] = []
-        for event in sorted where event.team == team {
-            score += 1
-            teamTimestamps.append((event.timestamp, score))
+        // 各「スコア変化点」の時刻と新スコア値を集める
+        var score = 0
+        var changes: [(timestamp: Double, newScore: Int)] = []
+
+        for event in sorted {
+            if event.kind == .setWon && resetOnSetWon {
+                if score != 0 {
+                    score = 0
+                    changes.append((event.timestamp, 0))
+                }
+            } else if event.kind == .point && event.team == team {
+                score += 1
+                changes.append((event.timestamp, score))
+            }
         }
 
-        if teamTimestamps.isEmpty {
+        if changes.isEmpty {
             states.append(("0", 0, duration))
         } else {
-            states.append(("0", 0, teamTimestamps[0].timestamp))
-            for (i, ts) in teamTimestamps.enumerated() {
-                let end = (i + 1 < teamTimestamps.count) ? teamTimestamps[i + 1].timestamp : duration
-                states.append(("\(ts.newScore)", ts.timestamp, end))
+            states.append(("0", 0, changes[0].timestamp))
+            for (i, ch) in changes.enumerated() {
+                let end = (i + 1 < changes.count) ? changes[i + 1].timestamp : duration
+                states.append(("\(ch.newScore)", ch.timestamp, end))
             }
         }
 
@@ -841,7 +855,7 @@ struct ScoreboardLayerBuilder {
         team: Team,
         duration: TimeInterval
     ) {
-        let teamEvents = events.filter { $0.team == team }.sorted { $0.timestamp < $1.timestamp }
+        let teamEvents = events.filter { $0.team == team && $0.kind == .point }.sorted { $0.timestamp < $1.timestamp }
         guard !teamEvents.isEmpty, duration > 0 else { return }
 
         let pulseDuration: TimeInterval = 0.3
@@ -901,7 +915,7 @@ struct ScoreboardLayerBuilder {
         team: Team,
         duration: TimeInterval
     ) {
-        let teamEvents = events.filter { $0.team == team }.sorted { $0.timestamp < $1.timestamp }
+        let teamEvents = events.filter { $0.team == team && $0.kind == .point }.sorted { $0.timestamp < $1.timestamp }
         guard !teamEvents.isEmpty, duration > 0 else { return }
 
         let flashDuration: TimeInterval = 1.0

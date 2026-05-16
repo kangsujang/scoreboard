@@ -128,11 +128,26 @@ final class Match {
     }
 
     var homeScore: Int {
-        scoreEvents.filter { $0.team == .home && $0.kind == .point }.count
+        currentScore(for: .home)
     }
 
     var awayScore: Int {
-        scoreEvents.filter { $0.team == .away && $0.kind == .point }.count
+        currentScore(for: .away)
+    }
+
+    /// 現在の累積得点（showSetCount時は最後のセット獲得以降のみカウント）。
+    /// 「セクション境界」は最後の .setWon イベント時刻を意味する。
+    private func currentScore(for team: Team) -> Int {
+        let style = scoreboardStyle
+        if style.showSetCount {
+            let lastSetWon = scoreEvents
+                .filter { $0.kind == .setWon }
+                .max(by: { $0.timestamp < $1.timestamp })?.timestamp ?? -1
+            return scoreEvents.filter {
+                $0.team == team && $0.kind == .point && $0.timestamp > lastSetWon
+            }.count
+        }
+        return scoreEvents.filter { $0.team == team && $0.kind == .point }.count
     }
 
     var homeSetCount: Int {
@@ -267,9 +282,18 @@ final class Match {
     }
 
     func scoreAt(time: TimeInterval) -> (home: Int, away: Int) {
+        let style = scoreboardStyle
+        // showSetCount時: 指定時刻までの最後の setWon 時刻を境界としてスコアをリセット
+        var resetBoundary: TimeInterval = -1
+        if style.showSetCount {
+            resetBoundary = sortedEvents
+                .filter { $0.kind == .setWon && $0.timestamp <= time }
+                .last?.timestamp ?? -1
+        }
+
         var home = 0
         var away = 0
-        for event in sortedEvents where event.timestamp <= time && event.kind == .point {
+        for event in sortedEvents where event.timestamp <= time && event.timestamp > resetBoundary && event.kind == .point {
             switch event.team {
             case .home: home += 1
             case .away: away += 1

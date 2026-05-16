@@ -75,7 +75,7 @@ enum VideoCompositionBuilder {
             let corrected = correctedSize(naturalSize: naturalSize, transform: preferredTransform)
             if referenceSize == nil {
                 referenceSize = corrected
-                referenceFrameRate = try await sourceVideoTrack.load(.nominalFrameRate)
+                referenceFrameRate = try await detectFrameRate(of: sourceVideoTrack)
             }
 
             segments.append((
@@ -156,6 +156,19 @@ enum VideoCompositionBuilder {
 
         videoComposition.instructions = [instruction]
         return videoComposition
+    }
+
+    // MARK: - Frame Rate Detection
+
+    /// nominalFrameRate と minFrameDuration の両方を考慮して信頼性の高いフレームレートを返す。
+    /// 4K iPhone素材などで nominalFrameRate が実値より低く（例: 30FPS素材なのに15を返す）報告されるケースを救済する。
+    static func detectFrameRate(of track: AVAssetTrack) async throws -> Float {
+        let nominal = try await track.load(.nominalFrameRate)
+        let minFrameDuration = try await track.load(.minFrameDuration)
+        let durationBased: Float = (minFrameDuration.isValid && minFrameDuration.seconds > 0)
+            ? Float(1.0 / minFrameDuration.seconds)
+            : 0
+        return max(nominal, durationBased)
     }
 
     // MARK: - Transform Handling

@@ -161,14 +161,34 @@ enum VideoCompositionBuilder {
     // MARK: - Frame Rate Detection
 
     /// nominalFrameRate と minFrameDuration の両方を考慮して信頼性の高いフレームレートを返す。
-    /// 4K iPhone素材などで nominalFrameRate が実値より低く（例: 30FPS素材なのに15を返す）報告されるケースを救済する。
+    /// 4K iPhone素材などで nominalFrameRate が実値より低く（例: 30FPS素材なのに15.79を返す）報告されるケースを救済する。
     static func detectFrameRate(of track: AVAssetTrack) async throws -> Float {
         let nominal = try await track.load(.nominalFrameRate)
         let minFrameDuration = try await track.load(.minFrameDuration)
         let durationBased: Float = (minFrameDuration.isValid && minFrameDuration.seconds > 0)
             ? Float(1.0 / minFrameDuration.seconds)
             : 0
-        return max(nominal, durationBased)
+        let raw = max(nominal, durationBased)
+        return normalizeToStandardFrameRate(raw)
+    }
+
+    /// 検出された生のフレームレートを標準的なフレームレート (24/25/30/50/60/120) に正規化する。
+    /// VFR素材で半減した値（例: 15.79）が報告された場合、2倍/3倍してから最寄りの標準値にスナップする。
+    static func normalizeToStandardFrameRate(_ rate: Float) -> Float {
+        guard rate > 0 else { return 30.0 }
+        let standards: [Float] = [24, 25, 30, 50, 60, 120, 240]
+        let tolerance: Float = 2.0
+
+        if let nearest = standards.first(where: { abs(rate - $0) <= tolerance }) {
+            return nearest
+        }
+        for multiplier: Float in [2, 3, 4] {
+            let multiplied = rate * multiplier
+            if let nearest = standards.first(where: { abs(multiplied - $0) <= tolerance }) {
+                return nearest
+            }
+        }
+        return rate
     }
 
     // MARK: - Transform Handling

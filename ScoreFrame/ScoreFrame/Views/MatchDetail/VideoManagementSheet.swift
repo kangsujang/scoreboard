@@ -46,6 +46,11 @@ struct VideoManagementSheet: View {
                                             .font(.caption2)
                                             .foregroundStyle(.secondary)
                                     }
+                                    if let info = videoInfoText(for: entry) {
+                                        Text(info)
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                    }
                                 }
                             }
                         }
@@ -139,9 +144,30 @@ struct VideoManagementSheet: View {
         for url in match.videoURLs {
             let thumb = await ThumbnailGenerator.generate(for: url)
             let date = await VideoImportService.creationDate(for: url)
-            entries.append(VideoEntry(url: url, originalFileName: url.lastPathComponent, thumbnail: thumb, creationDate: date))
+            let info = await VideoImportService.videoInfo(for: url)
+            entries.append(VideoEntry(
+                url: url,
+                originalFileName: url.lastPathComponent,
+                thumbnail: thumb,
+                creationDate: date,
+                dimensions: info?.dimensions,
+                frameRate: info?.frameRate
+            ))
         }
         videoEntries = entries
+    }
+
+    // MARK: - Display Helpers
+
+    private func videoInfoText(for entry: VideoEntry) -> String? {
+        var parts: [String] = []
+        if let size = entry.dimensions {
+            parts.append("\(Int(size.width))×\(Int(size.height))")
+        }
+        if let fps = entry.frameRate, fps > 0 {
+            parts.append(String(format: "%.2f fps", fps))
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
     // MARK: - Import from Photos Library
@@ -157,8 +183,16 @@ struct VideoManagementSheet: View {
                 let creationDate = await VideoImportService.creationDate(for: movie.url)
                 let sandboxURL = try await VideoImportService.copyToSandbox(from: movie.url)
                 let thumb = await ThumbnailGenerator.generate(for: sandboxURL)
+                let info = await VideoImportService.videoInfo(for: sandboxURL)
                 await MainActor.run {
-                    videoEntries.append(VideoEntry(url: sandboxURL, originalFileName: originalName, thumbnail: thumb, creationDate: creationDate))
+                    videoEntries.append(VideoEntry(
+                        url: sandboxURL,
+                        originalFileName: originalName,
+                        thumbnail: thumb,
+                        creationDate: creationDate,
+                        dimensions: info?.dimensions,
+                        frameRate: info?.frameRate
+                    ))
                 }
             } catch {
                 await MainActor.run {
@@ -182,8 +216,16 @@ struct VideoManagementSheet: View {
                 let creationDate = await VideoImportService.creationDate(for: url)
                 let sandboxURL = try await VideoImportService.copyToSandbox(from: url)
                 let thumb = await ThumbnailGenerator.generate(for: sandboxURL)
+                let info = await VideoImportService.videoInfo(for: sandboxURL)
                 await MainActor.run {
-                    videoEntries.append(VideoEntry(url: sandboxURL, originalFileName: originalName, thumbnail: thumb, creationDate: creationDate))
+                    videoEntries.append(VideoEntry(
+                        url: sandboxURL,
+                        originalFileName: originalName,
+                        thumbnail: thumb,
+                        creationDate: creationDate,
+                        dimensions: info?.dimensions,
+                        frameRate: info?.frameRate
+                    ))
                 }
             } catch {
                 await MainActor.run {

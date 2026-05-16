@@ -51,6 +51,35 @@ struct VideoImportService {
         try? FileManager.default.removeItem(at: url)
     }
 
+    struct VideoInfo {
+        let dimensions: CGSize
+        let frameRate: Float
+    }
+
+    /// 動画ファイルから表示用のメタ情報（補正済み解像度・AVFoundationが報告する生のフレームレート）を取得する。
+    static func videoInfo(for url: URL) async -> VideoInfo? {
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if accessing { url.stopAccessingSecurityScopedResource() }
+        }
+        let asset = AVURLAsset(url: url)
+        do {
+            let tracks = try await asset.loadTracks(withMediaType: .video)
+            guard let track = tracks.first else { return nil }
+            let naturalSize = try await track.load(.naturalSize)
+            let transform = try await track.load(.preferredTransform)
+            let nominal = try await track.load(.nominalFrameRate)
+            let minFrameDuration = try await track.load(.minFrameDuration)
+            let durationBased: Float = (minFrameDuration.isValid && minFrameDuration.seconds > 0)
+                ? Float(1.0 / minFrameDuration.seconds)
+                : 0
+            let dimensions = VideoCompositionBuilder.correctedSize(naturalSize: naturalSize, transform: transform)
+            return VideoInfo(dimensions: dimensions, frameRate: max(nominal, durationBased))
+        } catch {
+            return nil
+        }
+    }
+
     /// Documents/Videos/ 内の孤立ファイル（どのMatchからも参照されていない）を削除
     static func cleanupOrphanedVideos(referencedURLs: Set<URL>) {
         let fileManager = FileManager.default

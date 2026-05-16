@@ -10,6 +10,8 @@ struct VideoEntry: Identifiable {
     var originalFileName: String?
     var thumbnail: UIImage?
     var creationDate: Date?
+    var dimensions: CGSize?
+    var frameRate: Float?
 }
 
 struct MatchSetupView: View {

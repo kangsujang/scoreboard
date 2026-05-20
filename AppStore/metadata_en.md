@@ -10,7 +10,7 @@ Overlay scores on match videos
 
 ## Promotional Text (170 chars max)
 
-[FREE until end of April] Turn your match videos into professional broadcasts. Add scoreboards to soccer, handball, rugby, hockey and more. Export with ease.
+Turn your match videos into professional broadcasts. Add scoreboards to soccer, handball, rugby, hockey and more. Export with ease.
 
 ## Description (4000 chars max)
 

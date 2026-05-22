@@ -25,7 +25,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sujang.ScoreFrame
         MARKETING_VERSION: "1.1.0"
-        CURRENT_PROJECT_VERSION: "64"
+        CURRENT_PROJECT_VERSION: "65"
         DEVELOPMENT_TEAM: "48745L927F"
         CODE_SIGN_STYLE: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
@@ -39,4 +39,5 @@ targets:
         INFOPLIST_KEY_UILaunchScreen_Generation: true
         INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "試合動画を選択するためにフォトライブラリへのアクセスが必要です"
         INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription: "エクスポートした動画を写真に保存するためにアクセスが必要です"
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: false
         SWIFT_EMIT_LOC_STRINGS: "YES"

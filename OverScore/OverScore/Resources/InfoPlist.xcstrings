@@ -5,10 +5,28 @@
       "comment" : "Bundle name",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OverScore"
+          }
+        },
         "ja" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "ScoreFrame"
+            "state" : "translated",
+            "value" : "OverScore"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OverScore"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OverScore"
           }
         }
       }

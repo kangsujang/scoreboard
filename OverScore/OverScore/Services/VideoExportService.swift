@@ -86,7 +86,7 @@ final class VideoExportService {
 
         // Export
         let outputURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("ScoreFrame_\(UUID().uuidString)")
+            .appendingPathComponent("OverScore_\(UUID().uuidString)")
             .appendingPathExtension("mp4")
 
         if match.skipOverlay {
@@ -194,7 +194,7 @@ final class VideoExportService {
     // MARK: - Background Task
 
     private func beginBackgroundTask() {
-        backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "ScoreFrameExport") { [weak self] in
+        backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "OverScoreExport") { [weak self] in
             // 期限切れ時はキャンセルせずバックグラウンドタスクのみ終了
             // AVAssetExportSessionはシステムレベルで継続される
             self?.endBackgroundTask()

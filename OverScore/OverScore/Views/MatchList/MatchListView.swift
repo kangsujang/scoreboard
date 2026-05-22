@@ -16,7 +16,7 @@ struct MatchListView: View {
                 matchList
             }
         }
-        .navigationTitle("ScoreFrame")
+        .navigationTitle("OverScore")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {

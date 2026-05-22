@@ -2,7 +2,7 @@
 
 ## App Name (30 chars max)
 
-ScoreFrame - Sport Scoreboard
+OverScore - Sport Scoreboard
 
 ## Subtitle (30 chars max)
 
@@ -14,9 +14,9 @@ Turn your match videos into professional broadcasts. Add scoreboards to soccer, 
 
 ## Description (4000 chars max)
 
-ScoreFrame lets you overlay scoreboards onto sports match videos and export them as polished MP4 files.
+OverScore lets you overlay scoreboards onto sports match videos and export them as polished MP4 files.
 
-Whether it's your child's youth soccer game, a recreational league match, a handball tournament, or a rugby fixture, ScoreFrame transforms ordinary match footage into professional-looking broadcasts — complete with live-updating scoreboards.
+Whether it's your child's youth soccer game, a recreational league match, a handball tournament, or a rugby fixture, OverScore transforms ordinary match footage into professional-looking broadcasts — complete with live-updating scoreboards.
 
 KEY FEATURES
 - Overlay scoreboards on recorded videos

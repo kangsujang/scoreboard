@@ -98,7 +98,7 @@ struct VideoImportService {
         }
     }
 
-    /// /tmp/ 内の ScoreFrame エクスポート一時ファイルを削除
+    /// /tmp/ 内の OverScore エクスポート一時ファイルを削除
     static func cleanupTempExportFiles() {
         let fileManager = FileManager.default
         let tmpDir = fileManager.temporaryDirectory
@@ -109,7 +109,7 @@ struct VideoImportService {
         ) else { return }
 
         for file in files {
-            if file.lastPathComponent.hasPrefix("ScoreFrame_") && file.pathExtension == "mp4" {
+            if file.lastPathComponent.hasPrefix("OverScore_") && file.pathExtension == "mp4" {
                 try? fileManager.removeItem(at: file)
             }
         }

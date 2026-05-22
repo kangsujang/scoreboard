@@ -1,4 +1,4 @@
-name: ScoreFrame
+name: OverScore
 options:
   bundleIdPrefix: com.sujang
   deploymentTarget:
@@ -13,11 +13,11 @@ settings:
     SWIFT_STRICT_CONCURRENCY: minimal
 
 targets:
-  ScoreFrame:
+  OverScore:
     type: application
     platform: iOS
     sources:
-      - path: ScoreFrame
+      - path: OverScore
         excludes:
           - "**/.DS_Store"
     settings:

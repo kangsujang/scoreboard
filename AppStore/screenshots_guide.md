@@ -58,4 +58,4 @@
 4. App Store Connectにアップロード
 
 ## App Store Connect アップロード先
-App Store Connect > マイApp > ScoreFrame > App Store > バージョン情報 > スクリーンショット
+App Store Connect > マイApp > OverScore > App Store > バージョン情報 > スクリーンショット

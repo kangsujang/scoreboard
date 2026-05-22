@@ -6,7 +6,7 @@ XbotGoで撮影した試合動画に、スコアボードを重ねられるア�
 
 XbotGoのおかげで試合の撮影はバッチリですが、あとからスコアを確認したい時に「今何対何だっけ？」となることありませんか？
 
-「ScoreFrame」を使えば、撮影済みの動画にスコアボードを後付けしてエクスポートできます。
+「OverScore」を使えば、撮影済みの動画にスコアボードを後付けしてエクスポートできます。
 
 【できること】
 - 撮影した動画にスコアボードをオーバーレイ
@@ -24,7 +24,7 @@ XbotGoのおかげで試合の撮影はバッチリですが、あとからス�
 App Store: https://apps.apple.com/app/id6760339051
 紹介動画: https://youtu.be/gSFEHQUX6kg
 
-#XbotGo #サッカー #少年サッカー #スコアボード #試合動画 #ScoreFrame
+#XbotGo #サッカー #少年サッカー #スコアボード #試合動画 #OverScore
 
 ---
 
@@ -32,7 +32,7 @@ App Store: https://apps.apple.com/app/id6760339051
 
 お子さんのサッカーの試合動画、撮りっぱなしになっていませんか？
 
-「ScoreFrame」を使えば、撮影済みの動画にスコアボードを後から重ねて、テレビ中継のような仕上がりにできます。
+「OverScore」を使えば、撮影済みの動画にスコアボードを後から重ねて、テレビ中継のような仕上がりにできます。
 
 動画を再生しながらゴールのタイミングをタップするだけ。前半・後半・延長戦・PK戦にも対応しています。
 
@@ -47,13 +47,13 @@ App Store: https://apps.apple.com/app/id6760339051
 
 App Store: https://apps.apple.com/app/id6760339051
 
-#少年サッカー #サッカー #試合動画 #スコアボード #ScoreFrame #サッカーママ #サッカーパパ
+#少年サッカー #サッカー #試合動画 #スコアボード #OverScore #サッカーママ #サッカーパパ
 
 ---
 
 ## ハンドボールグループ向け（日本語）
 
-ハンドボールの試合動画にスコアボードを重ねられるアプリ「ScoreFrame」を紹介させてください。
+ハンドボールの試合動画にスコアボードを重ねられるアプリ「OverScore」を紹介させてください。
 
 サッカー向けに開発したアプリですが、ハンドボールにも完全対応しました！
 
@@ -69,7 +69,7 @@ App Store: https://apps.apple.com/app/id6760339051
 
 App Store: https://apps.apple.com/app/id6760339051
 
-#ハンドボール #handball #試合動画 #スコアボード #ScoreFrame
+#ハンドボール #handball #試合動画 #スコアボード #OverScore
 
 ---
 
@@ -77,7 +77,7 @@ App Store: https://apps.apple.com/app/id6760339051
 
 Are your kids' soccer match videos just sitting in your camera roll?
 
-With "ScoreFrame", you can overlay professional scoreboards onto your recorded match videos and export them as MP4 files — just like a TV broadcast.
+With "OverScore", you can overlay professional scoreboards onto your recorded match videos and export them as MP4 files — just like a TV broadcast.
 
 Simply play the video and tap when goals are scored. It supports halves, extra time, and penalty shootouts.
 
@@ -92,13 +92,13 @@ Perfect for sharing with the team or posting on social media. FREE until end of 
 
 App Store: https://apps.apple.com/app/id6760339051
 
-#soccer #youthsoccer #scoreboard #matchvideo #ScoreFrame #soccermom #soccerdad
+#soccer #youthsoccer #scoreboard #matchvideo #OverScore #soccermom #soccerdad
 
 ---
 
 ## Handball Group (English)
 
-Introducing "ScoreFrame" — an app that lets you overlay scoreboards on your handball match videos.
+Introducing "OverScore" — an app that lets you overlay scoreboards on your handball match videos.
 
 Originally built for soccer, it now fully supports handball with features you'll love:
 
@@ -113,13 +113,13 @@ FREE until end of April!
 
 App Store: https://apps.apple.com/app/id6760339051
 
-#handball #matchvideo #scoreboard #ScoreFrame
+#handball #matchvideo #scoreboard #OverScore
 
 ---
 
 ## 핸드볼 그룹 (한국어)
 
-핸드볼 경기 영상에 스코어보드를 합성할 수 있는 앱 "ScoreFrame"을 소개합니다.
+핸드볼 경기 영상에 스코어보드를 합성할 수 있는 앱 "OverScore"을 소개합니다.
 
 축구용으로 개발한 앱이지만, 핸드볼에도 완벽하게 대응했습니다!
 
@@ -135,4 +135,4 @@ App Store: https://apps.apple.com/app/id6760339051
 
 App Store: https://apps.apple.com/app/id6760339051
 
-#핸드볼 #handball #경기영상 #스코어보드 #ScoreFrame
+#핸드볼 #handball #경기영상 #스코어보드 #OverScore

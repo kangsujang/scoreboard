@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct ScoreFrameApp: App {
+struct OverScoreApp: App {
     let container: ModelContainer
 
     init() {

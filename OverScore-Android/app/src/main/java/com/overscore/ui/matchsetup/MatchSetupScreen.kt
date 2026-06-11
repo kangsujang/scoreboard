@@ -131,7 +131,7 @@ fun MatchSetupScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Video ${index + 1}",
+                        text = stringResource(R.string.video_number, index + 1),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.weight(1f)
                     )

@@ -137,12 +137,12 @@ fun ScoreboardStyleSheet(
                 selected = editTarget == EditTarget.Scoreboard,
                 onClick = { editTarget = EditTarget.Scoreboard },
                 shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
-            ) { Text("スコアボード") }
+            ) { Text(stringResource(R.string.style_target_scoreboard)) }
             SegmentedButton(
                 selected = editTarget == EditTarget.MatchInfo,
                 onClick = { editTarget = EditTarget.MatchInfo },
                 shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
-            ) { Text("試合情報") }
+            ) { Text(stringResource(R.string.match_info_label)) }
         }
 
         Row(
@@ -151,7 +151,7 @@ fun ScoreboardStyleSheet(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "ピンチでサイズ変更・ドラッグで位置調整",
+                text = stringResource(R.string.style_gesture_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -164,7 +164,7 @@ fun ScoreboardStyleSheet(
                     baseInfoScale = 1.0f; baseInfoPosX = 0.02f; baseInfoPosY = 0.12f
                 }
                 onStyleChange(currentStyle)
-            }) { Text("リセット") }
+            }) { Text(stringResource(R.string.reset)) }
         }
 
         // Theme selection

@@ -49,7 +49,14 @@ import com.overscore.model.Team
 import com.overscore.model.TimerSegment
 import com.overscore.util.TimeFormatting
 
-val periodPresets = listOf("前半", "後半", "延前", "延後", "PK")
+@Composable
+fun periodPresets(): List<String> = listOf(
+    stringResource(R.string.period_first_half),
+    stringResource(R.string.period_second_half),
+    stringResource(R.string.period_extra_first),
+    stringResource(R.string.period_extra_second),
+    stringResource(R.string.pk_mode)
+)
 
 @Composable
 fun ScoreControlsView(
@@ -160,7 +167,7 @@ fun ScoreControlsView(
         ) {
             OutlinedButton(onClick = { onAddSegment() }) {
                 Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
-                Text("セグメント追加", fontSize = 12.sp)
+                Text(stringResource(R.string.add_segment), fontSize = 12.sp)
             }
 
             if (match.timerSegments.any { it.timerStartTime != null }) {
@@ -172,7 +179,7 @@ fun ScoreControlsView(
                     )
                 ) {
                     Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
-                    Text("タイマー引き継ぎ", fontSize = 12.sp)
+                    Text(stringResource(R.string.timer_carry_over), fontSize = 12.sp)
                 }
             }
         }
@@ -231,7 +238,7 @@ private fun SegmentControlRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "セグメント ${index + 1}",
+                text = stringResource(R.string.segment_number, index + 1),
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -240,7 +247,7 @@ private fun SegmentControlRow(
                 IconButton(onClick = onRemove) {
                     Icon(
                         Icons.Default.Delete,
-                        contentDescription = "削除",
+                        contentDescription = stringResource(R.string.delete),
                         tint = MaterialTheme.colorScheme.error
                     )
                 }
@@ -248,7 +255,8 @@ private fun SegmentControlRow(
         }
 
         // Period label presets + custom input
-        val isCustomLabel = segment.periodLabel != null && segment.periodLabel !in periodPresets
+        val presets = periodPresets()
+        val isCustomLabel = segment.periodLabel != null && segment.periodLabel !in presets
         var customText by remember(segment.id) {
             mutableStateOf(if (isCustomLabel) segment.periodLabel ?: "" else "")
         }
@@ -257,7 +265,7 @@ private fun SegmentControlRow(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            items(periodPresets) { preset ->
+            items(presets) { preset ->
                 FilterChip(
                     selected = segment.periodLabel == preset,
                     onClick = {
@@ -274,7 +282,7 @@ private fun SegmentControlRow(
                         customText = newValue
                         onPeriodLabel(newValue.ifEmpty { null })
                     },
-                    placeholder = { Text("ラベル", fontSize = 12.sp) },
+                    placeholder = { Text(stringResource(R.string.segment_label_placeholder), fontSize = 12.sp) },
                     singleLine = true,
                     textStyle = MaterialTheme.typography.bodySmall,
                     modifier = Modifier
@@ -304,7 +312,7 @@ private fun SegmentControlRow(
                 )
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("区切り開始", fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.segment_start), fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
                     segment.segmentStartTime?.let {
                         Text(
                             TimeFormatting.format(it),
@@ -324,7 +332,7 @@ private fun SegmentControlRow(
                 )
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("キックオフ", fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.kickoff), fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
                     segment.timerStartTime?.let {
                         Text(
                             TimeFormatting.format(it),
@@ -345,7 +353,7 @@ private fun SegmentControlRow(
                 )
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("試合終了", fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.full_time), fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
                     segment.timerStopTime?.let {
                         Text(
                             TimeFormatting.format(it),
@@ -361,7 +369,7 @@ private fun SegmentControlRow(
                 IconButton(onClick = onTimerClear) {
                     Icon(
                         Icons.Default.Clear,
-                        contentDescription = "クリア",
+                        contentDescription = stringResource(R.string.clear),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -376,7 +384,7 @@ private fun SegmentControlRow(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "開始時間",
+                    stringResource(R.string.start_time),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

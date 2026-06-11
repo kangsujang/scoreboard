@@ -221,7 +221,7 @@ fun ExportScreen(
                         }
 
                         Button(onClick = { viewModel.startExport(context) }) {
-                            Text("Retry")
+                            Text(stringResource(R.string.retry))
                         }
 
                         OutlinedButton(onClick = onNavigateBack) {

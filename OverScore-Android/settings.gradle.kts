@@ -17,5 +17,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ScoreFrame"
+rootProject.name = "OverScore"
 include(":app")

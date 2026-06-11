@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.scoreframe"
+    namespace = "com.overscore"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.scoreframe"
+        applicationId = "com.overscore"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

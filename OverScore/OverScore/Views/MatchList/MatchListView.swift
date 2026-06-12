@@ -7,6 +7,7 @@ struct MatchListView: View {
     @Query(sort: \Match.createdAt, order: .reverse) private var matches: [Match]
     @State private var showDeleteConfirmation = false
     @State private var matchToDelete: Match?
+    @State private var showSettings = false
 
     var body: some View {
         Group {
@@ -18,6 +19,13 @@ struct MatchListView: View {
         }
         .navigationTitle("OverScore")
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    showSettings = true
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+            }
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     router.navigate(to: .matchSetup)
@@ -25,6 +33,9 @@ struct MatchListView: View {
                     Image(systemName: "plus")
                 }
             }
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
         }
         .alert("試合を削除", isPresented: $showDeleteConfirmation) {
             Button("削除", role: .destructive) {

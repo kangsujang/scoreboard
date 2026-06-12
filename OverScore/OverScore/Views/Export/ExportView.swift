@@ -3,14 +3,19 @@ import AVKit
 
 struct ExportView: View {
     @Environment(Router.self) private var router
+    @Environment(StoreManager.self) private var storeManager
     let match: Match
     @State private var viewModel: ExportViewModel?
     @State private var player: AVPlayer?
     @State private var videoAspectRatio: CGFloat = 16.0 / 9.0
+    @State private var adCompleted = false
 
     var body: some View {
         Group {
-            if let vm = viewModel {
+            if !adCompleted {
+                ProgressView("準備中...")
+                    .task { await showAdIfNeeded() }
+            } else if let vm = viewModel {
                 exportContent(vm: vm)
             } else {
                 ProgressView("準備中...")
@@ -34,11 +39,6 @@ struct ExportView: View {
         }
         .navigationBarBackButtonHidden(true)
         .task {
-            if viewModel == nil {
-                let vm = ExportViewModel(match: match)
-                viewModel = vm
-                vm.startExport()
-            }
             if let url = match.videoURLs.first,
                let size = await ThumbnailGenerator.videoSize(for: url) {
                 videoAspectRatio = size.width / size.height
@@ -169,6 +169,18 @@ struct ExportView: View {
             .buttonStyle(.borderedProminent)
 
             Spacer()
+        }
+    }
+
+    private func showAdIfNeeded() async {
+        if !storeManager.isAdRemoved {
+            await AdManager.shared.showInterstitialAd()
+        }
+        adCompleted = true
+        if viewModel == nil {
+            let vm = ExportViewModel(match: match)
+            viewModel = vm
+            vm.startExport()
         }
     }
 }

@@ -49,10 +49,10 @@
     <string name="delete">Delete</string>
 
     <!-- Period Presets -->
-    <string name="period_first_half">1st Half</string>
-    <string name="period_second_half">2nd Half</string>
-    <string name="period_extra_first">ET 1st</string>
-    <string name="period_extra_second">ET 2nd</string>
+    <string name="period_first_half">1st</string>
+    <string name="period_second_half">2nd</string>
+    <string name="period_extra_first">Ex 1st</string>
+    <string name="period_extra_second">Ex 2nd</string>
 
     <!-- Match Detail -->
     <string name="match_detail_title">Match Detail</string>

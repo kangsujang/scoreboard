@@ -1,0 +1,148 @@
+import Foundation
+import SwiftUI
+
+struct ScoreboardStyle: Codable, Equatable {
+    var theme: Theme = .dark
+    var showScore: Bool = true
+    var showMatchTimer: Bool = true
+    var timerPosition: TimerPosition = .left
+    var showTimerOptions: Bool = false      // +表示・タイマーカラー選択の表示
+    var showPenaltyTimer: Bool = false      // ペナルティタイマーの表示
+    var showTimeouts: Bool = false          // タイムアウト機能の表示
+    var showSetCount: Bool = false          // セットカウント表示（バレーボール等）
+    var periodLabel: String?
+
+    // チームユニフォームカラー ("#RRGGBB" 形式、nil=テーマデフォルト)
+    var homeTeamColorHex: String?
+    var awayTeamColorHex: String?
+
+    // セクションごとのチームカラー上書きを有効化するか
+    var useSegmentTeamColors: Bool = false
+
+    // 連続位置 (0〜1 正規化, 左上原点)
+    var positionX: CGFloat = 0.02
+    var positionY: CGFloat = 0.02
+
+    // 連続スケール (0.5〜2.5)
+    var scale: CGFloat = 0.5
+
+    // 試合情報の位置・スケール (独立制御)
+    var matchInfoPositionX: CGFloat = 0.70
+    var matchInfoPositionY: CGFloat = 0.02
+    var matchInfoScale: CGFloat = 1.0
+
+    // 旧プロパティ — Codable 互換のため残す（UIからは使わない）
+    var position: Position = .topLeft
+    var fontSize: FontSize = .medium
+
+    enum Position: String, Codable, CaseIterable {
+        case topLeft
+        case topCenter
+        case topRight
+
+        var displayName: String {
+            switch self {
+            case .topLeft: return String(localized: "左上")
+            case .topCenter: return String(localized: "中央上")
+            case .topRight: return String(localized: "右上")
+            }
+        }
+    }
+
+    enum TimerPosition: String, Codable, CaseIterable {
+        case left
+        case right
+
+        var displayName: String {
+            switch self {
+            case .left: return String(localized: "左")
+            case .right: return String(localized: "右")
+            }
+        }
+    }
+
+    enum Theme: String, Codable, CaseIterable {
+        case dark
+        case light
+        case broadcast
+        case minimal
+
+        var displayName: String {
+            switch self {
+            case .dark: return "Dark"
+            case .light: return "Light"
+            case .broadcast: return "Broadcast"
+            case .minimal: return "Minimal"
+            }
+        }
+    }
+
+    enum FontSize: String, Codable, CaseIterable {
+        case small
+        case medium
+        case large
+
+        var displayName: String {
+            switch self {
+            case .small: return String(localized: "小")
+            case .medium: return String(localized: "中")
+            case .large: return String(localized: "大")
+            }
+        }
+
+        var scaleFactor: CGFloat {
+            switch self {
+            case .small: return 0.75
+            case .medium: return 1.0
+            case .large: return 1.3
+            }
+        }
+    }
+
+    // MARK: - Codable (旧データ互換)
+
+    // MARK: - Computed Color accessors
+
+    var homeTeamColor: Color? {
+        get { homeTeamColorHex.flatMap { Color(hex: $0) } }
+        set { homeTeamColorHex = newValue?.hexString }
+    }
+
+    var awayTeamColor: Color? {
+        get { awayTeamColorHex.flatMap { Color(hex: $0) } }
+        set { awayTeamColorHex = newValue?.hexString }
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case theme, showScore, showMatchTimer, timerPosition, showTimerOptions, showPenaltyTimer, showTimeouts, showSetCount, periodLabel, positionX, positionY, scale, position, fontSize
+        case homeTeamColorHex, awayTeamColorHex
+        case useSegmentTeamColors
+        case matchInfoPositionX, matchInfoPositionY, matchInfoScale
+    }
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        theme = try container.decodeIfPresent(Theme.self, forKey: .theme) ?? .dark
+        showScore = try container.decodeIfPresent(Bool.self, forKey: .showScore) ?? true
+        showMatchTimer = try container.decodeIfPresent(Bool.self, forKey: .showMatchTimer) ?? true
+        timerPosition = try container.decodeIfPresent(TimerPosition.self, forKey: .timerPosition) ?? .left
+        showTimerOptions = try container.decodeIfPresent(Bool.self, forKey: .showTimerOptions) ?? false
+        showPenaltyTimer = try container.decodeIfPresent(Bool.self, forKey: .showPenaltyTimer) ?? false
+        showTimeouts = try container.decodeIfPresent(Bool.self, forKey: .showTimeouts) ?? false
+        showSetCount = try container.decodeIfPresent(Bool.self, forKey: .showSetCount) ?? false
+        periodLabel = try container.decodeIfPresent(String.self, forKey: .periodLabel)
+        positionX = try container.decodeIfPresent(CGFloat.self, forKey: .positionX) ?? 0.02
+        positionY = try container.decodeIfPresent(CGFloat.self, forKey: .positionY) ?? 0.02
+        scale = try container.decodeIfPresent(CGFloat.self, forKey: .scale) ?? 0.5
+        position = try container.decodeIfPresent(Position.self, forKey: .position) ?? .topLeft
+        fontSize = try container.decodeIfPresent(FontSize.self, forKey: .fontSize) ?? .medium
+        homeTeamColorHex = try container.decodeIfPresent(String.self, forKey: .homeTeamColorHex)
+        awayTeamColorHex = try container.decodeIfPresent(String.self, forKey: .awayTeamColorHex)
+        useSegmentTeamColors = try container.decodeIfPresent(Bool.self, forKey: .useSegmentTeamColors) ?? false
+        matchInfoPositionX = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoPositionX) ?? 0.70
+        matchInfoPositionY = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoPositionY) ?? 0.02
+        matchInfoScale = try container.decodeIfPresent(CGFloat.self, forKey: .matchInfoScale) ?? 1.0
+    }
+}

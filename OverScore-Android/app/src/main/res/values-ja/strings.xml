@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OverScore</string>
+
+    <!-- Match List -->
+    <string name="match_list_title">試合一覧</string>
+    <string name="match_list_empty">試合がありません。\n＋ボタンで作成してください。</string>
+    <string name="new_match">新規試合</string>
+    <string name="delete_match">削除</string>
+
+    <!-- Match Setup -->
+    <string name="match_setup_title">新規試合</string>
+    <string name="home_team">ホームチーム</string>
+    <string name="away_team">アウェイチーム</string>
+    <string name="match_info_label">試合情報</string>
+    <string name="match_info_placeholder">大会名・日程など</string>
+    <string name="select_videos">動画を選択</string>
+    <string name="add_video">動画を追加</string>
+    <string name="max_videos">最大10本まで</string>
+    <string name="video_number">動画 %1$d</string>
+    <string name="next">次へ</string>
+    <string name="cancel">キャンセル</string>
+
+    <!-- Score Editor -->
+    <string name="score_editor_title">スコア編集</string>
+    <string name="goal">ゴール</string>
+    <string name="undo">取消</string>
+    <string name="events">イベント</string>
+    <string name="no_events">イベントなし</string>
+    <string name="finish">完了</string>
+    <string name="timer">タイマー</string>
+    <string name="start_timer">開始</string>
+    <string name="stop_timer">停止</string>
+    <string name="reset_timer">リセット</string>
+    <string name="period_label">ピリオド</string>
+    <string name="add_period">ピリオド追加</string>
+    <string name="penalty_timer">ペナルティタイマー</string>
+    <string name="timeout">タイムアウト</string>
+    <string name="pk_mode">PK</string>
+    <string name="add_segment">セグメント追加</string>
+    <string name="timer_carry_over">タイマー引き継ぎ</string>
+    <string name="segment_number">セグメント %1$d</string>
+    <string name="segment_label_placeholder">ラベル</string>
+    <string name="segment_start">区切り開始</string>
+    <string name="kickoff">キックオフ</string>
+    <string name="full_time">試合終了</string>
+    <string name="clear">クリア</string>
+    <string name="start_time">開始時間</string>
+    <string name="delete">削除</string>
+
+    <!-- Period Presets -->
+    <string name="period_first_half">前半</string>
+    <string name="period_second_half">後半</string>
+    <string name="period_extra_first">延前</string>
+    <string name="period_extra_second">延後</string>
+
+    <!-- Match Detail -->
+    <string name="match_detail_title">試合詳細</string>
+    <string name="edit_style">スタイル編集</string>
+    <string name="manage_videos">動画管理</string>
+    <string name="export_video">動画エクスポート</string>
+
+    <!-- Scoreboard Style -->
+    <string name="style_title">スコアボードスタイル</string>
+    <string name="style_target_scoreboard">スコアボード</string>
+    <string name="style_gesture_hint">ピンチでサイズ変更・ドラッグで位置調整</string>
+    <string name="reset">リセット</string>
+    <string name="theme">テーマ</string>
+    <string name="show_score">スコア表示</string>
+    <string name="show_timer">タイマー表示</string>
+    <string name="timer_position">タイマー位置</string>
+    <string name="timer_left">左</string>
+    <string name="timer_right">右</string>
+    <string name="show_timer_options">タイマーオプション</string>
+    <string name="show_penalty_timer">ペナルティタイマー</string>
+    <string name="show_timeouts">タイムアウト</string>
+    <string name="home_team_color">ホームチームカラー</string>
+    <string name="away_team_color">アウェイチームカラー</string>
+    <string name="done">完了</string>
+
+    <!-- Export -->
+    <string name="export_title">エクスポート</string>
+    <string name="exporting">エクスポート中…</string>
+    <string name="export_complete">エクスポート完了</string>
+    <string name="export_failed">エクスポート失敗</string>
+    <string name="retry">再試行</string>
+    <string name="share">共有</string>
+    <string name="save_to_gallery">ギャラリーに保存</string>
+    <string name="back_to_list">一覧に戻る</string>
+    <string name="skip_overlay">動画のみ（オーバーレイなし）</string>
+
+    <!-- Playback -->
+    <string name="play">再生</string>
+    <string name="pause">一時停止</string>
+    <string name="speed">速度</string>
+</resources>

@@ -1,4 +1,4 @@
-# ScoreFrame
+# OverScore
 
 サッカー動画にスコアボードを合成するiOSアプリ。
 
@@ -15,8 +15,8 @@
 
 ## セットアップ
 
-1. Xcodeで新規プロジェクトを作成（App → SwiftUI → ScoreFrame）
-2. `ScoreFrame/ScoreFrame/` 配下のソースファイルをプロジェクトに追加
+1. Xcodeで新規プロジェクトを作成（App → SwiftUI → OverScore）
+2. `OverScore/OverScore/` 配下のソースファイルをプロジェクトに追加
 3. Info.plistのプライバシー設定を確認
 4. iOS 17.0以上をデプロイメントターゲットに設定
 5. ビルド & 実行

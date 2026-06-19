@@ -14,9 +14,76 @@ struct VideoEntry: Identifiable {
     var frameRate: Float?
 }
 
+struct SportSelectView: View {
+    @Environment(Router.self) private var router
+    @State private var selected: SportType = .soccer
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("スポーツを選ぶ")
+                        .font(.title2.bold())
+                    Text("選ぶだけでスコアボードを自動設定します")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 14) {
+                    ForEach(SportType.allCases) { sport in
+                        sportCard(sport)
+                    }
+                }
+            }
+            .padding()
+        }
+        .navigationTitle("かんたんスタート")
+        .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .bottom) {
+            Button {
+                router.navigate(to: .matchSetup(selected))
+            } label: {
+                Text("次へ")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .padding()
+        }
+    }
+
+    private func sportCard(_ sport: SportType) -> some View {
+        Button {
+            selected = sport
+        } label: {
+            VStack(spacing: 8) {
+                Text(sport.emoji)
+                    .font(.system(size: 32))
+                Text(sport.displayName)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 18)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(selected == sport ? Color.accentColor.opacity(0.12) : Color(.secondarySystemBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(selected == sport ? Color.accentColor : Color.clear, lineWidth: 2)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 struct MatchSetupView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(Router.self) private var router
+
+    let sportType: SportType
 
     @State private var homeTeamName = ""
     @State private var awayTeamName = ""
@@ -38,6 +105,18 @@ struct MatchSetupView: View {
 
     var body: some View {
         Form {
+            Section {
+                HStack(spacing: 8) {
+                    Text(sportType.emoji)
+                    Text(sportType.displayName)
+                        .font(.subheadline.weight(.semibold))
+                    Spacer()
+                    Text("選択中のスポーツ")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             Section("チーム名") {
                 TextField("ホームチーム", text: $homeTeamName)
                     .textInputAutocapitalization(.words)
@@ -256,6 +335,10 @@ struct MatchSetupView: View {
             match.matchInfo = trimmedInfo
         }
         match.videoURLs = videoEntries.map(\.url)
+        match.sportType = sportType
+        var style = match.scoreboardStyle
+        sportType.applyPreset(to: &style)
+        match.scoreboardStyle = style
         modelContext.insert(match)
 
         if videoOnlyMerge {

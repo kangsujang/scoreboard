@@ -72,6 +72,9 @@ struct ScoreEditorView: View {
             PlaybackControlsView(playerVM: playerVM)
                 .padding(.vertical, 6)
 
+            goalTimeline(duration: playerVM.duration)
+                .padding(.horizontal)
+
             ScrollView {
                 scoreControls(currentTime: currentTime)
                     .padding(.vertical, 6)
@@ -101,6 +104,9 @@ struct ScoreEditorView: View {
 
                     PlaybackControlsView(playerVM: playerVM)
                         .padding(.vertical, 8)
+                        .padding(.horizontal)
+
+                    goalTimeline(duration: playerVM.duration)
                         .padding(.horizontal)
 
                     Spacer(minLength: 0)
@@ -144,9 +150,36 @@ struct ScoreEditorView: View {
         }
     }
 
+    /// 観ながらタップで記録したゴールを動画全体に対する位置の点で可視化する
+    @ViewBuilder
+    private func goalTimeline(duration: TimeInterval) -> some View {
+        let goals = match.scoreEvents.filter { $0.kind == .point }
+        Group {
+            if duration > 0 && !goals.isEmpty {
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(.quaternary)
+                            .frame(height: 6)
+
+                        ForEach(goals, id: \.id) { goal in
+                            let ratio = min(max(goal.timestamp / duration, 0), 1)
+                            Circle()
+                                .fill(goal.team == .home ? Color.blue : Color.red)
+                                .frame(width: 10, height: 10)
+                                .position(x: geo.size.width * ratio, y: 3)
+                        }
+                    }
+                }
+                .frame(height: 10)
+            }
+        }
+    }
+
     private func eventList() -> some View {
         EventListView(
             events: match.scoreEvents,
+            sportType: match.sportType,
             pkKicks: match.pkKicks,
             penaltyTimers: match.penaltyTimers,
             homeTeamName: match.homeTeamName,

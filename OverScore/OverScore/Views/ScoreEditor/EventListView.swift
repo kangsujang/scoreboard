@@ -2,6 +2,7 @@ import SwiftUI
 
 struct EventListView: View {
     let events: [ScoreEvent]
+    var sportType: SportType = .soccer
     var pkKicks: [PKKick] = []
     var penaltyTimers: [PenaltyTimer] = []
     let homeTeamName: String
@@ -25,8 +26,8 @@ struct EventListView: View {
         if allItems.isEmpty {
             ContentUnavailableView(
                 "まだ得点がありません",
-                systemImage: "soccerball",
-                description: Text("ゴールボタンで得点を記録しましょう")
+                systemImage: sportType.goalSystemImage,
+                description: Text("\(sportType.goalButtonLabel)ボタンで得点を記録しましょう")
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
@@ -95,7 +96,7 @@ struct EventListView: View {
             HStack {
                 switch item.kind {
                 case .goal(let team):
-                    Image(systemName: "soccerball")
+                    Image(systemName: sportType.goalSystemImage)
                         .foregroundStyle(team == .home ? .blue : .red)
                     Text(team == .home ? homeTeamName : awayTeamName)
                         .font(.subheadline)

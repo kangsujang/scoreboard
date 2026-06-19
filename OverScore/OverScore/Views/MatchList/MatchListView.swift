@@ -28,7 +28,7 @@ struct MatchListView: View {
             }
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    router.navigate(to: .matchSetup)
+                    router.navigate(to: .sportSelect)
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -56,7 +56,7 @@ struct MatchListView: View {
             Text("右上の＋ボタンから試合を作成しましょう")
         } actions: {
             Button("試合を作成") {
-                router.navigate(to: .matchSetup)
+                router.navigate(to: .sportSelect)
             }
             .buttonStyle(.borderedProminent)
         }
@@ -81,6 +81,19 @@ struct MatchListView: View {
             }
         }
         .listStyle(.plain)
+        .safeAreaInset(edge: .bottom) {
+            Button {
+                router.navigate(to: .sportSelect)
+            } label: {
+                Label("新しい試合", systemImage: "plus")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .padding()
+            .background(.bar)
+        }
     }
 
     private func deleteMatch(_ match: Match) {

@@ -1,15 +1,19 @@
 import SwiftUI
 
 enum Route: Hashable {
-    case matchSetup
+    case sportSelect
+    case matchSetup(SportType)
     case scoreEditor(Match)
     case matchDetail(Match)
     case export(Match)
 
     func hash(into hasher: inout Hasher) {
         switch self {
-        case .matchSetup:
+        case .sportSelect:
+            hasher.combine("sportSelect")
+        case .matchSetup(let sport):
             hasher.combine("matchSetup")
+            hasher.combine(sport)
         case .scoreEditor(let match):
             hasher.combine("scoreEditor")
             hasher.combine(match.id)
@@ -24,8 +28,10 @@ enum Route: Hashable {
 
     static func == (lhs: Route, rhs: Route) -> Bool {
         switch (lhs, rhs) {
-        case (.matchSetup, .matchSetup):
+        case (.sportSelect, .sportSelect):
             return true
+        case (.matchSetup(let a), .matchSetup(let b)):
+            return a == b
         case (.scoreEditor(let a), .scoreEditor(let b)):
             return a.id == b.id
         case (.matchDetail(let a), .matchDetail(let b)):

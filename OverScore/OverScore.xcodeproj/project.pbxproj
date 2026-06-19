@@ -45,6 +45,7 @@
 		F46518FE81D10BE0ECD6B260 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2B2727602713BAD0B256A0 /* ShareSheet.swift */; };
 		FE92E39AB909380C36F12C5C /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED1D68B1DD975EA8C96DE7C /* ExportView.swift */; };
 		FF1E6C8161F1AFAC51E710F8 /* ScoreboardStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2CCDB8AFE476FB9AE2C5AE0 /* ScoreboardStyle.swift */; };
+		BBC0304F2DB748E894354FC1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C476FBEA67C2407F82C32D63 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -87,6 +88,7 @@
 		E2CCDB8AFE476FB9AE2C5AE0 /* ScoreboardStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreboardStyle.swift; sourceTree = "<group>"; };
 		E49DF3CBF5A7E44A565E7699 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		E7673D56EE303CF2F9B24BD6 /* MatchDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailView.swift; sourceTree = "<group>"; };
+		C476FBEA67C2407F82C32D63 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -151,6 +153,7 @@
 				7871C5749B6FD18CD391C514 /* MatchList */,
 				337E1F4CD59E88CA8376275A /* MatchSetup */,
 				A4AD4A7E0A22863A823887C5 /* ScoreEditor */,
+				03740837CE974D72858F796C /* Settings */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -204,6 +207,14 @@
 				E49DF3CBF5A7E44A565E7699 /* VideoPlayerView.swift */,
 			);
 			path = ScoreEditor;
+			sourceTree = "<group>";
+		};
+		03740837CE974D72858F796C /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				C476FBEA67C2407F82C32D63 /* SettingsView.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 		B0D93D1630C5A5215E26FCB4 /* Resources */ = {
@@ -363,6 +374,7 @@
 				C51E9378D51EE69B8A110B02 /* ScoreboardPreviewView.swift in Sources */,
 				FF1E6C8161F1AFAC51E710F8 /* ScoreboardStyle.swift in Sources */,
 				5D9A3B436F488F72ED5DBBB5 /* ScoreboardStyleSheet.swift in Sources */,
+				BBC0304F2DB748E894354FC1 /* SettingsView.swift in Sources */,
 				F46518FE81D10BE0ECD6B260 /* ShareSheet.swift in Sources */,
 				07FB550857000A200F93CE68 /* Team.swift in Sources */,
 				4B0862EF1B6C73BD07C4DD3F /* ThumbnailGenerator.swift in Sources */,
@@ -387,7 +399,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 65;
+				CURRENT_PROJECT_VERSION = 67;
 				DEVELOPMENT_TEAM = 48745L927F;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -401,7 +413,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sujang.ScoreFrame;
 				SDKROOT = iphoneos;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -474,7 +486,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 65;
+				CURRENT_PROJECT_VERSION = 67;
 				DEVELOPMENT_TEAM = 48745L927F;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -488,7 +500,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sujang.ScoreFrame;
 				SDKROOT = iphoneos;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;

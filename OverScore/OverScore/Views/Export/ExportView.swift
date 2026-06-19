@@ -3,22 +3,18 @@ import AVKit
 
 struct ExportView: View {
     @Environment(Router.self) private var router
-    @Environment(StoreManager.self) private var storeManager
     let match: Match
     @State private var viewModel: ExportViewModel?
     @State private var player: AVPlayer?
     @State private var videoAspectRatio: CGFloat = 16.0 / 9.0
-    @State private var adCompleted = false
 
     var body: some View {
         Group {
-            if !adCompleted {
-                ProgressView("準備中...")
-                    .task { await showAdIfNeeded() }
-            } else if let vm = viewModel {
+            if let vm = viewModel {
                 exportContent(vm: vm)
             } else {
                 ProgressView("準備中...")
+                    .task { startExportIfNeeded() }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -172,15 +168,10 @@ struct ExportView: View {
         }
     }
 
-    private func showAdIfNeeded() async {
-        if !storeManager.isAdRemoved {
-            await AdManager.shared.showInterstitialAd()
-        }
-        adCompleted = true
-        if viewModel == nil {
-            let vm = ExportViewModel(match: match)
-            viewModel = vm
-            vm.startExport()
-        }
+    private func startExportIfNeeded() {
+        guard viewModel == nil else { return }
+        let vm = ExportViewModel(match: match)
+        viewModel = vm
+        vm.startExport()
     }
 }

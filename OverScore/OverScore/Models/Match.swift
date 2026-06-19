@@ -19,6 +19,12 @@ final class Match {
     var penaltyTimersData: Data?       // [PenaltyTimer] を JSON エンコード保存
     var timeoutsData: Data?            // [TimeoutEvent] を JSON エンコード保存
     var skipOverlay: Bool = false       // スコアボードオーバーレイを付けず動画のみ結合
+    var sportTypeRaw: String?           // SportType (旧データは nil → サッカー扱い)
+
+    var sportType: SportType {
+        get { sportTypeRaw.flatMap(SportType.init(rawValue:)) ?? .soccer }
+        set { sportTypeRaw = newValue.rawValue }
+    }
 
     @Relationship(deleteRule: .cascade, inverse: \ScoreEvent.match)
     var scoreEvents: [ScoreEvent]

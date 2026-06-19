@@ -35,6 +35,10 @@ struct ScoreControlsView: View {
         "PK"
     ]
 
+    private var periodPresets: [String] {
+        match.sportType.periodPresets
+    }
+
     private var isPKMode: Bool {
         match.currentPeriodLabel(at: currentTime)?.lowercased() == "pk"
     }
@@ -96,7 +100,7 @@ struct ScoreControlsView: View {
                 .padding(.horizontal)
             } else {
                 HStack(spacing: 12) {
-                    GoalButton(teamName: match.homeTeamName, color: .blue) {
+                    GoalButton(teamName: match.homeTeamName, color: .blue, sportType: match.sportType) {
                         onGoal(.home)
                     }
 
@@ -109,7 +113,7 @@ struct ScoreControlsView: View {
                     .buttonStyle(.bordered)
                     .disabled(!match.scoreEvents.contains { $0.kind == .point })
 
-                    GoalButton(teamName: match.awayTeamName, color: .red) {
+                    GoalButton(teamName: match.awayTeamName, color: .red, sportType: match.sportType) {
                         onGoal(.away)
                     }
                 }
@@ -216,7 +220,8 @@ struct ScoreControlsView: View {
                     onTeamColor: { team, hex in onSegmentTeamColor(index, team, hex) },
                     onRemove: match.timerSegments.count > 1 ? { onRemoveSegment(index) } : nil,
                     showTimerOptions: match.scoreboardStyle.showTimerOptions,
-                    showTeamColors: match.scoreboardStyle.useSegmentTeamColors
+                    showTeamColors: match.scoreboardStyle.useSegmentTeamColors,
+                    periodPresets: periodPresets
                 )
             }
         }
@@ -242,6 +247,7 @@ private struct SegmentControlRow: View {
     let onRemove: (() -> Void)?
     var showTimerOptions: Bool = false
     var showTeamColors: Bool = false
+    var periodPresets: [String] = ScoreControlsView.periodPresets
 
     static func hexString(from uiColor: UIColor) -> String {
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0
@@ -280,7 +286,7 @@ private struct SegmentControlRow: View {
             // ピリオドラベル
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
-                    ForEach(ScoreControlsView.periodPresets, id: \.self) { preset in
+                    ForEach(periodPresets, id: \.self) { preset in
                         Button(preset) {
                             onPeriodLabel(segment.periodLabel == preset ? nil : preset)
                         }
@@ -292,7 +298,7 @@ private struct SegmentControlRow: View {
                     TextField("ラベル", text: Binding(
                         get: {
                             let current = segment.periodLabel ?? ""
-                            return ScoreControlsView.periodPresets.contains(current) ? "" : current
+                            return periodPresets.contains(current) ? "" : current
                         },
                         set: { newValue in
                             onPeriodLabel(newValue.isEmpty ? nil : newValue)
@@ -682,6 +688,7 @@ private struct PKTeamButtons: View {
 private struct GoalButton: View {
     let teamName: String
     let color: Color
+    var sportType: SportType = .soccer
     let action: () -> Void
     @State private var tapCount = 0
 
@@ -691,9 +698,9 @@ private struct GoalButton: View {
             action()
         } label: {
             VStack(spacing: 2) {
-                Image(systemName: "soccerball")
+                Image(systemName: sportType.goalSystemImage)
                     .font(.title3)
-                Text("ゴール+")
+                Text(sportType.goalButtonLabel)
                     .font(.caption2.weight(.semibold))
             }
             .frame(maxWidth: .infinity)

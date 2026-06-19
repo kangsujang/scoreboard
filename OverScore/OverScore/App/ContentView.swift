@@ -8,8 +8,10 @@ struct ContentView: View {
             MatchListView()
                 .navigationDestination(for: Route.self) { route in
                     switch route {
-                    case .matchSetup:
-                        MatchSetupView()
+                    case .sportSelect:
+                        SportSelectView()
+                    case .matchSetup(let sportType):
+                        MatchSetupView(sportType: sportType)
                     case .scoreEditor(let match):
                         ScoreEditorView(match: match)
                     case .matchDetail(let match):

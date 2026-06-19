@@ -81,7 +81,7 @@ struct MatchDetailView: View {
                                     .foregroundStyle(.secondary)
                                     .frame(width: 50, alignment: .leading)
 
-                                Image(systemName: "soccerball")
+                                Image(systemName: match.sportType.goalSystemImage)
                                     .foregroundStyle(team == .home ? .blue : .red)
 
                                 VStack(alignment: .leading, spacing: 1) {

@@ -50,15 +50,24 @@ struct MatchListView: View {
     }
 
     private var emptyStateView: some View {
-        ContentUnavailableView {
-            Label("試合がありません", systemImage: "sportscourt")
-        } description: {
-            Text("右上の＋ボタンから試合を作成しましょう")
-        } actions: {
-            Button("試合を作成") {
+        VStack(spacing: 0) {
+            ContentUnavailableView {
+                Label("試合がありません", systemImage: "sportscourt")
+            } description: {
+                Text("下のボタンから試合を作成しましょう")
+            }
+            .frame(maxHeight: .infinity)
+
+            Button {
                 router.navigate(to: .sportSelect)
+            } label: {
+                Label("新しい試合", systemImage: "plus")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
             }
             .buttonStyle(.borderedProminent)
+            .padding()
         }
     }
 

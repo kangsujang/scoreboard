@@ -11,6 +11,12 @@ struct VideoManagementSheet: View {
     @State private var isImporting = false
     @State private var errorMessage: String?
     @State private var showFileImporter = false
+    @State private var didLoad = false
+    @State private var showDiscardConfirm = false
+
+    private var hasUnsavedChanges: Bool {
+        didLoad && videoEntries.map(\.url) != match.videoURLs
+    }
 
     var body: some View {
         NavigationStack {
@@ -88,6 +94,15 @@ struct VideoManagementSheet: View {
                         Label("ファイルから追加", systemImage: "folder")
                     }
                     .disabled(isImporting)
+
+                    if isImporting {
+                        HStack(spacing: 8) {
+                            ProgressView()
+                            Text("動画を読み込み中...")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
 
                 if let errorMessage {
@@ -101,15 +116,33 @@ struct VideoManagementSheet: View {
             .environment(\.editMode, .constant(.active))
             .navigationTitle("動画管理")
             .navigationBarTitleDisplayMode(.inline)
+            .interactiveDismissDisabled(hasUnsavedChanges || isImporting)
+            .confirmationDialog(
+                "変更を破棄しますか？",
+                isPresented: $showDiscardConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("変更を破棄", role: .destructive) { dismiss() }
+                Button("編集を続ける", role: .cancel) {}
+            } message: {
+                Text("保存していない変更は失われます。")
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("キャンセル") { dismiss() }
+                    Button("キャンセル") {
+                        if hasUnsavedChanges {
+                            showDiscardConfirm = true
+                        } else {
+                            dismiss()
+                        }
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") {
                         match.videoURLs = videoEntries.map(\.url)
                         dismiss()
                     }
+                    .disabled(isImporting)
                 }
             }
             .onChange(of: selectedItems) { _, newItems in
@@ -155,6 +188,7 @@ struct VideoManagementSheet: View {
             ))
         }
         videoEntries = entries
+        didLoad = true
     }
 
     // MARK: - Display Helpers

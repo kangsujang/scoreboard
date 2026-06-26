@@ -195,6 +195,15 @@ struct MatchSetupView: View {
                     )
                 }
                 .disabled(isImporting)
+
+                if isImporting {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                        Text("動画を読み込み中...")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             } header: {
                 Text("試合動画")
             } footer: {
@@ -233,7 +242,7 @@ struct MatchSetupView: View {
                         Spacer()
                     }
                 }
-                .disabled(!canProceed)
+                .disabled(!canProceed || isImporting)
             }
         }
         .navigationTitle("新規試合")

@@ -23,6 +23,7 @@ struct ScoreboardStyleSheet: View {
         }
     }
     @State private var editTarget: EditTarget = .scoreboard
+    @State private var showDiscardConfirm = false
 
     // ジェスチャー用ベース値（スコアボード）
     @State private var baseScale: CGFloat = 1.0
@@ -182,7 +183,11 @@ struct ScoreboardStyleSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("キャンセル") {
-                        dismiss()
+                        if hasUnsavedChanges {
+                            showDiscardConfirm = true
+                        } else {
+                            dismiss()
+                        }
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
@@ -198,6 +203,17 @@ struct ScoreboardStyleSheet: View {
                 }
             }
         }
+        .interactiveDismissDisabled(hasUnsavedChanges)
+        .confirmationDialog(
+            "変更を破棄しますか？",
+            isPresented: $showDiscardConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("変更を破棄", role: .destructive) { dismiss() }
+            Button("編集を続ける", role: .cancel) {}
+        } message: {
+            Text("保存していない変更は失われます。")
+        }
         .task {
             guard thumbnail == nil, let url = match.videoURLs.first else { return }
             thumbnail = await ThumbnailGenerator.generate(for: url)
@@ -205,6 +221,17 @@ struct ScoreboardStyleSheet: View {
                 videoAspectRatio = size.width / size.height
             }
         }
+    }
+
+    // MARK: - Unsaved changes detection
+
+    private var hasUnsavedChanges: Bool {
+        if style != match.scoreboardStyle { return true }
+        let trimmedHome = homeTeamNameEdit.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedAway = awayTeamNameEdit.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedHome.isEmpty && trimmedHome != match.homeTeamName { return true }
+        if !trimmedAway.isEmpty && trimmedAway != match.awayTeamName { return true }
+        return false
     }
 
     // MARK: - Match Info Binding

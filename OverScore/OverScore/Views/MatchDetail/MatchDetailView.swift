@@ -193,16 +193,23 @@ struct MatchDetailView: View {
                     Label("スコアボード設定", systemImage: "paintbrush")
                 }
                 .disabled(match.skipOverlay)
-
-                Button {
-                    router.navigate(to: .export(match))
-                } label: {
-                    Label("エクスポート", systemImage: "square.and.arrow.up")
-                }
-                .disabled(match.videoURLs.isEmpty)
             }
         }
         .listStyle(.insetGrouped)
+        .safeAreaInset(edge: .bottom) {
+            Button {
+                router.navigate(to: .export(match))
+            } label: {
+                Label("エクスポート", systemImage: "square.and.arrow.up")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(match.videoURLs.isEmpty)
+            .padding()
+            .background(.bar)
+        }
         .navigationTitle("試合詳細")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

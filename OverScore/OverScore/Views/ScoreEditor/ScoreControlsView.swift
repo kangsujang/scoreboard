@@ -70,10 +70,21 @@ struct ScoreControlsView: View {
             }
             .padding(.horizontal)
 
-            Text(TimeFormatting.format(seconds: currentTime))
-                .font(.caption2)
-                .monospacedDigit()
-                .foregroundStyle(.secondary)
+            HStack(spacing: 4) {
+                Image(systemName: "smallcircle.filled.circle")
+                    .font(.caption2)
+                Text("記録位置")
+                    .font(.caption2)
+                Text(TimeFormatting.format(seconds: currentTime))
+                    .font(.callout.weight(.semibold))
+                    .monospacedDigit()
+            }
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Capsule().fill(.quaternary))
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("記録位置 \(TimeFormatting.format(seconds: currentTime))")
 
             if isPKMode {
                 PKStateView(match: match, currentTime: currentTime)

@@ -11,18 +11,31 @@ struct MatchRowView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 6))
 
             VStack(alignment: .leading, spacing: 4) {
-                HStack {
+                HStack(spacing: 6) {
                     Text(match.homeTeamName)
                         .font(.subheadline.weight(.semibold))
-                    Text("\(match.homeScore) - \(match.awayScore)")
-                        .font(.subheadline.weight(.bold))
-                        .monospacedDigit()
+                        .lineLimit(1)
+                    HStack(spacing: 2) {
+                        Text("\(match.homeScore)")
+                            .foregroundStyle(.blue)
+                        Text("-")
+                            .foregroundStyle(.secondary)
+                        Text("\(match.awayScore)")
+                            .foregroundStyle(.red)
+                    }
+                    .font(.subheadline.weight(.bold))
+                    .monospacedDigit()
                     Text(match.awayTeamName)
                         .font(.subheadline.weight(.semibold))
+                        .lineLimit(1)
                 }
 
                 HStack(spacing: 4) {
                     Text(match.createdAt, style: .date)
+                    if match.videoURLs.count > 0 {
+                        Text("·")
+                        Label("\(match.videoURLs.count)", systemImage: "film")
+                    }
                     if let info = match.matchInfo, !info.isEmpty {
                         Text("·")
                         Text(info)

@@ -16,6 +16,7 @@ struct EventListView: View {
     var timeouts: [TimeoutEvent] = []
     var onDeleteTimeout: ((UUID) -> Void)? = nil
     var onEditTimeoutTimestamp: ((UUID, TimeInterval) -> Void)? = nil
+    var onSeek: ((TimeInterval) -> Void)? = nil
 
     @State private var editingItem: EventItem? = nil
     @State private var confirmingDeleteItem: EventItem? = nil
@@ -92,55 +93,63 @@ struct EventListView: View {
             .buttonStyle(.plain)
             .disabled(!canEdit)
 
-            // イベント内容
-            HStack {
-                switch item.kind {
-                case .goal(let team):
-                    Image(systemName: sportType.goalSystemImage)
-                        .foregroundStyle(team == .home ? .blue : .red)
-                    Text(team == .home ? homeTeamName : awayTeamName)
-                        .font(.subheadline)
-                    Spacer()
-                    Text("\(item.homeScore) - \(item.awayScore)")
-                        .font(.subheadline.weight(.semibold))
-                        .monospacedDigit()
+            // イベント内容（タップで動画位置へジャンプ）
+            Button {
+                onSeek?(item.timestamp)
+            } label: {
+                HStack {
+                    switch item.kind {
+                    case .goal(let team):
+                        Image(systemName: sportType.goalSystemImage)
+                            .foregroundStyle(team == .home ? .blue : .red)
+                        Text(team == .home ? homeTeamName : awayTeamName)
+                            .font(.subheadline)
+                        Spacer()
+                        Text("\(item.homeScore) - \(item.awayScore)")
+                            .font(.subheadline.weight(.semibold))
+                            .monospacedDigit()
 
-                case .pkKick(let team, let isGoal):
-                    Image(systemName: "p.circle")
-                        .foregroundStyle(team == .home ? .blue : .red)
-                    Text(team == .home ? homeTeamName : awayTeamName)
-                        .font(.subheadline)
-                    Text(isGoal ? "◯" : "✗")
-                        .font(.subheadline)
-                        .foregroundStyle(isGoal ? .green : .secondary)
-                    Spacer()
-                    Text("\(item.homeScore) - \(item.awayScore) PK")
-                        .font(.subheadline.weight(.semibold))
-                        .monospacedDigit()
+                    case .pkKick(let team, let isGoal):
+                        Image(systemName: "p.circle")
+                            .foregroundStyle(team == .home ? .blue : .red)
+                        Text(team == .home ? homeTeamName : awayTeamName)
+                            .font(.subheadline)
+                        Text(isGoal ? "◯" : "✗")
+                            .font(.subheadline)
+                            .foregroundStyle(isGoal ? .green : .secondary)
+                        Spacer()
+                        Text("\(item.homeScore) - \(item.awayScore) PK")
+                            .font(.subheadline.weight(.semibold))
+                            .monospacedDigit()
 
-                case .penaltyTimer(let team, let durationSeconds):
-                    Image(systemName: "timer")
-                        .foregroundStyle(team == .home ? .blue : .red)
-                    Text(team == .home ? homeTeamName : awayTeamName)
-                        .font(.subheadline)
-                    Spacer()
-                    Text("\(Int(durationSeconds) / 60)分")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.orange)
+                    case .penaltyTimer(let team, let durationSeconds):
+                        Image(systemName: "timer")
+                            .foregroundStyle(team == .home ? .blue : .red)
+                        Text(team == .home ? homeTeamName : awayTeamName)
+                            .font(.subheadline)
+                        Spacer()
+                        Text("\(Int(durationSeconds) / 60)分")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.orange)
 
-                case .timeout(let team):
-                    Image(systemName: "pause.circle.fill")
-                        .foregroundStyle(team == .home ? .blue : .red)
-                    Text(team == .home ? homeTeamName : awayTeamName)
-                        .font(.subheadline)
-                    Spacer()
-                    Text("タイムアウト")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.orange)
+                    case .timeout(let team):
+                        Image(systemName: "pause.circle.fill")
+                            .foregroundStyle(team == .home ? .blue : .red)
+                        Text(team == .home ? homeTeamName : awayTeamName)
+                            .font(.subheadline)
+                        Spacer()
+                        Text("タイムアウト")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.orange)
+                    }
                 }
+                .padding(.vertical, 14)
+                .padding(.leading, 4)
+                .contentShape(Rectangle())
             }
-            .padding(.vertical, 14)
-            .padding(.leading, 4)
+            .buttonStyle(.plain)
+            .foregroundStyle(.primary)
+            .disabled(onSeek == nil)
 
             // 削除ボタン
             if canEdit {

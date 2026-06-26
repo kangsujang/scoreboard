@@ -161,17 +161,24 @@ struct ScoreEditorView: View {
                         RoundedRectangle(cornerRadius: 3)
                             .fill(.quaternary)
                             .frame(height: 6)
+                            .frame(maxHeight: .infinity, alignment: .center)
 
                         ForEach(goals, id: \.id) { goal in
                             let ratio = min(max(goal.timestamp / duration, 0), 1)
                             Circle()
                                 .fill(goal.team == .home ? Color.blue : Color.red)
-                                .frame(width: 10, height: 10)
-                                .position(x: geo.size.width * ratio, y: 3)
+                                .frame(width: 12, height: 12)
+                                .frame(width: 28, height: 28)
+                                .contentShape(Circle())
+                                .position(x: geo.size.width * ratio, y: geo.size.height / 2)
+                                .onTapGesture {
+                                    playerVM?.seek(to: goal.timestamp)
+                                }
+                                .accessibilityLabel("ゴール \(TimeFormatting.format(seconds: goal.timestamp)) へ移動")
                         }
                     }
                 }
-                .frame(height: 10)
+                .frame(height: 28)
             }
         }
     }
@@ -192,7 +199,8 @@ struct ScoreEditorView: View {
             onEditPenaltyTimerTimestamp: { id, time in updatePenaltyTimerTimestamp(id: id, time: time) },
             timeouts: match.timeouts,
             onDeleteTimeout: { id in deleteTimeout(id: id) },
-            onEditTimeoutTimestamp: { id, time in updateTimeoutTimestamp(id: id, time: time) }
+            onEditTimeoutTimestamp: { id, time in updateTimeoutTimestamp(id: id, time: time) },
+            onSeek: playerVM != nil ? { time in playerVM?.seek(to: time) } : nil
         )
     }
 

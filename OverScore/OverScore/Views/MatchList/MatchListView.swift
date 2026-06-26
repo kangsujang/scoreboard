@@ -25,6 +25,7 @@ struct MatchListView: View {
                 } label: {
                     Image(systemName: "gearshape")
                 }
+                .accessibilityLabel("設定")
             }
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -32,6 +33,7 @@ struct MatchListView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
+                .accessibilityLabel("新しい試合")
             }
         }
         .sheet(isPresented: $showSettings) {

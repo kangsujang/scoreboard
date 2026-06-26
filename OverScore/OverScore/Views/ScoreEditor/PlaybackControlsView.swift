@@ -29,6 +29,7 @@ struct PlaybackControlsView: View {
                         Image(systemName: "gobackward.5")
                             .font(.body)
                     }
+                    .accessibilityLabel("5秒戻す")
 
                     Button {
                         playerVM.togglePlayback()
@@ -36,6 +37,7 @@ struct PlaybackControlsView: View {
                         Image(systemName: playerVM.isPlaying ? "pause.fill" : "play.fill")
                             .font(.title3)
                     }
+                    .accessibilityLabel(playerVM.isPlaying ? "一時停止" : "再生")
 
                     Button {
                         playerVM.skipForward()
@@ -43,6 +45,7 @@ struct PlaybackControlsView: View {
                         Image(systemName: "goforward.5")
                             .font(.body)
                     }
+                    .accessibilityLabel("5秒進める")
                 }
 
                 Spacer()

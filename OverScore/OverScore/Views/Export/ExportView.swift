@@ -7,14 +7,19 @@ struct ExportView: View {
     @State private var viewModel: ExportViewModel?
     @State private var player: AVPlayer?
     @State private var videoAspectRatio: CGFloat = 16.0 / 9.0
+    @State private var hasStarted = false
 
     var body: some View {
         Group {
             if let vm = viewModel {
-                exportContent(vm: vm)
+                if hasStarted {
+                    exportContent(vm: vm)
+                } else {
+                    confirmationView(vm: vm)
+                }
             } else {
                 ProgressView("準備中...")
-                    .task { startExportIfNeeded() }
+                    .task { prepareViewModel() }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -43,6 +48,57 @@ struct ExportView: View {
         .onDisappear {
             player?.pause()
         }
+    }
+
+    private func confirmationView(vm: ExportViewModel) -> some View {
+        VStack(spacing: 20) {
+            Spacer()
+
+            Image(systemName: "square.and.arrow.up.circle.fill")
+                .font(.system(size: 56))
+                .foregroundStyle(Color.accentColor)
+
+            Text("この内容でエクスポートします")
+                .font(.headline)
+
+            VStack(spacing: 10) {
+                summaryRow(label: "対戦", value: "\(match.homeTeamName) \(match.homeScore) - \(match.awayScore) \(match.awayTeamName)")
+                Divider()
+                summaryRow(label: "動画", value: "\(match.videoURLs.count)本")
+                Divider()
+                summaryRow(label: "スコアボード", value: match.skipOverlay ? "なし（動画のみ結合）" : "あり")
+            }
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+            .frame(maxWidth: 400)
+
+            Button {
+                hasStarted = true
+                vm.startExport()
+            } label: {
+                Label("エクスポート開始", systemImage: "square.and.arrow.up")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .frame(maxWidth: 400)
+
+            Spacer()
+        }
+        .padding()
+    }
+
+    private func summaryRow(label: String, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(label)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value)
+                .fontWeight(.medium)
+                .multilineTextAlignment(.trailing)
+        }
+        .font(.subheadline)
     }
 
     @ViewBuilder
@@ -168,10 +224,8 @@ struct ExportView: View {
         }
     }
 
-    private func startExportIfNeeded() {
+    private func prepareViewModel() {
         guard viewModel == nil else { return }
-        let vm = ExportViewModel(match: match)
-        viewModel = vm
-        vm.startExport()
+        viewModel = ExportViewModel(match: match)
     }
 }

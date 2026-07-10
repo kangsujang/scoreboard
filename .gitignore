@@ -36,6 +36,13 @@ Pods/
 # Claude
 .claude/
 
+# Secrets
+.env
+
+# Scripts runtime artifacts
+scripts/__pycache__/
+scripts/*.log
+
 # Android
 OverScore-Android/.gradle/
 OverScore-Android/.idea/

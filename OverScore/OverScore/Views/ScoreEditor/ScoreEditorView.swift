@@ -9,6 +9,14 @@ struct ScoreEditorView: View {
     @State private var playerVM: PlayerViewModel?
     @State private var videoAspectRatio: CGFloat = 16.0 / 9.0
 
+    /// 動画プレイヤーの読み込み状態。playerVM が非nilなら読み込み完了。
+    private enum PlayerLoadState {
+        case loading   // 動画あり・読み込み中
+        case noVideo   // 動画未追加（ライブ記録モード）
+        case failed    // 動画はあるが読み込みに失敗
+    }
+    @State private var loadState: PlayerLoadState = .loading
+
     // ライブストップウォッチ（動画なし時）
     @State private var liveElapsed: TimeInterval = 0
     @State private var liveIsRunning = false
@@ -30,7 +38,15 @@ struct ScoreEditorView: View {
                     iPhoneLayout(playerVM: playerVM)
                 }
             } else {
-                noVideoLayout()
+                switch loadState {
+                case .loading:
+                    ProgressView("動画を準備中...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                case .noVideo:
+                    noVideoLayout()
+                case .failed:
+                    videoLoadErrorView()
+                }
             }
         }
         .navigationTitle("スコア記録")
@@ -310,7 +326,12 @@ struct ScoreEditorView: View {
 
     private func setupPlayer() {
         let urls = match.videoURLs
-        guard !urls.isEmpty else { return }
+        guard !urls.isEmpty else {
+            // 動画未追加: ライブ記録モードとして扱う
+            loadState = .noVideo
+            return
+        }
+        loadState = .loading
         Task {
             if let url = urls.first, let size = await ThumbnailGenerator.videoSize(for: url) {
                 videoAspectRatio = size.width / size.height
@@ -318,8 +339,24 @@ struct ScoreEditorView: View {
             do {
                 playerVM = try await PlayerViewModel.create(urls: urls)
             } catch {
-                // プレイヤー作成失敗時は nil のまま（ContentUnavailableView を表示）
+                // 動画はあるが読み込みに失敗 → エラー表示（再試行可能）
+                loadState = .failed
             }
+        }
+    }
+
+    private func videoLoadErrorView() -> some View {
+        ContentUnavailableView {
+            Label("動画を読み込めませんでした", systemImage: "exclamationmark.triangle")
+        } description: {
+            Text("動画ファイルが見つからないか、破損している可能性があります。動画管理から追加し直してください。")
+        } actions: {
+            Button {
+                setupPlayer()
+            } label: {
+                Text("再試行")
+            }
+            .buttonStyle(.borderedProminent)
         }
     }
 

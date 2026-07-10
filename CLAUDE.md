@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-ScoreFrame — サッカー動画にスコアボードをオーバーレイ合成するiOSアプリ。少年サッカー/草サッカーの試合動画に後からスコアボードを重ねてMP4エクスポートする。
+OverScore — サッカー動画にスコアボードをオーバーレイ合成するiOSアプリ。少年サッカー/草サッカーの試合動画に後からスコアボードを重ねてMP4エクスポートする。
 
 ## 技術スタック
 
@@ -12,23 +12,23 @@ ScoreFrame — サッカー動画にスコアボードをオーバーレイ合�
 - SwiftData (永続化)
 - AVFoundation (動画合成・エクスポート)
 - PhotosUI (動画選択)
-- Xcodeプロジェクト: `ScoreFrame/ScoreFrame.xcodeproj`
+- Xcodeプロジェクト: `OverScore/OverScore.xcodeproj`
 
 ## ビルド・実行
 
 ```bash
 # Xcodeでビルド（コマンドライン）
-xcodebuild -project ScoreFrame/ScoreFrame.xcodeproj -scheme ScoreFrame -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project OverScore/OverScore.xcodeproj -scheme OverScore -destination 'platform=iOS Simulator,name=iPhone 16' build
 
 # Xcodeで開く
-open ScoreFrame/ScoreFrame.xcodeproj
+open OverScore/OverScore.xcodeproj
 ```
 
 テストスイートは未構成。
 
 ## アーキテクチャ
 
-ソースは `ScoreFrame/ScoreFrame/` 配下。MVVM + Serviceパターン。
+ソースは `OverScore/OverScore/` 配下。MVVM + Serviceパターン。
 
 ### 画面遷移
 

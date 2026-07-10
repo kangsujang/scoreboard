@@ -20,7 +20,7 @@ Packages/
 Package.pins
 Package.resolved
 *.xcodeproj
-!ScoreFrame.xcodeproj
+!OverScore.xcodeproj
 
 # CocoaPods
 Pods/
@@ -36,11 +36,18 @@ Pods/
 # Claude
 .claude/
 
+# Secrets
+.env
+
+# Scripts runtime artifacts
+scripts/__pycache__/
+scripts/*.log
+
 # Android
-ScoreFrame-Android/.gradle/
-ScoreFrame-Android/.idea/
-ScoreFrame-Android/build/
-ScoreFrame-Android/app/build/
-ScoreFrame-Android/local.properties
-ScoreFrame-Android/captures/
+OverScore-Android/.gradle/
+OverScore-Android/.idea/
+OverScore-Android/build/
+OverScore-Android/app/build/
+OverScore-Android/local.properties
+OverScore-Android/captures/
 *.iml

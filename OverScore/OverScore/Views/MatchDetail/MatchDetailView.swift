@@ -173,7 +173,7 @@ struct MatchDetailView: View {
                 }
             }
 
-            Section("アクション") {
+            Section {
                 Button {
                     showVideoSheet = true
                 } label: {
@@ -193,6 +193,16 @@ struct MatchDetailView: View {
                     Label("スコアボード設定", systemImage: "paintbrush")
                 }
                 .disabled(match.skipOverlay)
+            } header: {
+                Text("アクション")
+            } footer: {
+                if match.skipOverlay {
+                    Label(
+                        "「動画のみ結合」がオンのため、スコア編集とスコアボード設定は使用できません。上の設定をオフにすると編集できます。",
+                        systemImage: "info.circle"
+                    )
+                    .font(.caption)
+                }
             }
         }
         .listStyle(.insetGrouped)

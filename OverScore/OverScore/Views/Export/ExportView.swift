@@ -108,6 +108,8 @@ struct ExportView: View {
                 exportingView(vm: vm)
             } else if let url = vm.exportedURL {
                 completedView(vm: vm, url: url)
+            } else if vm.isCancelledByUser {
+                cancelledView()
             } else if let error = vm.exportError {
                 errorView(error: error)
             }
@@ -129,7 +131,8 @@ struct ExportView: View {
             Spacer()
 
             ProgressView(value: vm.progress) {
-                Text("エクスポート中...")
+                // 進捗0%の間はコンポジション構築中（進捗を取得できない段階）
+                Text(vm.progress == 0 ? "エクスポートを準備中..." : "エクスポート中...")
                     .font(.headline)
             } currentValueLabel: {
                 Text("\(Int(vm.progress * 100))%")
@@ -196,6 +199,27 @@ struct ExportView: View {
         }
         .onAppear {
             player = AVPlayer(url: url)
+        }
+    }
+
+    /// ユーザーによるキャンセル後の表示（失敗ではないため警告表現を使わない）
+    private func cancelledView() -> some View {
+        VStack(spacing: 16) {
+            Spacer()
+
+            Image(systemName: "xmark.circle")
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
+
+            Text("エクスポートをキャンセルしました")
+                .font(.headline)
+
+            Button("再開する") {
+                viewModel?.startExport()
+            }
+            .buttonStyle(.borderedProminent)
+
+            Spacer()
         }
     }
 

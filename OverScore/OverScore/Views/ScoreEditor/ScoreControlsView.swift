@@ -27,6 +27,68 @@ struct ScoreControlsView: View {
     let onEndTimeout: (UUID, TimeInterval) -> Void
     let onRemoveTimeout: (UUID) -> Void
 
+    /// タイマー・セグメント設定セクションの開閉。既にタイマー設定済みの試合では開いた状態で開始する。
+    @State private var showSegmentSettings: Bool
+
+    init(
+        match: Match,
+        currentTime: TimeInterval,
+        onGoal: @escaping (Team) -> Void,
+        onUndo: @escaping () -> Void,
+        onSetWon: @escaping (Team) -> Void,
+        onSetUndo: @escaping () -> Void,
+        onPKKick: @escaping (Team, Bool) -> Void,
+        onPKUndo: @escaping () -> Void,
+        onSegmentStart: @escaping (Int) -> Void,
+        onSegmentTimerStart: @escaping (Int) -> Void,
+        onSegmentTimerStop: @escaping (Int) -> Void,
+        onSegmentTimerClear: @escaping (Int) -> Void,
+        onSegmentOffsetChange: @escaping (Int, TimeInterval) -> Void,
+        onSegmentPeriodLabel: @escaping (Int, String?) -> Void,
+        onSegmentShowPlusPrefix: @escaping (Int, Bool) -> Void,
+        onSegmentTimerColor: @escaping (Int, String?) -> Void,
+        onSegmentTeamColor: @escaping (Int, Team, String?) -> Void,
+        onAddSegment: @escaping () -> Void,
+        onAddSegmentWithRestart: @escaping () -> Void,
+        onRemoveSegment: @escaping (Int) -> Void,
+        onAddPenaltyTimer: @escaping (Team, TimeInterval) -> Void,
+        onRemovePenaltyTimer: @escaping (UUID) -> Void,
+        onStartTimeout: @escaping (Team) -> Void,
+        onEndTimeout: @escaping (UUID, TimeInterval) -> Void,
+        onRemoveTimeout: @escaping (UUID) -> Void
+    ) {
+        self.match = match
+        self.currentTime = currentTime
+        self.onGoal = onGoal
+        self.onUndo = onUndo
+        self.onSetWon = onSetWon
+        self.onSetUndo = onSetUndo
+        self.onPKKick = onPKKick
+        self.onPKUndo = onPKUndo
+        self.onSegmentStart = onSegmentStart
+        self.onSegmentTimerStart = onSegmentTimerStart
+        self.onSegmentTimerStop = onSegmentTimerStop
+        self.onSegmentTimerClear = onSegmentTimerClear
+        self.onSegmentOffsetChange = onSegmentOffsetChange
+        self.onSegmentPeriodLabel = onSegmentPeriodLabel
+        self.onSegmentShowPlusPrefix = onSegmentShowPlusPrefix
+        self.onSegmentTimerColor = onSegmentTimerColor
+        self.onSegmentTeamColor = onSegmentTeamColor
+        self.onAddSegment = onAddSegment
+        self.onAddSegmentWithRestart = onAddSegmentWithRestart
+        self.onRemoveSegment = onRemoveSegment
+        self.onAddPenaltyTimer = onAddPenaltyTimer
+        self.onRemovePenaltyTimer = onRemovePenaltyTimer
+        self.onStartTimeout = onStartTimeout
+        self.onEndTimeout = onEndTimeout
+        self.onRemoveTimeout = onRemoveTimeout
+        // 既にキックオフ/区切りが記録済みなら設定を開いて表示
+        let hasTimerConfig = match.timerSegments.contains {
+            $0.timerStartTime != nil || $0.segmentStartTime != nil
+        }
+        _showSegmentSettings = State(initialValue: hasTimerConfig)
+    }
+
     static let periodPresets: [String] = [
         String(localized: "前半"),
         String(localized: "後半"),
@@ -189,6 +251,29 @@ struct ScoreControlsView: View {
                 )
             }
 
+            // タイマー・セグメント設定（折りたたみ: 記録操作と分離して密度を下げる）
+            DisclosureGroup(isExpanded: $showSegmentSettings) {
+                segmentSettingsSection
+                    .padding(.top, 4)
+            } label: {
+                Label(segmentSettingsLabel, systemImage: "slider.horizontal.3")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal)
+        }
+    }
+
+    private var segmentSettingsLabel: String {
+        let count = match.timerSegments.count
+        return count > 1
+            ? String(localized: "タイマー・セグメント設定 (\(count))")
+            : String(localized: "タイマー・セグメント設定")
+    }
+
+    @ViewBuilder
+    private var segmentSettingsSection: some View {
+        VStack(spacing: 8) {
             // セグメント追加ボタン
             HStack(spacing: 8) {
                 Button {

@@ -238,7 +238,9 @@ struct ScoreEditorView: View {
                     }
                 } label: {
                     Label(
-                        liveIsRunning ? "一時停止" : (liveElapsed > 0 ? "再開" : "開始"),
+                        liveIsRunning
+                            ? String(localized: "一時停止")
+                            : (liveElapsed > 0 ? String(localized: "再開") : String(localized: "開始")),
                         systemImage: liveIsRunning ? "pause.circle.fill" : "play.circle.fill"
                     )
                     .frame(maxWidth: .infinity)

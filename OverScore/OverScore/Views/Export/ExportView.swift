@@ -62,11 +62,11 @@ struct ExportView: View {
                 .font(.headline)
 
             VStack(spacing: 10) {
-                summaryRow(label: "対戦", value: "\(match.homeTeamName) \(match.homeScore) - \(match.awayScore) \(match.awayTeamName)")
+                summaryRow(label: String(localized: "対戦"), value: "\(match.homeTeamName) \(match.homeScore) - \(match.awayScore) \(match.awayTeamName)")
                 Divider()
-                summaryRow(label: "動画", value: "\(match.videoURLs.count)本")
+                summaryRow(label: String(localized: "動画"), value: String(localized: "\(match.videoURLs.count)本"))
                 Divider()
-                summaryRow(label: "スコアボード", value: match.skipOverlay ? "なし（動画のみ結合）" : "あり")
+                summaryRow(label: String(localized: "スコアボード"), value: match.skipOverlay ? String(localized: "なし（動画のみ結合）") : String(localized: "あり"))
             }
             .padding()
             .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
@@ -132,7 +132,7 @@ struct ExportView: View {
 
             ProgressView(value: vm.progress) {
                 // 進捗0%の間はコンポジション構築中（進捗を取得できない段階）
-                Text(vm.progress == 0 ? "エクスポートを準備中..." : "エクスポート中...")
+                Text(vm.progress == 0 ? String(localized: "エクスポートを準備中...") : String(localized: "エクスポート中..."))
                     .font(.headline)
             } currentValueLabel: {
                 Text("\(Int(vm.progress * 100))%")
@@ -179,7 +179,7 @@ struct ExportView: View {
                     vm.saveToPhotos()
                 } label: {
                     Label(
-                        vm.savedToPhotos ? "保存済み" : "写真に保存",
+                        vm.savedToPhotos ? String(localized: "保存済み") : String(localized: "写真に保存"),
                         systemImage: vm.savedToPhotos ? "checkmark" : "photo.on.rectangle"
                     )
                     .frame(maxWidth: .infinity)

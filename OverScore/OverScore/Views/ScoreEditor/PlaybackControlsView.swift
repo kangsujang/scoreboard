@@ -37,7 +37,7 @@ struct PlaybackControlsView: View {
                         Image(systemName: playerVM.isPlaying ? "pause.fill" : "play.fill")
                             .font(.title3)
                     }
-                    .accessibilityLabel(playerVM.isPlaying ? "一時停止" : "再生")
+                    .accessibilityLabel(playerVM.isPlaying ? String(localized: "一時停止") : String(localized: "再生"))
 
                     Button {
                         playerVM.skipForward()

@@ -8,6 +8,8 @@ struct ScoreboardStyleSheet: View {
     @State private var videoAspectRatio: CGFloat
     @State private var homeTeamNameEdit: String
     @State private var awayTeamNameEdit: String
+    /// 試合情報の編集値。他の項目と同様にステージングし「保存」時のみ match に反映する
+    @State private var matchInfoEdit: String
     var onSave: (() -> Void)?
 
     // 編集対象
@@ -46,6 +48,7 @@ struct ScoreboardStyleSheet: View {
         self._baseMatchInfoPosition = State(initialValue: CGPoint(x: s.matchInfoPositionX, y: s.matchInfoPositionY))
         self._homeTeamNameEdit = State(initialValue: match.homeTeamName)
         self._awayTeamNameEdit = State(initialValue: match.awayTeamName)
+        self._matchInfoEdit = State(initialValue: match.matchInfo ?? "")
     }
 
     var body: some View {
@@ -60,7 +63,7 @@ struct ScoreboardStyleSheet: View {
                             awayScore: match.awayScore,
                             style: style,
                             currentPeriodLabel: match.timerSegments.first?.periodLabel,
-                            matchInfo: match.matchInfo,
+                            matchInfo: matchInfoEdit.isEmpty ? nil : matchInfoEdit,
                             pkKicks: match.pkKicks,
                             thumbnail: thumbnail,
                             videoAspectRatio: videoAspectRatio,
@@ -153,7 +156,7 @@ struct ScoreboardStyleSheet: View {
                 }
 
                 Section {
-                    TextField("大会名・日程など", text: matchInfoBinding)
+                    TextField("大会名・日程など", text: $matchInfoEdit)
                 } header: {
                     Text("試合情報")
                 } footer: {
@@ -197,6 +200,8 @@ struct ScoreboardStyleSheet: View {
                         let trimmedAway = awayTeamNameEdit.trimmingCharacters(in: .whitespacesAndNewlines)
                         if !trimmedHome.isEmpty { match.homeTeamName = trimmedHome }
                         if !trimmedAway.isEmpty { match.awayTeamName = trimmedAway }
+                        let trimmedInfo = matchInfoEdit.trimmingCharacters(in: .whitespacesAndNewlines)
+                        match.matchInfo = trimmedInfo.isEmpty ? nil : trimmedInfo
                         dismiss()
                         onSave?()
                     }
@@ -231,16 +236,9 @@ struct ScoreboardStyleSheet: View {
         let trimmedAway = awayTeamNameEdit.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmedHome.isEmpty && trimmedHome != match.homeTeamName { return true }
         if !trimmedAway.isEmpty && trimmedAway != match.awayTeamName { return true }
+        let trimmedInfo = matchInfoEdit.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedInfo != (match.matchInfo ?? "") { return true }
         return false
-    }
-
-    // MARK: - Match Info Binding
-
-    private var matchInfoBinding: Binding<String> {
-        Binding(
-            get: { match.matchInfo ?? "" },
-            set: { match.matchInfo = $0.isEmpty ? nil : $0 }
-        )
     }
 
     // MARK: - Color Bindings

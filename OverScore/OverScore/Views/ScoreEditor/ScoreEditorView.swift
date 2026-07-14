@@ -22,6 +22,8 @@ struct ScoreEditorView: View {
     @State private var liveIsRunning = false
     @State private var liveStartDate: Date? = nil
     @State private var liveDisplayTime: TimeInterval = 0
+    /// ライブタイマーのリセット確認（計測中の経過時間を誤って失わないため）
+    @State private var showResetConfirm = false
 
     private var currentTime: TimeInterval {
         playerVM?.currentTime ?? 0
@@ -236,7 +238,9 @@ struct ScoreEditorView: View {
                     }
                 } label: {
                     Label(
-                        liveIsRunning ? "一時停止" : (liveElapsed > 0 ? "再開" : "開始"),
+                        liveIsRunning
+                            ? String(localized: "一時停止")
+                            : (liveElapsed > 0 ? String(localized: "再開") : String(localized: "開始")),
                         systemImage: liveIsRunning ? "pause.circle.fill" : "play.circle.fill"
                     )
                     .frame(maxWidth: .infinity)
@@ -246,7 +250,7 @@ struct ScoreEditorView: View {
                 .tint(liveIsRunning ? .orange : .green)
 
                 Button {
-                    resetLiveTimer()
+                    showResetConfirm = true
                 } label: {
                     Label("リセット", systemImage: "arrow.counterclockwise.circle")
                         .frame(maxWidth: .infinity)
@@ -254,6 +258,18 @@ struct ScoreEditorView: View {
                 }
                 .buttonStyle(.bordered)
                 .disabled(liveDisplayTime == 0)
+                .confirmationDialog(
+                    "タイマーをリセットしますか？",
+                    isPresented: $showResetConfirm,
+                    titleVisibility: .visible
+                ) {
+                    Button("リセット", role: .destructive) {
+                        resetLiveTimer()
+                    }
+                    Button("キャンセル", role: .cancel) {}
+                } message: {
+                    Text("経過時間（\(TimeFormatting.format(seconds: liveDisplayTime))）が0に戻ります。")
+                }
             }
         }
         .padding(.vertical, 8)

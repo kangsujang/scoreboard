@@ -12,6 +12,8 @@ final class VideoExportService {
     private var exportSession: AVAssetExportSession?
     private var progressTimer: Timer?
     private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
+    /// コンポジション構築中（exportSession生成前）のキャンセル要求を拾うフラグ
+    private var isCancelled = false
 
     enum ExportError: LocalizedError {
         case noVideoTrack
@@ -43,6 +45,7 @@ final class VideoExportService {
         progress = 0
         exportedURL = nil
         error = nil
+        isCancelled = false
         UIApplication.shared.isIdleTimerDisabled = true
         beginBackgroundTask()
 
@@ -67,6 +70,7 @@ final class VideoExportService {
     }
 
     func cancel() {
+        isCancelled = true
         exportSession?.cancelExport()
         progressTimer?.invalidate()
         progressTimer = nil
@@ -82,6 +86,13 @@ final class VideoExportService {
 
     private func performExport(urls: [URL], match: Match) async throws -> URL {
         let result = try await VideoCompositionBuilder.build(from: urls)
+
+        // 構築中にキャンセルされていたらここで脱出
+        // （build自体は中断できないため、セッション生成前の早期チェックで対応）
+        if isCancelled {
+            throw ExportError.cancelled
+        }
+
         let videoSize = result.videoSize
 
         // Export

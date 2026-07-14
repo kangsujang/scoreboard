@@ -180,7 +180,7 @@ struct MatchSetupView: View {
                     matching: .videos
                 ) {
                     Label(
-                        isImporting ? "読み込み中..." : "写真ライブラリから追加",
+                        isImporting ? String(localized: "読み込み中...") : String(localized: "写真ライブラリから追加"),
                         systemImage: "photo.on.rectangle"
                     )
                 }
@@ -237,7 +237,7 @@ struct MatchSetupView: View {
                 } label: {
                     HStack {
                         Spacer()
-                        Text(videoOnlyMerge ? "次へ: 確認画面" : "次へ: スコアボード設定")
+                        Text(videoOnlyMerge ? String(localized: "次へ: 確認画面") : String(localized: "次へ: スコアボード設定"))
                             .font(.headline)
                         Spacer()
                     }

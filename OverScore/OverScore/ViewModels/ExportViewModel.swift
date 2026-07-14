@@ -20,6 +20,14 @@ final class ExportViewModel {
     var exportedURL: URL? { exportService.exportedURL }
     var exportError: Error? { exportService.error }
 
+    /// エラーがユーザーによるキャンセルかどうか（失敗表示と区別するため）
+    var isCancelledByUser: Bool {
+        if case VideoExportService.ExportError.cancelled? = exportError as? VideoExportService.ExportError {
+            return true
+        }
+        return false
+    }
+
     func startExport() {
         Task {
             do {

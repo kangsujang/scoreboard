@@ -62,11 +62,11 @@ struct ExportView: View {
                 .font(.headline)
 
             VStack(spacing: 10) {
-                summaryRow(label: "対戦", value: "\(match.homeTeamName) \(match.homeScore) - \(match.awayScore) \(match.awayTeamName)")
+                summaryRow(label: String(localized: "対戦"), value: "\(match.homeTeamName) \(match.homeScore) - \(match.awayScore) \(match.awayTeamName)")
                 Divider()
-                summaryRow(label: "動画", value: "\(match.videoURLs.count)本")
+                summaryRow(label: String(localized: "動画"), value: String(localized: "\(match.videoURLs.count)本"))
                 Divider()
-                summaryRow(label: "スコアボード", value: match.skipOverlay ? "なし（動画のみ結合）" : "あり")
+                summaryRow(label: String(localized: "スコアボード"), value: match.skipOverlay ? String(localized: "なし（動画のみ結合）") : String(localized: "あり"))
             }
             .padding()
             .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
@@ -108,6 +108,8 @@ struct ExportView: View {
                 exportingView(vm: vm)
             } else if let url = vm.exportedURL {
                 completedView(vm: vm, url: url)
+            } else if vm.isCancelledByUser {
+                cancelledView()
             } else if let error = vm.exportError {
                 errorView(error: error)
             }
@@ -129,7 +131,8 @@ struct ExportView: View {
             Spacer()
 
             ProgressView(value: vm.progress) {
-                Text("エクスポート中...")
+                // 進捗0%の間はコンポジション構築中（進捗を取得できない段階）
+                Text(vm.progress == 0 ? String(localized: "エクスポートを準備中...") : String(localized: "エクスポート中..."))
                     .font(.headline)
             } currentValueLabel: {
                 Text("\(Int(vm.progress * 100))%")
@@ -176,7 +179,7 @@ struct ExportView: View {
                     vm.saveToPhotos()
                 } label: {
                     Label(
-                        vm.savedToPhotos ? "保存済み" : "写真に保存",
+                        vm.savedToPhotos ? String(localized: "保存済み") : String(localized: "写真に保存"),
                         systemImage: vm.savedToPhotos ? "checkmark" : "photo.on.rectangle"
                     )
                     .frame(maxWidth: .infinity)
@@ -196,6 +199,27 @@ struct ExportView: View {
         }
         .onAppear {
             player = AVPlayer(url: url)
+        }
+    }
+
+    /// ユーザーによるキャンセル後の表示（失敗ではないため警告表現を使わない）
+    private func cancelledView() -> some View {
+        VStack(spacing: 16) {
+            Spacer()
+
+            Image(systemName: "xmark.circle")
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
+
+            Text("エクスポートをキャンセルしました")
+                .font(.headline)
+
+            Button("再開する") {
+                viewModel?.startExport()
+            }
+            .buttonStyle(.borderedProminent)
+
+            Spacer()
         }
     }
 

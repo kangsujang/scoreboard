@@ -345,6 +345,9 @@ private struct SegmentControlRow: View {
     var showTeamColors: Bool = false
     var periodPresets: [String] = ScoreControlsView.periodPresets
 
+    /// セグメント削除の確認ダイアログ表示（誤タップによる設定喪失を防ぐ）
+    @State private var showRemoveConfirm = false
+
     static func hexString(from uiColor: UIColor) -> String {
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0
         uiColor.getRed(&r, green: &g, blue: &b, alpha: nil)
@@ -368,14 +371,28 @@ private struct SegmentControlRow: View {
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(.secondary)
                 Spacer()
-                if let onRemove {
+                if onRemove != nil {
                     Button(role: .destructive) {
-                        onRemove()
+                        showRemoveConfirm = true
                     } label: {
                         Image(systemName: "trash.circle")
                             .font(.caption)
+                            .frame(width: 32, height: 32)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.borderless)
+                    .confirmationDialog(
+                        "セグメント \(index + 1) を削除しますか？",
+                        isPresented: $showRemoveConfirm,
+                        titleVisibility: .visible
+                    ) {
+                        Button("削除", role: .destructive) {
+                            onRemove?()
+                        }
+                        Button("キャンセル", role: .cancel) {}
+                    } message: {
+                        Text("キックオフ時刻やラベルなどの設定が失われます。")
+                    }
                 }
             }
 
@@ -921,6 +938,8 @@ private struct PenaltyTimerSection: View {
     let onAdd: (Team, TimeInterval) -> Void
     let onRemove: (UUID) -> Void
     @State private var showingCustomSheet: Team? = nil
+    /// 削除確認中のペナルティタイマーID（誤タップによる即削除を防ぐ）
+    @State private var confirmingRemoveID: UUID?
 
     static let presets: [(label: String, seconds: TimeInterval)] = [
         ("2分", 120),
@@ -973,6 +992,24 @@ private struct PenaltyTimerSection: View {
             )
             .presentationDetents([.height(280)])
         }
+        .confirmationDialog(
+            "このペナルティタイマーを削除しますか？",
+            isPresented: Binding(
+                get: { confirmingRemoveID != nil },
+                set: { if !$0 { confirmingRemoveID = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("削除", role: .destructive) {
+                if let id = confirmingRemoveID {
+                    onRemove(id)
+                }
+                confirmingRemoveID = nil
+            }
+            Button("キャンセル", role: .cancel) {
+                confirmingRemoveID = nil
+            }
+        }
     }
 
     private func penaltyRow(timer: PenaltyTimer, teamName: String, color: Color) -> some View {
@@ -991,11 +1028,13 @@ private struct PenaltyTimerSection: View {
                     .foregroundStyle(.yellow)
             }
             Button {
-                onRemove(timer.id)
+                confirmingRemoveID = timer.id
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .frame(width: 44, height: 32)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
         }

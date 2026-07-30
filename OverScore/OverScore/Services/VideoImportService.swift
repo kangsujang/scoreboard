@@ -56,7 +56,8 @@ struct VideoImportService {
         let frameRate: Float
     }
 
-    /// 動画ファイルから表示用のメタ情報（補正済み解像度・AVFoundationが報告する生のフレームレート）を取得する。
+    /// 動画ファイルから表示用のメタ情報（補正済み解像度・フレームレート）を取得する。
+    /// フレームレートはエクスポート時に使う値と揃えるため VideoCompositionBuilder の検出ロジックを共用する。
     static func videoInfo(for url: URL) async -> VideoInfo? {
         let accessing = url.startAccessingSecurityScopedResource()
         defer {
@@ -68,13 +69,10 @@ struct VideoImportService {
             guard let track = tracks.first else { return nil }
             let naturalSize = try await track.load(.naturalSize)
             let transform = try await track.load(.preferredTransform)
-            let nominal = try await track.load(.nominalFrameRate)
-            let minFrameDuration = try await track.load(.minFrameDuration)
-            let durationBased: Float = (minFrameDuration.isValid && minFrameDuration.seconds > 0)
-                ? Float(1.0 / minFrameDuration.seconds)
-                : 0
+            let frameDuration = try await VideoCompositionBuilder.detectFrameDuration(of: track)
+            let frameRate: Float = frameDuration.seconds > 0 ? Float(1.0 / frameDuration.seconds) : 0
             let dimensions = VideoCompositionBuilder.correctedSize(naturalSize: naturalSize, transform: transform)
-            return VideoInfo(dimensions: dimensions, frameRate: max(nominal, durationBased))
+            return VideoInfo(dimensions: dimensions, frameRate: frameRate)
         } catch {
             return nil
         }

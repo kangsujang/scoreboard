@@ -8,7 +8,14 @@ enum VideoCompositionBuilder {
         let videoSize: CGSize
         let duration: CMTime
         let segmentTransforms: [(track: AVMutableCompositionTrack, transform: CGAffineTransform, naturalSize: CGSize)]
-        let nominalFrameRate: Float
+        /// 元動画のフレーム間隔。29.97fps のようなドロップフレームレートを
+        /// 1001/30000 の有理数のまま保持する（整数丸めによるコマ重複を防ぐため）。
+        let frameDuration: CMTime
+
+        var nominalFrameRate: Float {
+            let seconds = frameDuration.seconds
+            return seconds > 0 ? Float(1.0 / seconds) : 30.0
+        }
     }
 
     enum BuildError: LocalizedError {
@@ -49,7 +56,7 @@ enum VideoCompositionBuilder {
 
         var currentTime = CMTime.zero
         var referenceSize: CGSize?
-        var referenceFrameRate: Float?
+        var shortestFrameDuration: CMTime?
         var segments: [(track: AVMutableCompositionTrack, transform: CGAffineTransform, naturalSize: CGSize)] = []
 
         for url in urls {
@@ -75,7 +82,15 @@ enum VideoCompositionBuilder {
             let corrected = correctedSize(naturalSize: naturalSize, transform: preferredTransform)
             if referenceSize == nil {
                 referenceSize = corrected
-                referenceFrameRate = try await detectFrameRate(of: sourceVideoTrack)
+            }
+
+            // 複数動画を連結する場合、最もフレームレートの高い素材に合わせる。
+            // 低い方に合わせるとその素材のコマが間引かれてカクつくため。
+            let segmentFrameDuration = try await detectFrameDuration(of: sourceVideoTrack)
+            if let current = shortestFrameDuration {
+                shortestFrameDuration = CMTimeMinimum(current, segmentFrameDuration)
+            } else {
+                shortestFrameDuration = segmentFrameDuration
             }
 
             segments.append((
@@ -88,14 +103,14 @@ enum VideoCompositionBuilder {
         }
 
         let videoSize = referenceSize ?? CGSize(width: 1920, height: 1080)
-        let frameRate = (referenceFrameRate ?? 0) > 0 ? referenceFrameRate! : 30.0
+        let frameDuration = shortestFrameDuration ?? defaultFrameDuration
 
         return Result(
             composition: composition,
             videoSize: videoSize,
             duration: currentTime,
             segmentTransforms: segments,
-            nominalFrameRate: frameRate
+            frameDuration: frameDuration
         )
     }
 
@@ -108,8 +123,7 @@ enum VideoCompositionBuilder {
     ) -> AVMutableVideoComposition {
         let videoComposition = AVMutableVideoComposition()
         videoComposition.renderSize = result.videoSize
-        let timescale = Int32(ceil(result.nominalFrameRate))
-        videoComposition.frameDuration = CMTime(value: 1, timescale: timescale)
+        videoComposition.frameDuration = result.frameDuration
         videoComposition.animationTool = AVVideoCompositionCoreAnimationTool(
             postProcessingAsVideoLayer: videoLayer,
             in: parentLayer
@@ -139,8 +153,7 @@ enum VideoCompositionBuilder {
     ) -> AVMutableVideoComposition {
         let videoComposition = AVMutableVideoComposition()
         videoComposition.renderSize = result.videoSize
-        let timescale = Int32(ceil(result.nominalFrameRate))
-        videoComposition.frameDuration = CMTime(value: 1, timescale: timescale)
+        videoComposition.frameDuration = result.frameDuration
 
         let instruction = AVMutableVideoCompositionInstruction()
         instruction.timeRange = CMTimeRange(start: .zero, duration: result.duration)
@@ -160,35 +173,68 @@ enum VideoCompositionBuilder {
 
     // MARK: - Frame Rate Detection
 
-    /// nominalFrameRate と minFrameDuration の両方を考慮して信頼性の高いフレームレートを返す。
-    /// 4K iPhone素材などで nominalFrameRate が実値より低く（例: 30FPS素材なのに15.79を返す）報告されるケースを救済する。
-    static func detectFrameRate(of track: AVAssetTrack) async throws -> Float {
+    static let defaultFrameDuration = CMTime(value: 1, timescale: 30)
+
+    /// 標準的なフレームレートと、それに対応する正確なフレーム間隔。
+    /// 29.97 / 59.94 などのドロップフレームレートは 1001/30000 形式の有理数で保持する。
+    /// 30 に丸めてしまうと約1000フレームに1枚コマが重複し、周期的なカクつきの原因になる。
+    private static let standardFrameDurations: [(rate: Float, duration: CMTime)] = [
+        (24000.0 / 1001.0, CMTime(value: 1001, timescale: 24000)),
+        (24, CMTime(value: 1, timescale: 24)),
+        (25, CMTime(value: 1, timescale: 25)),
+        (30000.0 / 1001.0, CMTime(value: 1001, timescale: 30000)),
+        (30, CMTime(value: 1, timescale: 30)),
+        (50, CMTime(value: 1, timescale: 50)),
+        (60000.0 / 1001.0, CMTime(value: 1001, timescale: 60000)),
+        (60, CMTime(value: 1, timescale: 60)),
+        (100, CMTime(value: 1, timescale: 100)),
+        (120000.0 / 1001.0, CMTime(value: 1001, timescale: 120000)),
+        (120, CMTime(value: 1, timescale: 120)),
+        (240, CMTime(value: 1, timescale: 240))
+    ]
+
+    /// 元動画のフレーム間隔を検出する。
+    /// nominalFrameRate と minFrameDuration の両方を考慮し、
+    /// 4K iPhone素材などで実値より低く（例: 30FPS素材なのに15.79）報告されるケースを救済する。
+    static func detectFrameDuration(of track: AVAssetTrack) async throws -> CMTime {
         let nominal = try await track.load(.nominalFrameRate)
         let minFrameDuration = try await track.load(.minFrameDuration)
-        let durationBased: Float = (minFrameDuration.isValid && minFrameDuration.seconds > 0)
-            ? Float(1.0 / minFrameDuration.seconds)
-            : 0
-        let raw = max(nominal, durationBased)
-        return normalizeToStandardFrameRate(raw)
-    }
 
-    /// 検出された生のフレームレートを標準的なフレームレート (24/25/30/50/60/120) に正規化する。
-    /// VFR素材で半減した値（例: 15.79）が報告された場合、2倍/3倍してから最寄りの標準値にスナップする。
-    static func normalizeToStandardFrameRate(_ rate: Float) -> Float {
-        guard rate > 0 else { return 30.0 }
-        let standards: [Float] = [24, 25, 30, 50, 60, 120, 240]
-        let tolerance: Float = 2.0
+        let hasMinFrameDuration = minFrameDuration.isValid
+            && !minFrameDuration.isIndefinite
+            && minFrameDuration.seconds > 0
+        let minFrameDurationRate = hasMinFrameDuration ? Float(1.0 / minFrameDuration.seconds) : 0
 
-        if let nearest = standards.first(where: { abs(rate - $0) <= tolerance }) {
-            return nearest
+        let rawRate = max(nominal, minFrameDurationRate)
+
+        // 標準値付近ならドロップフレームレートも区別して正確な有理数を採用する
+        if let exact = nearestStandardFrameDuration(for: rawRate, tolerance: 0.1) {
+            return exact
         }
+
+        // VFR素材でフレームレートが 1/2・1/3・1/4 に報告されるケースを救済する
         for multiplier: Float in [2, 3, 4] {
-            let multiplied = rate * multiplier
-            if let nearest = standards.first(where: { abs(multiplied - $0) <= tolerance }) {
-                return nearest
+            if let exact = nearestStandardFrameDuration(for: rawRate * multiplier, tolerance: 2.0) {
+                return exact
             }
         }
-        return rate
+
+        // 標準値に該当しない場合は素材のタイミングをそのまま維持する
+        if hasMinFrameDuration && minFrameDurationRate >= nominal {
+            return minFrameDuration
+        }
+        if rawRate > 0 {
+            return CMTime(value: 1000, timescale: Int32((rawRate * 1000).rounded()))
+        }
+        return defaultFrameDuration
+    }
+
+    /// 指定フレームレートに最も近い標準フレーム間隔を返す。許容範囲外なら nil。
+    static func nearestStandardFrameDuration(for rate: Float, tolerance: Float) -> CMTime? {
+        guard rate > 0 else { return nil }
+        let nearest = standardFrameDurations.min { abs($0.rate - rate) < abs($1.rate - rate) }
+        guard let nearest, abs(nearest.rate - rate) <= tolerance else { return nil }
+        return nearest.duration
     }
 
     // MARK: - Transform Handling

@@ -26,23 +26,26 @@ struct ScoreboardLayerBuilder {
         let overlayLayer = CALayer()
         overlayLayer.frame = CGRect(origin: .zero, size: config.videoSize)
 
-        let container = buildContainerLayer(config: config)
-        overlayLayer.addSublayer(container)
+        // チーム名・スコア・タイマー等のスコアボード本体（試合情報のみ表示モードでは非表示）
+        if config.style.showTeamsSection {
+            let container = buildContainerLayer(config: config)
+            overlayLayer.addSublayer(container)
 
-        // PK overlay (positioned below main scoreboard)
-        var bottomY = container.frame.maxY + config.videoSize.width * ScoreboardPreviewView.baseRatio * config.style.scale * 0.25
+            // PK overlay (positioned below main scoreboard)
+            var bottomY = container.frame.maxY + config.videoSize.width * ScoreboardPreviewView.baseRatio * config.style.scale * 0.25
 
-        if !config.pkKicks.isEmpty {
-            let pkLayer = buildPKLayer(config: config, mainContainerFrame: container.frame)
-            overlayLayer.addSublayer(pkLayer)
-            bottomY = pkLayer.frame.maxY + config.videoSize.width * ScoreboardPreviewView.baseRatio * config.style.scale * 0.25
-        }
+            if !config.pkKicks.isEmpty {
+                let pkLayer = buildPKLayer(config: config, mainContainerFrame: container.frame)
+                overlayLayer.addSublayer(pkLayer)
+                bottomY = pkLayer.frame.maxY + config.videoSize.width * ScoreboardPreviewView.baseRatio * config.style.scale * 0.25
+            }
 
-        // Penalty timer overlay (positioned below scoreboard/PK, outside container)
-        if !config.penaltyTimers.isEmpty {
-            let penaltyLayer = buildPenaltyTimerLayer(config: config, originX: container.frame.origin.x, originY: bottomY)
-            if let penaltyLayer {
-                overlayLayer.addSublayer(penaltyLayer)
+            // Penalty timer overlay (positioned below scoreboard/PK, outside container)
+            if !config.penaltyTimers.isEmpty {
+                let penaltyLayer = buildPenaltyTimerLayer(config: config, originX: container.frame.origin.x, originY: bottomY)
+                if let penaltyLayer {
+                    overlayLayer.addSublayer(penaltyLayer)
+                }
             }
         }
 

@@ -83,20 +83,22 @@ struct ScoreboardPreviewView: View {
                 }
 
                 // Scoreboard overlay + PK + Penalty timers
-                VStack(alignment: .leading, spacing: geo.size.width * Self.baseRatio * 0.25) {
-                    scoreboardContent(containerWidth: geo.size.width)
+                if style.showTeamsSection {
+                    VStack(alignment: .leading, spacing: geo.size.width * Self.baseRatio * 0.25) {
+                        scoreboardContent(containerWidth: geo.size.width)
 
-                    if currentPeriodLabel?.lowercased() == "pk", !pkKicks.isEmpty {
-                        pkContent(containerWidth: geo.size.width)
+                        if currentPeriodLabel?.lowercased() == "pk", !pkKicks.isEmpty {
+                            pkContent(containerWidth: geo.size.width)
+                        }
+
+                        penaltyTimerOverlay(containerWidth: geo.size.width)
                     }
-
-                    penaltyTimerOverlay(containerWidth: geo.size.width)
+                    .scaleEffect(style.scale, anchor: .topLeading)
+                    .offset(
+                        x: style.positionX * geo.size.width,
+                        y: style.positionY * geo.size.height
+                    )
                 }
-                .scaleEffect(style.scale, anchor: .topLeading)
-                .offset(
-                    x: style.positionX * geo.size.width,
-                    y: style.positionY * geo.size.height
-                )
 
                 // 試合情報（独立位置・スケール）
                 if let info = matchInfo, !info.isEmpty {

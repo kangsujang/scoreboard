@@ -4156,6 +4156,50 @@
           }
         }
       }
+    },
+    "スコアボードを表示": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show Scoreboard"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스코어보드 표시"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示记分牌"
+          }
+        }
+      }
+    },
+    "オフにすると、チーム名・スコア・タイマーなどは表示されず「試合情報」のみが表示されます。対戦相手が不明な場合や、複数チームと練習試合を行う場合などに利用できます。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When off, team names, score, and timer are hidden — only \"Match Info\" is shown. Useful when the opponent is unknown or when playing practice matches against multiple teams."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "끄면 팀 이름·스코어·타이머 등이 표시되지 않고 \"경기 정보\"만 표시됩니다. 상대팀을 모르거나 여러 팀과 연습 경기를 하는 경우 등에 사용할 수 있습니다."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭后将不显示队名、比分、计时器等，仅显示\"比赛信息\"。适用于对手未知或与多支球队进行训练赛等情况。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

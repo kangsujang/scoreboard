@@ -163,22 +163,30 @@ struct ScoreboardStyleSheet: View {
                     Text("スコアボード下部に表示されます")
                 }
 
-                Section("オプション") {
-                    Toggle("スコア表示", isOn: $style.showScore)
-                    Toggle("タイマー表示", isOn: $style.showMatchTimer)
-                    if style.showMatchTimer {
-                        Picker("タイマー位置", selection: $style.timerPosition) {
-                            ForEach(ScoreboardStyle.TimerPosition.allCases, id: \.self) { pos in
-                                Text(pos.displayName).tag(pos)
-                            }
-                        }
-                        .pickerStyle(.segmented)
+                Section {
+                    Toggle("スコアボードを表示", isOn: $style.showTeamsSection)
+                } footer: {
+                    Text("オフにすると、チーム名・スコア・タイマーなどは表示されず「試合情報」のみが表示されます。対戦相手が不明な場合や、複数チームと練習試合を行う場合などに利用できます。")
+                }
 
-                        Toggle("タイマー詳細設定", isOn: $style.showTimerOptions)
+                if style.showTeamsSection {
+                    Section("オプション") {
+                        Toggle("スコア表示", isOn: $style.showScore)
+                        Toggle("タイマー表示", isOn: $style.showMatchTimer)
+                        if style.showMatchTimer {
+                            Picker("タイマー位置", selection: $style.timerPosition) {
+                                ForEach(ScoreboardStyle.TimerPosition.allCases, id: \.self) { pos in
+                                    Text(pos.displayName).tag(pos)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+
+                            Toggle("タイマー詳細設定", isOn: $style.showTimerOptions)
+                        }
+                        Toggle("ペナルティタイマー", isOn: $style.showPenaltyTimer)
+                        Toggle("タイムアウト", isOn: $style.showTimeouts)
+                        Toggle("セットカウント表示", isOn: $style.showSetCount)
                     }
-                    Toggle("ペナルティタイマー", isOn: $style.showPenaltyTimer)
-                    Toggle("タイムアウト", isOn: $style.showTimeouts)
-                    Toggle("セットカウント表示", isOn: $style.showSetCount)
                 }
             }
             .navigationTitle("スコアボード設定")

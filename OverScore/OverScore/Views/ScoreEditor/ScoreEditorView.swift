@@ -278,6 +278,13 @@ struct ScoreEditorView: View {
     }
 
     private func videoWithOverlay(playerVM: PlayerViewModel) -> some View {
+        ZoomableView {
+            videoFrame(playerVM: playerVM)
+        }
+    }
+
+    /// 動画 + スコアボードプレビュー。ズーム時は合成結果ごと拡大される。
+    private func videoFrame(playerVM: PlayerViewModel) -> some View {
         ZStack {
             VideoPlayerView(player: playerVM.player)
                 .background(.black)

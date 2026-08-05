@@ -33,6 +33,7 @@
 		9C1F6694BF8E07EEF9F033AA /* EventListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3906BE0660E8B34B17035C16 /* EventListView.swift */; };
 		A4B2056C032867586EDD36A1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D671933DB6B254866E6841B7 /* ContentView.swift */; };
 		AD5F403C7B41BD8049ED4B22 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49DF3CBF5A7E44A565E7699 /* VideoPlayerView.swift */; };
+		AD5F403C7B41BD8049ED4B23 /* ZoomableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49DF3CBF5A7E44A565E769A /* ZoomableView.swift */; };
 		AF715706A86A5D6622527AC3 /* TimeoutEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986ED4F76219BC8FAF496C51 /* TimeoutEvent.swift */; };
 		C51E9378D51EE69B8A110B02 /* ScoreboardPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EB139CF4C616D5C84468CDE /* ScoreboardPreviewView.swift */; };
 		CBFE546A1F902BE14FA70AF7 /* PlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D84E8ACF3D408DB569611372 /* PlayerViewModel.swift */; };
@@ -87,6 +88,7 @@
 		D84E8ACF3D408DB569611372 /* PlayerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewModel.swift; sourceTree = "<group>"; };
 		E2CCDB8AFE476FB9AE2C5AE0 /* ScoreboardStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreboardStyle.swift; sourceTree = "<group>"; };
 		E49DF3CBF5A7E44A565E7699 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
+		E49DF3CBF5A7E44A565E769A /* ZoomableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableView.swift; sourceTree = "<group>"; };
 		E7673D56EE303CF2F9B24BD6 /* MatchDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchDetailView.swift; sourceTree = "<group>"; };
 		C476FBEA67C2407F82C32D63 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -205,6 +207,7 @@
 				8BC8936A9E5D30377300A9EC /* ScoreControlsView.swift */,
 				B015BAD32421A82AAE44BF0C /* ScoreEditorView.swift */,
 				E49DF3CBF5A7E44A565E7699 /* VideoPlayerView.swift */,
+				E49DF3CBF5A7E44A565E769A /* ZoomableView.swift */,
 			);
 			path = ScoreEditor;
 			sourceTree = "<group>";
@@ -386,6 +389,7 @@
 				93EEEC549130E101E4033D69 /* VideoImportService.swift in Sources */,
 				0061EA760AE5A8CFD6CAA190 /* VideoManagementSheet.swift in Sources */,
 				AD5F403C7B41BD8049ED4B22 /* VideoPlayerView.swift in Sources */,
+				AD5F403C7B41BD8049ED4B23 /* ZoomableView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -413,7 +417,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.3;
+				MARKETING_VERSION = 1.3.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sujang.ScoreFrame;
 				SDKROOT = iphoneos;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -500,7 +504,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.3;
+				MARKETING_VERSION = 1.3.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sujang.ScoreFrame;
 				SDKROOT = iphoneos;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;

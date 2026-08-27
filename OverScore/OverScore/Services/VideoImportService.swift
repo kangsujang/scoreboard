@@ -69,7 +69,7 @@ struct VideoImportService {
             guard let track = tracks.first else { return nil }
             let naturalSize = try await track.load(.naturalSize)
             let transform = try await track.load(.preferredTransform)
-            let frameDuration = try await VideoCompositionBuilder.detectFrameDuration(of: track)
+            let frameDuration = try await VideoCompositionBuilder.detectFrameDuration(of: track, in: asset)
             let frameRate: Float = frameDuration.seconds > 0 ? Float(1.0 / frameDuration.seconds) : 0
             let dimensions = VideoCompositionBuilder.correctedSize(naturalSize: naturalSize, transform: transform)
             return VideoInfo(dimensions: dimensions, frameRate: frameRate)

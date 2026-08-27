@@ -290,9 +290,10 @@ struct MatchSetupView: View {
                     continue
                 }
 
-                let originalName = movie.url.lastPathComponent
-                let creationDate = await VideoImportService.creationDate(for: movie.url)
-                let sandboxURL = try await VideoImportService.copyToSandbox(from: movie.url)
+                // VideoTransferable が Documents/Videos/ へ直接取り込み済み
+                let sandboxURL = movie.url
+                let originalName = sandboxURL.lastPathComponent
+                let creationDate = await VideoImportService.creationDate(for: sandboxURL)
                 let thumb = await ThumbnailGenerator.generate(for: sandboxURL)
                 await MainActor.run {
                     videoEntries.append(VideoEntry(url: sandboxURL, originalFileName: originalName, thumbnail: thumb, creationDate: creationDate))
@@ -370,11 +371,20 @@ struct VideoTransferable: Transferable {
         FileRepresentation(contentType: .movie) { video in
             SentTransferredFile(video.url)
         } importing: { received in
-            let tempURL = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension(received.file.pathExtension)
-            try FileManager.default.copyItem(at: received.file, to: tempURL)
-            return Self(url: tempURL)
+            // 一時ファイルを経由せず Documents/Videos/ へ直接取り込む。
+            // 以前は tmp に複製してから copyToSandbox でもう一度複製しており、
+            // 数GBの試合動画をフルコピー2回ぶん余計に書いていた。
+            // received.file はこのクロージャを抜けると破棄されるため、ここで引き取る。
+            let destination = try VideoImportService.makeSandboxURL(
+                pathExtension: received.file.pathExtension
+            )
+            // isOriginalFile のときは破棄用の複製ではなくユーザーの元ファイルなので move しない
+            try VideoImportService.adoptFile(
+                at: received.file,
+                to: destination,
+                canMove: !received.isOriginalFile
+            )
+            return Self(url: destination)
         }
     }
 }

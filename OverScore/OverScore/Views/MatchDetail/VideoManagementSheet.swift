@@ -213,9 +213,10 @@ struct VideoManagementSheet: View {
         for item in items {
             do {
                 guard let movie = try await item.loadTransferable(type: VideoTransferable.self) else { continue }
-                let originalName = movie.url.lastPathComponent
-                let creationDate = await VideoImportService.creationDate(for: movie.url)
-                let sandboxURL = try await VideoImportService.copyToSandbox(from: movie.url)
+                // VideoTransferable が Documents/Videos/ へ直接取り込み済み
+                let sandboxURL = movie.url
+                let originalName = sandboxURL.lastPathComponent
+                let creationDate = await VideoImportService.creationDate(for: sandboxURL)
                 let thumb = await ThumbnailGenerator.generate(for: sandboxURL)
                 let info = await VideoImportService.videoInfo(for: sandboxURL)
                 await MainActor.run {
